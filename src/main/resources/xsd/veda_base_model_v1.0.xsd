@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="http://www.taksila.com/veda/base/model/v1_0"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://www.taksila.com/veda/base/model/v1_0"
+	attributeFormDefault="unqualified"	elementFormDefault="qualified">
+		
+	<xs:element name="status" type="xs:string" />
+	<xs:element name="errorFieldId" type="xs:string" />
+	<xs:element name="errorMsg" type="xs:string" />
+	<xs:element name="errorInfo" type="ErrorInfo" />
+	<xs:element name="errors" type="Error" />
+	<xs:element name="baseResponse" type="BaseResponse"/>
+
+	<!-- definition of complex elements -->	
+
+	<!-- definition of BaseResponse common for all responses -->
+	<xs:complexType name="BaseResponse">
+		<xs:sequence>
+			<xs:element ref="status" />
+			<xs:element ref="errorInfo" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- definition of ErrorInfo common for all responses -->	
+	<xs:complexType name="ErrorInfo">
+		<xs:sequence>
+			<xs:element ref="errors" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="Error">
+		<xs:sequence>
+			<xs:element ref="errorFieldId" />
+			<xs:element ref="errorMsg" />
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
