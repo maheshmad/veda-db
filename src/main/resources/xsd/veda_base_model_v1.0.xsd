@@ -1,23 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns="http://www.taksila.com/veda/base/model/v1_0"
+<xs:schema xmlns="http://www.taksila.com/veda/model/api/base/v1_0"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-	targetNamespace="http://www.taksila.com/veda/base/model/v1_0"
+	targetNamespace="http://www.taksila.com/veda/model/api/base/v1_0"
 	attributeFormDefault="unqualified"	elementFormDefault="qualified">
 		
+	<xs:element name="id" type="xs:string" />
+	<xs:element name="txnId" type="xs:string" />
 	<xs:element name="status" type="xs:string" />
 	<xs:element name="errorFieldId" type="xs:string" />
 	<xs:element name="errorMsg" type="xs:string" />
 	<xs:element name="errorInfo" type="ErrorInfo" />
-	<xs:element name="errors" type="Error" />
+	<xs:element name="errors" type="Err" />
+	<xs:element name="msg" type="xs:string" />
 	<xs:element name="baseResponse" type="BaseResponse"/>
 
 	<!-- definition of complex elements -->	
-
+	
+	<!-- definition of BaseResponse common for all responses -->
+	<xs:complexType name="BaseRequest">
+		<xs:sequence>
+			<xs:element ref="txnId" />			
+		</xs:sequence>
+	</xs:complexType>
+	
 	<!-- definition of BaseResponse common for all responses -->
 	<xs:complexType name="BaseResponse">
 		<xs:sequence>
+			<xs:element type="xs:boolean" name="success" default="false" />
 			<xs:element ref="status" />
 			<xs:element ref="errorInfo" />
+			<xs:element ref="status" />
+			<xs:element ref="msg" />			
 		</xs:sequence>
 	</xs:complexType>
 
@@ -28,7 +41,7 @@
 		</xs:sequence>
 	</xs:complexType>
 	
-	<xs:complexType name="Error">
+	<xs:complexType name="Err">
 		<xs:sequence>
 			<xs:element ref="errorFieldId" />
 			<xs:element ref="errorMsg" />

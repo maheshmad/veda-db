@@ -1,5 +1,5 @@
 eclipse.preferences.version=1
-extraProperties=sonar.java.coveragePlugin\=jacoco\r\nsonar.language\=java\r\nsonar.jacoco.itReportPath\=C\:\\MMDOCS\\maheshworkspace\\taksila/target/jacoco-it.exec\r\nsonar.jacoco.reportPath\=C\:\\MMDOCS\\maheshworkspace\\taksila/target/jacoco.exec\r\nsonar.dynamicAnalysis\=reuseReports
+extraProperties=sonar.java.coveragePlugin\=jacoco\r\nsonar.language\=java\r\nsonar.jacoco.itReportPath\=C\:\\Users\\Nxxxx\\git\\taksila/target/jacoco-it.exec\r\nsonar.jacoco.reportPath\=C\:\\Users\\Nxxxx\\git\\taksila/target/jacoco.exec\r\nsonar.dynamicAnalysis\=reuseReports
 projectKey=com.taksila\:veda
 serverUrl=http\://localhost\:9000
 version=2

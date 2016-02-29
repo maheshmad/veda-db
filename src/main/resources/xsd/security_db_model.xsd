@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<xs:schema xmlns="http://www.taksila.com/veda/model/db/security/v1_0"
+	targetNamespace="http://www.taksila.com/veda/model/db/security/v1_0"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+	elementFormDefault="qualified">
+
+	<xs:element name="id" type="xs:string" />
+	<xs:element name="token" type="xs:string" />
+	<xs:element name="type" type="xs:string" />	
+	<xs:element name="username" type="xs:string" />
+	<xs:element name="encrypt_salt" type="xs:string" />
+	<xs:element name="tokenExpiryDateTime" type="xs:dateTime" />
+	<xs:element name="userId" type="xs:string" />
+ 	<xs:element name="firstName" type="xs:string" />
+ 	<xs:element name="lastName" type="xs:string" />
+ 	<xs:element name="emailId" type="xs:string" /> 	
+ 	<xs:element name="isAdmin" type="xs:boolean" />
+    <xs:element name="createdDate" type="xs:dateTime"  />
+    <xs:element name="updatedBy" type="xs:string" />
+    <xs:element name="updatedDate" type="xs:dateTime"  />
+    <xs:element name="profileImage" type="xs:base64Binary" />
+ 	<xs:element name="password" type="xs:string" />
+ 	<xs:element name="salt" type="xs:string" />
+ 	<xs:element name="pwdMustChange" type="xs:boolean" />
+ 	<xs:element name="userAgreementAccepted" type="xs:boolean" />
+ 	<xs:element name="privacyPolicyAgreementAccepted" type="xs:boolean" />
+ 	<xs:element name="onBoardingComplete" type="xs:boolean" />
+ 	<xs:element name="mobilePhone" type="xs:string" />
+    <xs:element name="officePhone" type="xs:string" />    
+    <xs:element name="passcode" type="xs:string" />    
+    
+	
+	<xs:complexType name="PasswordResetVerificationTokenTable">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the structure of the password verification token table				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:sequence>
+				<xs:element ref="token" />
+				<xs:element ref="username" />				
+				<xs:element ref="tokenExpiryDateTime" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="UserTable">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the structure of the password verification token table				
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="id" />		
+			<xs:element ref="userId" />
+			<xs:element ref="username" />
+			<xs:element ref="firstName" />
+			<xs:element ref="lastName" />
+			<xs:element ref="profileImage" />
+			<xs:element ref="emailId" />
+			<xs:element ref="isAdmin" />
+			<xs:element ref="createdDate" />
+			<xs:element ref="updatedBy" />
+			<xs:element ref="updatedDate" />
+			<xs:element ref="userAgreementAccepted" />
+			<xs:element ref="privacyPolicyAgreementAccepted" />
+			<xs:element ref="onBoardingComplete" />
+			<xs:element ref="mobilePhone" />
+			<xs:element ref="officePhone" />			
+			<xs:element ref="password"/>
+			<xs:element ref="passcode"/>
+			<xs:element name="roles" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	
+</xs:schema>
+

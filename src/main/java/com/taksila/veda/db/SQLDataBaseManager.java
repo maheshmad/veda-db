@@ -6,27 +6,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Calendar;
+import java.util.Map;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
-
-import java.util.Locale;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import com.taksila.veda.utils.AdminConfig;
-import com.taksila.veda.utils.JDBCUtil;
-import com.taksila.veda.utils.ResourceBundleUtils;
-public class DataBaseManager 
+public class SQLDataBaseManager 
 {
-	private Logger logger = Logger.getLogger(DataBaseManager.class);
+	private static Logger logger = LogManager.getLogger(SQLDataBaseManager.class.getName());
 	
-	private Connection conn = null;	
-	private Statement st = null;
-	private BaseSQLDialect sqlDialect; 
-	
-	private String instantiatedFromClassName;
-	private String dbName;
+	private Connection conn = null;		
+	private BaseSQLDialect sqlDialect; 		
+	private String instantiatedFromClassName = "";
+	private Map<String, String> dbProperties= null;
 	
 	public enum DB_SQL_DIALECT_TYPE
 	{
@@ -36,56 +33,75 @@ public class DataBaseManager
 		POSTGRES
 	}
 	
-	/**
-	 * Default constructor requires you to call connect() and close() explicitly
-	 * @throws SQLException 
-	 */
-	public DataBaseManager(String InstantiatedFromClassName)
+	public enum DB_PROPERTIES
 	{
-		this.instantiatedFromClassName = InstantiatedFromClassName;
-		dbName = ResourceBundleUtils.getStringFromBundle(AdminConfig.D2C_CONFIG_BUNDLE, Locale.UK, AdminConfig.DB_NAME);
-		this.setSqlDialect();
-	}
-		
-	private void setSqlDialect() 
-	{
-		DB_SQL_DIALECT_TYPE dialect = this.readFromConfig();
-		
-		switch (dialect) 
-		{
-			case DB2:
-				this.sqlDialect = new DB2SQLDialect();
-				break;
-			case ORACLE:
-				this.sqlDialect = new OracleSQLDialect();
-				break;
-			case MYSQL:
-				this.sqlDialect = new MySQLDialect();
-				break;
-			default:
-				this.sqlDialect = new BaseSQLDialect();	
-				break;
-		}
+		DB_SQL_JDBC_HOST_URL,
+		DB_SQL_JDBC_UID,
+		DB_SQL_JDBC_PWD,
+		DB_SQL_DIALECT_TYPE,
+		INSTANTIATED_FROM_CLASS
 	}
 	
-	private DB_SQL_DIALECT_TYPE readFromConfig()
-	{
-		if(DB_SQL_DIALECT_TYPE.ORACLE.toString().equals(dbName)) {
-			return DB_SQL_DIALECT_TYPE.ORACLE;
-		} else if(DB_SQL_DIALECT_TYPE.MYSQL.toString().equals(dbName)) {
-			return DB_SQL_DIALECT_TYPE.MYSQL;
-		}
-		
-		return null;
-	}
 	
-	public void connect() throws SQLException 
+	public SQLDataBaseManager(Map<String, String> dbProperties)
 	{		
-		try	{
+		logger.trace("initiliazing sqldbmanager");
+		this.dbProperties = dbProperties;
+		this.instantiatedFromClassName = this.dbProperties.get(DB_PROPERTIES.INSTANTIATED_FROM_CLASS.name());
+	//	this.setSqlDialect();
+		logger.trace("initiliazing sqldbmanager completed");
+	}
+	
+	private void setSqlDialect() 
+	{				
+		logger.trace("setting sql dialect for "+this.dbProperties.get(DB_PROPERTIES.DB_SQL_DIALECT_TYPE.name()));
+		try
+		{
+			DB_SQL_DIALECT_TYPE dialect = DB_SQL_DIALECT_TYPE.valueOf(this.dbProperties.get(DB_PROPERTIES.DB_SQL_DIALECT_TYPE.name()));
+			switch (dialect) 
+			{			
+				case MYSQL:
+					this.sqlDialect = new MySQLDialect();
+					break;
+				default:
+					this.sqlDialect = new BaseSQLDialect();	
+					break;
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void connect(String jndiName) throws SQLException 
+	{		
+		try	
+		{
 				if (conn == null || conn.isClosed()) 
 				{
-					logger.debug("############     	OPENING CONNECTION  (in class "+this.instantiatedFromClassName+")  ############");
-					conn = JDBCUtil.getConnection(dbName);
+					logger.debug("############     	OPENING CONNECTION  (in class "+this.instantiatedFromClassName+")  ############");					
+					try 
+					{						
+//							String DRIVER = "com.mysql.jdbc.Driver";
+//							String URL = this.dbProperties.get(DB_PROPERTIES.DB_SQL_JDBC_HOST_URL.name());
+//							String USERNAME = this.dbProperties.get(DB_PROPERTIES.DB_SQL_JDBC_UID.name());
+//							String PASSWORD = this.dbProperties.get(DB_PROPERTIES.DB_SQL_JDBC_PWD.name());
+//							
+//							Class.forName(DRIVER);
+//							conn = DriverManager.getConnection(URL, USERNAME,PASSWORD);
+														
+							Context initContext = new InitialContext();
+							Context envContext  = (Context)initContext.lookup("java:/comp/env");
+							DataSource ds = (DataSource)envContext.lookup(jndiName);
+							conn = ds.getConnection();
+					} 					
+					catch (SQLException e) 
+					{
+						e.printStackTrace();
+					}
+					
 				}
 				else;
 				
@@ -116,25 +132,20 @@ public class DataBaseManager
 	public void close()
 	{
 		try
-		{
-			if (this.st != null && !this.st.isClosed())
-				this.st.close();
-			else;
-						
+		{			
 			if (this.conn != null)
 			{	
 				if (!this.conn.isClosed())
 				{					
 				
-					logger.debug(this.getClass().getName()+ Level.TRACE + "############     	CLOSING DB CONNECTION   (in class "+this.instantiatedFromClassName+")   ############");
+					logger.debug("############     	CLOSING DB CONNECTION   (in class "+this.instantiatedFromClassName+")   ############");
 					this.conn.close();
 				}
 				else;
 			}
 			else;
 			
-			this.conn = null;
-			this.st = null;
+			this.conn = null;		
 		}
 		catch(SQLException ex)
 		{
@@ -156,9 +167,10 @@ public class DataBaseManager
 	public ResultSet executeQuery(String Query)
 	{
 		ResultSet rs = null;
+		Statement st = null;
 		try
 		{									
-			this.st = conn.createStatement();
+			st = conn.createStatement();
 			rs = st.executeQuery(Query);			
 			return rs;
 		}
@@ -166,6 +178,18 @@ public class DataBaseManager
 		{
 			this.HandleException("executeQuery()", ex);
 		}
+		finally
+		{
+			try 
+			{
+				if (st != null)
+					st.close();
+			} catch (SQLException e) {
+				
+				e.printStackTrace();
+			}
+		}
+		
 		return rs;
 	}
 	
@@ -175,15 +199,26 @@ public class DataBaseManager
 	
 	public boolean executeUpdate(String Query)
 	{
+		Statement st = null;
 		try
 		{			
-			this.st = conn.createStatement();
+			st = conn.createStatement();
 			st.executeUpdate(Query);
 		}
 		catch(SQLException ex)
 		{
 			this.HandleException("executeQuery()", ex);
 			return false;
+		}
+		finally
+		{
+			try 
+			{
+				st.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return true;
 	}
@@ -198,16 +233,18 @@ public class DataBaseManager
 	
 	public PreparedStatement getPreparedStatement(String SQLStmt)
 	{
+		PreparedStatement prepStmt = null;
 		try
 		{					
-			PreparedStatement PrepStmt = conn.prepareStatement(SQLStmt);
-			return PrepStmt;
+			prepStmt = conn.prepareStatement(SQLStmt);
+			return prepStmt;
 		}
 		catch(SQLException ex)
 		{
 			this.HandleException("executeQuery()", ex);
 			return null;
 		}
+		
 	}
 	
 	/**
@@ -218,11 +255,7 @@ public class DataBaseManager
 	private void HandleException(String ErrorInMethod, SQLException sqlex)
 	{
 		try 
-		{
-			if (this.st != null && !this.st.isClosed())
-				this.st.close();
-			else;
-			
+		{			
 			if (this.conn != null)
 			{
 				if (!this.conn.isClosed())
@@ -252,11 +285,7 @@ public class DataBaseManager
 	private void HandleException(String ErrorInMethod, Exception ex)
 	{
 		try 
-		{
-			if (this.st != null && !this.st.isClosed())
-				this.st.close();
-			else;
-			
+		{			
 			if (this.conn != null)
 			{
 				if (!this.conn.isClosed())
@@ -297,26 +326,8 @@ public class DataBaseManager
 		}
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
-	public Connection getConnection()
-	{
-		try 
-		{
-			if (this.conn == null || this.conn.isClosed())
-			{				
-				this.connect();				
-			}
-		} 
-		catch (SQLException e) 
-		{
-			this.HandleException("getConnection()", e);
-		}
-		
-		return this.conn;
-	}
+	
+	
 	
 	public BaseSQLDialect getSqlDialect() {
 		return sqlDialect;

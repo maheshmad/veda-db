@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<xs:schema xmlns="http://www.taksila.com/veda/model/api/security/v1_0"
+	targetNamespace="http://www.taksila.com/veda/model/api/security/v1_0"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	xmlns:secdb="http://www.taksila.com/veda/model/db/security/v1_0"
+	xmlns:base="http://www.taksila.com/veda/model/api/base/v1_0"
+	attributeFormDefault="unqualified" elementFormDefault="qualified">
+
+	<xs:import schemaLocation="veda_base_model_v1.0.xsd" namespace="http://www.taksila.com/veda/model/api/base/v1_0"></xs:import>
+	<xs:import schemaLocation="security_db_model.xsd" namespace="http://www.taksila.com/veda/model/db/security/v1_0"></xs:import>
+
+	<xs:element name="success" type="xs:boolean" />		
+	<xs:element name="msg" type="xs:string" />
+	<xs:element name="newPassword" type="xs:string" />
+	<xs:element name="newPasswordConfirm" type="xs:string" />
+	<xs:element name="status" type="StatusType" />
+	
+	<xs:simpleType name="StatusType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="INVALID" />
+			<xs:enumeration value="SUCCESS" />
+			<xs:enumeration value="FAILED" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<!-- Complex types -->
+	<xs:complexType name="PasswordResetVerificationToken">
+		<xs:annotation>
+			<xs:documentation>
+				Extension of the db model for api response				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="secdb:PasswordResetVerificationTokenTable">      
+            	<xs:sequence>      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+	<xs:complexType name="GenerateVerificationTokenResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GenerateVerificationTokenResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>					
+					<xs:element name="passwordResetVerificationToken" type="PasswordResetVerificationToken" />										
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ResetPasswordRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the ResetPasswordRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+					<xs:element ref="secdb:token" />
+					<xs:element ref="secdb:username" />
+					<xs:element ref="newPassword" />
+					<xs:element ref="newPasswordConfirm" />				
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="ResetPasswordResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the ResetPasswordResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+									
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="EmailPasswordResetResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the EmailPasswordResetResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+									
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	
+</xs:schema>
+
