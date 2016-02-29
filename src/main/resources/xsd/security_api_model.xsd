@@ -13,15 +13,7 @@
 	<xs:element name="msg" type="xs:string" />
 	<xs:element name="newPassword" type="xs:string" />
 	<xs:element name="newPasswordConfirm" type="xs:string" />
-	<xs:element name="status" type="StatusType" />
 	
-	<xs:simpleType name="StatusType">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="INVALID" />
-			<xs:enumeration value="SUCCESS" />
-			<xs:enumeration value="FAILED" />
-		</xs:restriction>
-	</xs:simpleType>
 	
 	<!-- Complex types -->
 	<xs:complexType name="PasswordResetVerificationToken">
@@ -96,6 +88,100 @@
             <xs:extension base="base:BaseResponse">  
             	<xs:sequence>
 									
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	
+	<xs:complexType name="UserInfo">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UserInfo response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="secdb:UserTable">  
+            	<xs:sequence>
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UserLoginResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UserLoginResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="userInfo" type="UserInfo"></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	
+	<xs:complexType name="GetUserInfoRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the ResetPasswordRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+					<xs:element ref="secdb:userId" />							
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="GetUserInfoResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UserLoginResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="userInfo" type="UserInfo" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="SearchUsersRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the ResetPasswordRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+					<xs:element ref="secdb:username" />							
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="SearchUsersResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UserLoginResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="users" type="UserInfo" maxOccurs="unbounded" minOccurs="0" ></xs:element>
+					<xs:element name="totalHits" type="xs:int"></xs:element>
+					<xs:element name="page" type="xs:int"></xs:element>							
+					<xs:element name="pageOffset" type="xs:int"></xs:element>
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>

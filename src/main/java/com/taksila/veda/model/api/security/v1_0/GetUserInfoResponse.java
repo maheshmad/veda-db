@@ -17,19 +17,19 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 
 /**
  * 
- * 				This represents the api structure of the GenerateVerificationTokenResponse response 				
+ * 				This represents the api structure of the UserLoginResponse response 				
  * 			
  * 
- * <p>Java class for GenerateVerificationTokenResponse complex type.
+ * <p>Java class for GetUserInfoResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="GenerateVerificationTokenResponse">
+ * &lt;complexType name="GetUserInfoResponse">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
  *       &lt;sequence>
- *         &lt;element name="passwordResetVerificationToken" type="{http://www.taksila.com/veda/model/api/security/v1_0}PasswordResetVerificationToken"/>
+ *         &lt;element name="userInfo" type="{http://www.taksila.com/veda/model/api/security/v1_0}UserInfo"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,38 +39,38 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "GenerateVerificationTokenResponse", propOrder = {
-    "passwordResetVerificationToken"
+@XmlType(name = "GetUserInfoResponse", propOrder = {
+    "userInfo"
 })
-public class GenerateVerificationTokenResponse
+public class GetUserInfoResponse
     extends BaseResponse
 {
 
     @XmlElement(required = true)
-    protected PasswordResetVerificationToken passwordResetVerificationToken;
+    protected UserInfo userInfo;
 
     /**
-     * Gets the value of the passwordResetVerificationToken property.
+     * Gets the value of the userInfo property.
      * 
      * @return
      *     possible object is
-     *     {@link PasswordResetVerificationToken }
+     *     {@link UserInfo }
      *     
      */
-    public PasswordResetVerificationToken getPasswordResetVerificationToken() {
-        return passwordResetVerificationToken;
+    public UserInfo getUserInfo() {
+        return userInfo;
     }
 
     /**
-     * Sets the value of the passwordResetVerificationToken property.
+     * Sets the value of the userInfo property.
      * 
      * @param value
      *     allowed object is
-     *     {@link PasswordResetVerificationToken }
+     *     {@link UserInfo }
      *     
      */
-    public void setPasswordResetVerificationToken(PasswordResetVerificationToken value) {
-        this.passwordResetVerificationToken = value;
+    public void setUserInfo(UserInfo value) {
+        this.userInfo = value;
     }
 
 }

@@ -6,13 +6,23 @@
 		
 	<xs:element name="id" type="xs:string" />
 	<xs:element name="txnId" type="xs:string" />
-	<xs:element name="status" type="xs:string" />
 	<xs:element name="errorFieldId" type="xs:string" />
 	<xs:element name="errorMsg" type="xs:string" />
 	<xs:element name="errorInfo" type="ErrorInfo" />
 	<xs:element name="errors" type="Err" />
 	<xs:element name="msg" type="xs:string" />
 	<xs:element name="baseResponse" type="BaseResponse"/>
+	
+	<xs:element name="status" type="StatusType" />
+	
+	<xs:simpleType name="StatusType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="INVALID" />
+			<xs:enumeration value="SUCCESS" />
+			<xs:enumeration value="FAILED" />
+			<xs:enumeration value="EXCEPTION" />
+		</xs:restriction>
+	</xs:simpleType>
 
 	<!-- definition of complex elements -->	
 	
@@ -27,7 +37,6 @@
 	<xs:complexType name="BaseResponse">
 		<xs:sequence>
 			<xs:element type="xs:boolean" name="success" default="false" />
-			<xs:element ref="status" />
 			<xs:element ref="errorInfo" />
 			<xs:element ref="status" />
 			<xs:element ref="msg" />			

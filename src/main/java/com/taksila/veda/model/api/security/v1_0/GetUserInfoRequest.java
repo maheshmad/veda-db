@@ -6,31 +6,32 @@
 //
 
 
-package com.taksila.veda.model.api.base.v1_0;
+package com.taksila.veda.model.api.security.v1_0;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
-import com.taksila.veda.model.api.security.v1_0.GetUserInfoRequest;
-import com.taksila.veda.model.api.security.v1_0.ResetPasswordRequest;
-import com.taksila.veda.model.api.security.v1_0.SearchUsersRequest;
+import com.taksila.veda.model.api.base.v1_0.BaseRequest;
 
 
 /**
- * <p>Java class for BaseRequest complex type.
+ * 
+ * 				This represents the api structure of the ResetPasswordRequest api request 				
+ * 			
+ * 
+ * <p>Java class for GetUserInfoRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="BaseRequest">
+ * &lt;complexType name="GetUserInfoRequest">
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseRequest">
  *       &lt;sequence>
- *         &lt;element ref="{http://www.taksila.com/veda/model/api/base/v1_0}txnId"/>
+ *         &lt;element ref="{http://www.taksila.com/veda/model/db/security/v1_0}userId"/>
  *       &lt;/sequence>
- *     &lt;/restriction>
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -38,41 +39,38 @@ import com.taksila.veda.model.api.security.v1_0.SearchUsersRequest;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "BaseRequest", propOrder = {
-    "txnId"
+@XmlType(name = "GetUserInfoRequest", propOrder = {
+    "userId"
 })
-@XmlSeeAlso({
-    ResetPasswordRequest.class,
-    SearchUsersRequest.class,
-    GetUserInfoRequest.class
-})
-public class BaseRequest {
+public class GetUserInfoRequest
+    extends BaseRequest
+{
 
-    @XmlElement(required = true)
-    protected String txnId;
+    @XmlElement(namespace = "http://www.taksila.com/veda/model/db/security/v1_0", required = true)
+    protected String userId;
 
     /**
-     * Gets the value of the txnId property.
+     * Gets the value of the userId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getTxnId() {
-        return txnId;
+    public String getUserId() {
+        return userId;
     }
 
     /**
-     * Sets the value of the txnId property.
+     * Sets the value of the userId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setTxnId(String value) {
-        this.txnId = value;
+    public void setUserId(String value) {
+        this.userId = value;
     }
 
 }

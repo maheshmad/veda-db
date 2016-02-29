@@ -11,22 +11,22 @@ package com.taksila.veda.model.api.security.v1_0;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import com.taksila.veda.model.db.security.v1_0.PasswordResetVerificationTokenTable;
+import com.taksila.veda.model.db.security.v1_0.UserTable;
 
 
 /**
  * 
- * 				Extension of the db model for api response				
+ * 				This represents the api structure of the UserInfo response 				
  * 			
  * 
- * <p>Java class for PasswordResetVerificationToken complex type.
+ * <p>Java class for UserInfo complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="PasswordResetVerificationToken">
+ * &lt;complexType name="UserInfo">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/db/security/v1_0}PasswordResetVerificationTokenTable">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/db/security/v1_0}UserTable">
  *       &lt;sequence>
  *       &lt;/sequence>
  *     &lt;/extension>
@@ -37,9 +37,9 @@ import com.taksila.veda.model.db.security.v1_0.PasswordResetVerificationTokenTab
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "PasswordResetVerificationToken")
-public class PasswordResetVerificationToken
-    extends PasswordResetVerificationTokenTable
+@XmlType(name = "UserInfo")
+public class UserInfo
+    extends UserTable
 {
 
 
