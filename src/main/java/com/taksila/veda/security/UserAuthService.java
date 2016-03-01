@@ -48,23 +48,37 @@ public class UserAuthService
     public void post(@FormParam("username") String userid, @Context HttpServletRequest request,@Context HttpServletResponse response,
     		@Context UriInfo uri,@FormParam("password") String password,@Suspended final AsyncResponse asyncResp) 
     {    	
-		HttpSession session = request.getSession(true);		
-		String tenantId = CommonUtils.getSubDomain(uri.getBaseUri());				
-		/*
-		 * get user info
-		 */
-		UserAuthComponent userAuthComponent = new UserAuthComponent(tenantId);
-		UserLoginResponse loginResp = userAuthComponent.authenticate(userid,password,session.getId());
-		
-		if (loginResp.getErrorInfo() != null)
-		{			
-			asyncResp.resume(Response.status(403).entity(loginResp).build());
-		}
-		else
+		UserLoginResponse loginResp = new UserLoginResponse();
+		try 
 		{
-			NewCookie cookie = new NewCookie(USER_AUTH_SESSION_COOKIE_NAME, loginResp.getSessionid());
-			asyncResp.resume(Response.ok(loginResp).cookie(cookie).build());
+			logger.trace("About to authenticate ");
+			HttpSession session = request.getSession(true);		
+			String tenantId = CommonUtils.getSubDomain(uri.getBaseUri());				
+			/*
+			 * get user info
+			 */			
+			UserAuthComponent userAuthComponent = new UserAuthComponent(tenantId);
+			loginResp = userAuthComponent.authenticate(userid,password,session.getId());
+			logger.trace(CommonUtils.toJson(loginResp));
+			if (loginResp.getErrorInfo() != null)
+			{			
+				asyncResp.resume(Response.status(403).entity(loginResp).build());
+			}
+			else
+			{
+				NewCookie cookie = new NewCookie(USER_AUTH_SESSION_COOKIE_NAME, loginResp.getSessionid());
+				asyncResp.resume(Response.ok(loginResp).cookie(cookie).build());
+			}
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			loginResp.setStatus(StatusType.EXCEPTION);
+			loginResp.setErrorInfo(CommonUtils.buildErrorInfo(e));
+			loginResp.setMsg(e.getMessage());			
 		}
+		    	
+		asyncResp.resume(Response.ok(loginResp).build());
 		        
     }
 	
@@ -92,9 +106,8 @@ public class UserAuthService
 			asyncResp.resume(Response.status(403).entity(userInfoResp).build());
 		}
 		else
-		{
-			NewCookie cookie = new NewCookie(USER_AUTH_SESSION_COOKIE_NAME, userInfoResp.getSessionid());
-			asyncResp.resume(Response.ok(userInfoResp).cookie(cookie).build());
+		{			
+			asyncResp.resume(Response.ok(userInfoResp).build());
 		}		
 		
 	}

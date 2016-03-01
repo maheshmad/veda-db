@@ -43,7 +43,7 @@ public class UserSessionDAO
 
 	public UserInfo getUserFromSession(String sessionid) 
 	{		
-		return null;
+		return new UserInfo();
 	}
 
 }

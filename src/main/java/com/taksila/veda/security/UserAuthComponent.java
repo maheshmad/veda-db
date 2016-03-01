@@ -36,6 +36,7 @@ public class UserAuthComponent
 		{
 			UserInfo userInfo = userSessionDAO.getUserFromSession(sessionid);
 			resp.setUserInfo(userInfo);
+			resp.setSessionid(sessionid);
 		} 
 		catch (Exception e) 
 		{
@@ -103,6 +104,7 @@ public class UserAuthComponent
 		UserLoginResponse loginResp = new UserLoginResponse();
 		try 
 		{
+			logger.trace("About to validate user = "+userid+" pwd = "+pwd);
 			UserInfo userInfo = userManagementDAO.authenticate(userid, pwd);
 			if (userInfo != null)
 			{	
@@ -118,7 +120,7 @@ public class UserAuthComponent
 			e.printStackTrace();
 		}
 		
-		return null;
+		return loginResp;
 	}
 	
 }

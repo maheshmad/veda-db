@@ -9,8 +9,6 @@
 	<xs:import schemaLocation="veda_base_model_v1.0.xsd" namespace="http://www.taksila.com/veda/model/api/base/v1_0"></xs:import>
 	<xs:import schemaLocation="security_db_model.xsd" namespace="http://www.taksila.com/veda/model/db/security/v1_0"></xs:import>
 
-	<xs:element name="success" type="xs:boolean" />		
-	<xs:element name="msg" type="xs:string" />
 	<xs:element name="newPassword" type="xs:string" />
 	<xs:element name="newPasswordConfirm" type="xs:string" />
 	
