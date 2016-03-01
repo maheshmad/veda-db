@@ -117,7 +117,8 @@
         <xs:complexContent>
             <xs:extension base="base:BaseResponse">  
             	<xs:sequence>
-					<xs:element name="userInfo" type="UserInfo"></xs:element>					
+					<xs:element name="userInfo" type="UserInfo"></xs:element>
+					<xs:element ref="secdb:sessionid"></xs:element>						
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>
@@ -127,7 +128,7 @@
 	<xs:complexType name="GetUserInfoRequest">
 		<xs:annotation>
 			<xs:documentation>
-				This represents the api structure of the ResetPasswordRequest api request 				
+				This represents the api structure of the GetUserInfoRequest api request 				
 			</xs:documentation>
 		</xs:annotation>
         <xs:complexContent>
@@ -142,7 +143,7 @@
 	<xs:complexType name="GetUserInfoResponse">
 		<xs:annotation>
 			<xs:documentation>
-				This represents the api structure of the UserLoginResponse response 				
+				This represents the api structure of the GetUserInfoResponse response 				
 			</xs:documentation>
 		</xs:annotation>
         <xs:complexContent>
@@ -157,7 +158,7 @@
 	<xs:complexType name="SearchUsersRequest">
 		<xs:annotation>
 			<xs:documentation>
-				This represents the api structure of the ResetPasswordRequest api request 				
+				This represents the api structure of the SearchUsersRequest api request 				
 			</xs:documentation>
 		</xs:annotation>
         <xs:complexContent>
@@ -172,7 +173,7 @@
 	<xs:complexType name="SearchUsersResponse">
 		<xs:annotation>
 			<xs:documentation>
-				This represents the api structure of the UserLoginResponse response 				
+				This represents the api structure of the SearchUsersResponse response 				
 			</xs:documentation>
 		</xs:annotation>
         <xs:complexContent>

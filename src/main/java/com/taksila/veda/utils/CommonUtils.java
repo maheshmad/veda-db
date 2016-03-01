@@ -282,6 +282,12 @@ public class CommonUtils
 		return err;
 	 }
 	 
+	 public static ErrorInfo buildErrorInfo(Exception e) 
+	 {
+		 
+		return buildErrorInfo("Exception", e.getMessage()+","+e.getLocalizedMessage());
+	 }
+	 
 	 public static ErrorInfo buildErrorInfo(String field, String msg)
 	 {
 		ErrorInfo errInfo = new ErrorInfo();	
@@ -646,6 +652,8 @@ public class CommonUtils
 		 return map;
 	 	
 	 }
+
+	
 	 
 	 
 		

@@ -5,6 +5,7 @@
 	elementFormDefault="qualified">
 
 	<xs:element name="id" type="xs:string" />
+	<xs:element name="sessionid" type="xs:string" />
 	<xs:element name="token" type="xs:string" />
 	<xs:element name="type" type="xs:string" />	
 	<xs:element name="username" type="xs:string" />
@@ -68,7 +69,25 @@
 			<xs:element ref="officePhone" />			
 			<xs:element ref="password"/>
 			<xs:element ref="passcode"/>
+			<xs:element name="lastLoginDateTime" type="xs:dateTime" />
 			<xs:element name="roles" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="UserSessionTable">
+		<xs:annotation>
+			<xs:documentation>
+				This table is used to store the authorized sessions. 
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="sessionid" />		
+			<xs:element ref="userId" />
+			<xs:element name="loginDateTime" type="xs:dateTime" />
+			<xs:element name="expiryDateTime" type="xs:dateTime" />
+			<xs:element name="ipAddr" type="xs:string" />
+			<xs:element name="browser" type="xs:string" />
+			<xs:element name="os" type="xs:string" />			
 		</xs:sequence>
 	</xs:complexType>
 	

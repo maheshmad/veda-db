@@ -22,13 +22,14 @@ public class UserManagementDAO
 
 	static Logger logger = LogManager.getLogger(UserManagementDAO.class.getName());
 
-	public UserManagementDAO(String tenantId) {
-		
+	public UserManagementDAO(String tenantId) 
+	{
+		this.tenantId = tenantId;
 	}
 
-	public boolean authenticate(String userid, String pwd) throws Exception 
+	public UserInfo authenticate(String userid, String pwd) throws Exception 
 	{
-		return true;
+		return new UserInfo();
 	}
 	
 	public UserInfo getUserInfo(String userid)
@@ -87,6 +88,11 @@ public class UserManagementDAO
 	}
 
 	public boolean changePassword(String userId, String oldPassword, String newPassword) 
+	{
+		return true;	
+	}
+	
+	public boolean invalidateUserSession(String userId) 
 	{
 		return true;	
 	}
