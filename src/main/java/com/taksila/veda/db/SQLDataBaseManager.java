@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.LogManager;
@@ -41,16 +42,7 @@ public class SQLDataBaseManager
 		DB_SQL_DIALECT_TYPE,
 		INSTANTIATED_FROM_CLASS
 	}
-	
-	
-	public SQLDataBaseManager(Map<String, String> dbProperties)
-	{		
-		logger.trace("initiliazing sqldbmanager");
-		this.dbProperties = dbProperties;
-		this.instantiatedFromClassName = this.dbProperties.get(DB_PROPERTIES.INSTANTIATED_FROM_CLASS.name());
-	//	this.setSqlDialect();
-		logger.trace("initiliazing sqldbmanager completed");
-	}
+		
 	
 	private void setSqlDialect() 
 	{				
@@ -75,15 +67,15 @@ public class SQLDataBaseManager
 	}
 	
 	
-	public void connect(String jndiName) throws SQLException 
+	public void connect() throws SQLException, NamingException 
 	{		
 		try	
 		{
 				if (conn == null || conn.isClosed()) 
 				{
 					logger.debug("############     	OPENING CONNECTION  (in class "+this.instantiatedFromClassName+")  ############");					
-					try 
-					{						
+//					try 
+//					{						
 //							String DRIVER = "com.mysql.jdbc.Driver";
 //							String URL = this.dbProperties.get(DB_PROPERTIES.DB_SQL_JDBC_HOST_URL.name());
 //							String USERNAME = this.dbProperties.get(DB_PROPERTIES.DB_SQL_JDBC_UID.name());
@@ -94,13 +86,13 @@ public class SQLDataBaseManager
 														
 							Context initContext = new InitialContext();
 							Context envContext  = (Context)initContext.lookup("java:/comp/env");
-							DataSource ds = (DataSource)envContext.lookup(jndiName);
+							DataSource ds = (DataSource)envContext.lookup("jdbc/xe1");
 							conn = ds.getConnection();
-					} 					
-					catch (SQLException e) 
-					{
-						e.printStackTrace();
-					}
+//					} 					
+//					catch (SQLException e) 
+//					{
+//						e.printStackTrace();
+//					}
 					
 				}
 				else;
@@ -120,16 +112,24 @@ public class SQLDataBaseManager
 				logger.debug("*                                                                                            *");
 				logger.debug("*                                                                                            *");
 				logger.debug("**********************************************************************************************");
+				throw ex;
 			}
-			catch(Exception ex) {
+			catch(NamingException nex)
+			{
+				nex.printStackTrace();
+				throw nex;
+			}
+			catch(Exception ex) 
+			{
 				this.HandleException("connect()", ex);
+				throw ex;
 			} 
 		
 	}
 	/*
 	 * 
 	 */
-	public void close()
+	public void close() throws SQLException
 	{
 		try
 		{			
@@ -158,9 +158,44 @@ public class SQLDataBaseManager
 			logger.debug("Class = "+this.instantiatedFromClassName);
 			ex.printStackTrace();							
 			logger.debug("**********************************************************************************************");
+			throw ex;
 		}
 		
 	}
+	
+	public void close(PreparedStatement stmt)
+	{
+		try
+		{			
+			if (stmt != null)
+			{
+				stmt.close();
+			}
+		}
+		catch(SQLException ex)
+		{
+			Calendar cal = Calendar.getInstance();
+			logger.debug("**********************************************************************************************");			
+			logger.debug("############   DB SQL EXCEPTION OCCURED AT "+ cal.getTime()+"   ############");
+			logger.debug("Error Code = "+ex.getErrorCode());
+			logger.debug("SQL State = "+ex.getSQLState());
+			logger.debug("Message = "+ex.getMessage());
+			logger.debug("Class = "+this.instantiatedFromClassName);
+			ex.printStackTrace();							
+			logger.debug("**********************************************************************************************");
+		}
+		finally
+		{
+			try 
+			{
+				this.close();
+			} catch (SQLException e) 
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	/*
 	 * 
 	 */

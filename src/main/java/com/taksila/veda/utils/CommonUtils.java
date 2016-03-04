@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
@@ -26,6 +27,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.naming.NamingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -50,8 +52,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 import com.taksila.veda.model.api.base.v1_0.Err;
 import com.taksila.veda.model.api.base.v1_0.ErrorInfo;
+import com.taksila.veda.model.api.base.v1_0.StatusType;
 
 
 public class CommonUtils 
@@ -286,6 +290,30 @@ public class CommonUtils
 	 {
 		 
 		return buildErrorInfo("Exception", e.getMessage()+","+e.getLocalizedMessage());
+	 }
+	 
+	 public static <T extends BaseResponse> void handleExceptionForResponse(T targetResp, Exception e) 
+	 {
+		 e.printStackTrace();
+		 logger.error("exception occured cause = "+e.getLocalizedMessage());
+		 targetResp.setSuccess(false);
+		 targetResp.setStatus(StatusType.EXCEPTION);
+		 if (SQLException.class.isInstance(e))
+		 {
+			SQLException sqlEx = (SQLException) e;								
+			targetResp.setErrorInfo(CommonUtils.buildErrorInfo("DB_EXCEPTION", sqlEx.getMessage()));
+		 }
+		 else if (NamingException.class.isInstance(e))
+		 {
+			NamingException nameEx = (NamingException) e;								
+			targetResp.setErrorInfo(CommonUtils.buildErrorInfo("NAMING_EXCEPTION ", nameEx.getMessage()+":"+nameEx.getExplanation()));
+		 }
+		 else
+		 {
+			 targetResp.setErrorInfo(CommonUtils.buildErrorInfo("GENERIC_EXCEPTION", e.getMessage()));
+		 }
+		 
+		
 	 }
 	 
 	 public static ErrorInfo buildErrorInfo(String field, String msg)

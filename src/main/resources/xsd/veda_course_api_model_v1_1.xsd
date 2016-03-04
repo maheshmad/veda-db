@@ -1,0 +1,234 @@
+<?xml version="1.0"?>
+<xs:schema xmlns="http://www.taksila.com/veda/model/api/course/v1_0"
+	targetNamespace="http://www.taksila.com/veda/model/api/course/v1_0"
+	xmlns:cdb="http://www.taksila.com/veda/model/db/course/v1_0"
+	xmlns:base="http://www.taksila.com/veda/model/api/base/v1_0"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+	elementFormDefault="qualified">
+	
+	<xs:import schemaLocation="veda_course_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/course/v1_0"></xs:import>
+	<xs:import schemaLocation="veda_base_model_v1.0.xsd" namespace="http://www.taksila.com/veda/model/api/base/v1_0"></xs:import>
+	
+	<!-- Complex types -->
+	<xs:complexType name="Chapter">
+		<xs:annotation>
+			<xs:documentation>
+				Extension of the db model for api response				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="cdb:ChapterTable">      
+            	<xs:sequence>      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+			
+	
+	<xs:complexType name="Topic">
+		<xs:annotation>
+			<xs:documentation>
+				Extension of the db model for api response				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="cdb:TopicTable">      
+            	<xs:sequence>      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="Slide">
+		<xs:annotation>
+			<xs:documentation>
+				Extension of the db model for api response				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="cdb:SlideTable">      
+            	<xs:sequence>      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="Note">
+		<xs:annotation>
+			<xs:documentation>
+				Extension of the db model for api response				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="cdb:NoteTable">      
+            	<xs:sequence>      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType>          
+	
+	<xs:complexType name="Course">
+		<xs:annotation>
+			<xs:documentation>
+				Extension of the db model for api response				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="cdb:CourseTable">      
+            	<xs:sequence>      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType> 
+			
+	<!-- APIs -->	
+	<xs:complexType name="GetCourseInfoRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetUserInfoRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+					<xs:element ref="base:id" />							
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="GetCourseInfoResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetUserInfoResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="course" type="Course" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="SearchCourseRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchCourseRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchRequest">  
+            	<xs:sequence>											
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="SearchCourseResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchCourseResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchResponse">  
+            	<xs:sequence>				
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CreateNewCourseRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateNewCourseRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="newCourse" type="Course" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="CreateNewCourseResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateNewCourseResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="course" type="Course" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateCourseRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateCourseRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="course" type="Course" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateCourseResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateCourseResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="course" type="Course" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteCourseRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteCourseRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element ref="base:id" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteCourseResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteCourseResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            						
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+		
+</xs:schema>
+

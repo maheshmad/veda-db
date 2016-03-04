@@ -4,16 +4,23 @@
 	targetNamespace="http://www.taksila.com/veda/model/api/base/v1_0"
 	attributeFormDefault="unqualified"	elementFormDefault="qualified">
 		
-	<xs:element name="id" type="xs:string" />
+	<xs:element name="id" type="xs:int" />
 	<xs:element name="txnId" type="xs:string" />
 	<xs:element name="errorFieldId" type="xs:string" />
 	<xs:element name="errorMsg" type="xs:string" />
 	<xs:element name="errorInfo" type="ErrorInfo" />
 	<xs:element name="errors" type="Err" />
 	<xs:element name="msg" type="xs:string" />
-	<xs:element name="baseResponse" type="BaseResponse"/>
-	
+	<xs:element name="query" type="xs:string" />
+	<xs:element name="baseResponse" type="BaseResponse"/>	
+	<xs:element name="totalHits" type="xs:int"></xs:element>
+	<xs:element name="page" type="xs:int"></xs:element>							
+	<xs:element name="pageOffset" type="xs:int"></xs:element>	
 	<xs:element name="status" type="StatusType" />
+	<xs:element name="recordType" type="xs:string" />
+	<xs:element name="recordId" type="xs:string" />
+	<xs:element name="recordTitle" type="xs:string" />
+	<xs:element name="recordSubtitle" type="xs:string" />		
 	
 	<xs:simpleType name="StatusType">
 		<xs:restriction base="xs:string">
@@ -36,7 +43,7 @@
 	<!-- definition of BaseResponse common for all responses -->
 	<xs:complexType name="BaseResponse">
 		<xs:sequence>
-			<xs:element type="xs:boolean" name="success" default="false" />
+			<xs:element type="xs:boolean" name="success" default="true" />
 			<xs:element ref="errorInfo" />
 			<xs:element ref="status" />
 			<xs:element ref="msg" />			
@@ -56,4 +63,52 @@
 			<xs:element ref="errorMsg" />
 		</xs:sequence>
 	</xs:complexType>
+	
+	<xs:complexType name="SearchHitRecord">
+		<xs:sequence>			
+			<xs:element ref="recordId" />
+			<xs:element ref="recordTitle" />
+			<xs:element ref="recordSubtitle" />			
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="SearchRequest">
+		<xs:annotation>
+			<xs:documentation>
+				SearchResponse is a generic class for getting search results of 
+				any type of records				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="BaseRequest">      
+            	<xs:sequence>
+            		<xs:element ref="recordType" />            		
+					<xs:element ref="page" />							
+					<xs:element ref="pageOffset" />
+					<xs:element ref="query" />		      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType>   
+		
+	<xs:complexType name="SearchResponse">
+		<xs:annotation>
+			<xs:documentation>
+				SearchResponse is a generic class for getting search results of 
+				any type of records				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="BaseResponse">      
+            	<xs:sequence>
+            		<xs:element ref="recordType" />
+            		<xs:element ref="totalHits"/>
+					<xs:element ref="page" />							
+					<xs:element ref="pageOffset" />
+					<xs:element name="hits" type="SearchHitRecord" maxOccurs="unbounded" minOccurs="0" />	      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType>   
+	
 </xs:schema>

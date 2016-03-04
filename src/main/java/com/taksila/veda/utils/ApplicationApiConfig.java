@@ -17,7 +17,7 @@ public class ApplicationApiConfig extends ResourceConfig
 {
 	public ApplicationApiConfig()
 	{
-		System.out.println("Inside veda-services application api config !!!!!!!!!!!!!");
+		System.out.println("Inside veda application api config !!!!!!!!!!!!!");
 		
 	}
 	
