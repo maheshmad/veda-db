@@ -81,7 +81,10 @@
         </xs:complexContent>
 	</xs:complexType> 
 			
-	<!-- APIs -->	
+	<!-- APIs -->
+	
+	
+	<!-- Courses -->	
 	<xs:complexType name="GetCourseInfoRequest">
 		<xs:annotation>
 			<xs:documentation>
@@ -229,6 +232,305 @@
 			</xs:extension>	
 		</xs:complexContent>
 	</xs:complexType>
+	
+	<!-- Chapters -->	
+	<xs:complexType name="GetChapterRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetChapterInfoRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+					<xs:element ref="base:id" />							
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="GetChapterResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetChapterInfoResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="chapter" type="Chapter" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="SearchChaptersRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchChaptersRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchRequest">  
+            	<xs:sequence>											
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="SearchChaptersResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchChaptersResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchResponse">  
+            	<xs:sequence>				
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CreateChapterRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateChapterRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="chapter" type="Chapter" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="CreateChapterResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateChapterResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="chapter" type="Chapter" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateChapterRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateChapterRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="chapter" type="Chapter" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateChapterResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateChapterResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="chapter" type="Chapter" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteChapterRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteChapterRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element ref="base:id" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteChapterResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteChapterResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            						
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- Topics -->	
+	<xs:complexType name="GetTopicRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetChapterInfoRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+					<xs:element ref="base:id" />							
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="GetTopicResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetTopicInfoResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="topic" type="Topic" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="SearchTopicsRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchTopicsRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchRequest">  
+            	<xs:sequence>											
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="SearchTopicsResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchTopicsResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchResponse">  
+            	<xs:sequence>				
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CreateTopicRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateTopicRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="topic" type="Topic" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="CreateTopicResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateTopicResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="topic" type="Topic" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateTopicRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateTopicRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="topic" type="Topic" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateTopicResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateTopicResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="topic" type="Topic" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteTopicRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteTopicRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element ref="base:id" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteTopicResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteTopicResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            						
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
 		
 </xs:schema>
 

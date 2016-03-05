@@ -17,19 +17,19 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 
 /**
  * 
- * 				This represents the api structure of the UpdateCourseResponse response 				
+ * 				This represents the api structure of the GetChapterInfoResponse response 				
  * 			
  * 
- * <p>Java class for UpdateCourseResponse complex type.
+ * <p>Java class for GetChapterResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="UpdateCourseResponse">
+ * &lt;complexType name="GetChapterResponse">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
  *       &lt;sequence>
- *         &lt;element name="course" type="{http://www.taksila.com/veda/model/api/course/v1_0}Course"/>
+ *         &lt;element name="chapter" type="{http://www.taksila.com/veda/model/api/course/v1_0}Chapter"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,38 +39,38 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "UpdateCourseResponse", propOrder = {
-    "course"
+@XmlType(name = "GetChapterResponse", propOrder = {
+    "chapter"
 })
-public class UpdateCourseResponse
+public class GetChapterResponse
     extends BaseResponse
 {
 
     @XmlElement(required = true)
-    protected Course course;
+    protected Chapter chapter;
 
     /**
-     * Gets the value of the course property.
+     * Gets the value of the chapter property.
      * 
      * @return
      *     possible object is
-     *     {@link Course }
+     *     {@link Chapter }
      *     
      */
-    public Course getCourse() {
-        return course;
+    public Chapter getChapter() {
+        return chapter;
     }
 
     /**
-     * Sets the value of the course property.
+     * Sets the value of the chapter property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Course }
+     *     {@link Chapter }
      *     
      */
-    public void setCourse(Course value) {
-        this.course = value;
+    public void setChapter(Chapter value) {
+        this.chapter = value;
     }
 
 }

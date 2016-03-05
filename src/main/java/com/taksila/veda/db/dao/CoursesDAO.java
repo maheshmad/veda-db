@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.naming.NamingException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,7 +38,12 @@ public class CoursesDAO
 													" WHERE "+COURSE_TABLE.id.value()+" = ? ";
 	
 	private static String delete_course_sql = "DELETE FROM COURSES WHERE "+COURSE_TABLE.id.value()+" = ? ";	
-	private static String search_course_by_title_sql = "SELECT * FROM COURSES WHERE "+COURSE_TABLE.title.value()+" like ? ";
+	private static String search_course_by_title_sql = "SELECT * FROM COURSES "
+												+ "WHERE "+COURSE_TABLE.title.value()+" like ? "
+												+ "OR "+COURSE_TABLE.coursename.value()+" like ? "
+												+ "OR "+COURSE_TABLE.subTitle.value()+" like ? ";
+	
+	private static String search_all_courses_sql = "SELECT * FROM COURSES";
 	private static String search_course_by_id_sql = "SELECT * FROM COURSES WHERE "+COURSE_TABLE.id.value()+" = ? ";	
 	
 	
@@ -79,7 +85,6 @@ public class CoursesDAO
 	
 	private Course mapRow(ResultSet resultSet) throws SQLException 
 	{
-		logger.debug("Entering into course mapRow():::::");
 		Course course = new Course();		
 		
 		course.setId(resultSet.getInt(COURSE_TABLE.id.value()));
@@ -88,7 +93,6 @@ public class CoursesDAO
 		course.setSubTitle(resultSet.getString(COURSE_TABLE.subTitle.value()));
 		course.setDescription(resultSet.getString(COURSE_TABLE.description.value()));
 		
-		logger.debug("Leaving from course mapRow():::::");
 		return course;
 	}
 	
@@ -106,8 +110,16 @@ public class CoursesDAO
 		try
 		{
 			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_course_by_title_sql);
-			stmt.setString(1, q);
+			if (StringUtils.isNotBlank(q))
+			{
+				stmt = this.sqlDBManager.getPreparedStatement(search_course_by_title_sql);
+				stmt.setString(1, q+"%");
+				stmt.setString(2, q+"%");
+				stmt.setString(3, q+"%");
+			}
+			else
+				stmt = this.sqlDBManager.getPreparedStatement(search_all_courses_sql);
+			
 			ResultSet resultSet = stmt.executeQuery();	
 			while (resultSet.next()) 
 			{

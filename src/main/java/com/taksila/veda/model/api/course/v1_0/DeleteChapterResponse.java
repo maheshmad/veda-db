@@ -10,26 +10,24 @@ package com.taksila.veda.model.api.course.v1_0;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 
 
 /**
  * 
- * 				This represents the api structure of the UpdateCourseResponse response 				
+ * 				This represents the api structure of the DeleteChapterResponse response 				
  * 			
  * 
- * <p>Java class for UpdateCourseResponse complex type.
+ * <p>Java class for DeleteChapterResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="UpdateCourseResponse">
+ * &lt;complexType name="DeleteChapterResponse">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
  *       &lt;sequence>
- *         &lt;element name="course" type="{http://www.taksila.com/veda/model/api/course/v1_0}Course"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,38 +37,10 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "UpdateCourseResponse", propOrder = {
-    "course"
-})
-public class UpdateCourseResponse
+@XmlType(name = "DeleteChapterResponse")
+public class DeleteChapterResponse
     extends BaseResponse
 {
 
-    @XmlElement(required = true)
-    protected Course course;
-
-    /**
-     * Gets the value of the course property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Course }
-     *     
-     */
-    public Course getCourse() {
-        return course;
-    }
-
-    /**
-     * Sets the value of the course property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Course }
-     *     
-     */
-    public void setCourse(Course value) {
-        this.course = value;
-    }
 
 }

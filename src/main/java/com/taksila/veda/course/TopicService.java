@@ -23,23 +23,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ManagedAsync;
 
-import com.taksila.veda.model.api.course.v1_0.Course;
-import com.taksila.veda.model.api.course.v1_0.CreateNewCourseRequest;
-import com.taksila.veda.model.api.course.v1_0.CreateNewCourseResponse;
-import com.taksila.veda.model.api.course.v1_0.DeleteCourseRequest;
-import com.taksila.veda.model.api.course.v1_0.DeleteCourseResponse;
-import com.taksila.veda.model.api.course.v1_0.GetCourseInfoRequest;
-import com.taksila.veda.model.api.course.v1_0.GetCourseInfoResponse;
-import com.taksila.veda.model.api.course.v1_0.SearchCourseRequest;
-import com.taksila.veda.model.api.course.v1_0.SearchCourseResponse;
-import com.taksila.veda.model.api.course.v1_0.UpdateCourseRequest;
-import com.taksila.veda.model.api.course.v1_0.UpdateCourseResponse;
+import com.taksila.veda.model.api.course.v1_0.Topic;
+import com.taksila.veda.model.api.course.v1_0.CreateTopicRequest;
+import com.taksila.veda.model.api.course.v1_0.CreateTopicResponse;
+import com.taksila.veda.model.api.course.v1_0.DeleteTopicRequest;
+import com.taksila.veda.model.api.course.v1_0.DeleteTopicResponse;
+import com.taksila.veda.model.api.course.v1_0.GetTopicRequest;
+import com.taksila.veda.model.api.course.v1_0.GetTopicResponse;
+import com.taksila.veda.model.api.course.v1_0.SearchTopicsRequest;
+import com.taksila.veda.model.api.course.v1_0.SearchTopicsResponse;
+import com.taksila.veda.model.api.course.v1_0.UpdateTopicRequest;
+import com.taksila.veda.model.api.course.v1_0.UpdateTopicResponse;
 import com.taksila.veda.utils.CommonUtils;
 
-@Path("/course")
-public class CourseService 
+@Path("/topic")
+public class TopicService 
 {
-	static Logger logger = LogManager.getLogger(CourseService.class.getName());	
+	static Logger logger = LogManager.getLogger(TopicService.class.getName());	
 		
 	/**
 	 * 
@@ -65,21 +65,21 @@ public class CourseService
     		@Suspended final AsyncResponse asyncResp) 
     {    	
 		
-		CreateNewCourseResponse operResp = new CreateNewCourseResponse();
+		CreateTopicResponse operResp = new CreateTopicResponse();
 		try 
 		{
-			Course course = new Course();
-			course.setName(name);
-			course.setSubTitle(subtitle);
-			course.setTitle(title);
-			course.setDescription(description);
+			Topic topic = new Topic();
+			topic.setName(name);
+			topic.setSubTitle(subtitle);
+			topic.setTitle(title);
+			topic.setDescription(description);
 			
-			CreateNewCourseRequest req = new CreateNewCourseRequest();
-			req.setNewCourse(course);
+			CreateTopicRequest req = new CreateTopicRequest();
+			req.setTopic(topic);
 			
 			String schoolId = CommonUtils.getSubDomain(uri);
-			CourseComponent courseComp = new CourseComponent(schoolId);
-			operResp = courseComp.createNewCourse(req); 			
+			TopicComponent topicComp = new TopicComponent(schoolId);
+			operResp = topicComp.createNewTopic(req); 			
 			operResp.setSuccess(true);
 		} 
 		catch (Exception ex) 
@@ -96,28 +96,28 @@ public class CourseService
 	 * 
 	 * @param request
 	 * @param uri
-	 * @param courseid
+	 * @param topicid
 	 * @param resp
 	 * @param asyncResp
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@ManagedAsync
-	@Path("/{courseid}")
+	@Path("/{topicid}")
 	public void getLoggedInUserInfo(@Context HttpServletRequest request, @Context UriInfo uri,		
-			@PathParam("courseid") String courseid,
+			@PathParam("topicid") String topicid,
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
 		
-		GetCourseInfoResponse operResp = new GetCourseInfoResponse();
+		GetTopicResponse operResp = new GetTopicResponse();
 		try 
 		{
-			GetCourseInfoRequest req = new GetCourseInfoRequest();
-			req.setId(Integer.valueOf(courseid));;
+			GetTopicRequest req = new GetTopicRequest();
+			req.setId(Integer.valueOf(topicid));;
 			
 			String schoolId = CommonUtils.getSubDomain(uri);
-			CourseComponent courseComp = new CourseComponent(schoolId);
-			operResp = courseComp.getCourse(req); 			
+			TopicComponent topicComp = new TopicComponent(schoolId);
+			operResp = topicComp.getTopic(req); 			
 			operResp.setSuccess(true);
 		} 
 		catch (Exception ex) 
@@ -135,7 +135,7 @@ public class CourseService
 	 * @param request
 	 * @param uri
 	 * @param name
-	 * @param courseid
+	 * @param topicid
 	 * @param title
 	 * @param subtitle
 	 * @param description
@@ -146,33 +146,33 @@ public class CourseService
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
-	@Path("/{courseid}")
-	public void updateCourse(@Context HttpServletRequest request, @Context UriInfo uri,	
+	@Path("/{topicid}")
+	public void updateTopic(@Context HttpServletRequest request, @Context UriInfo uri,	
 			@FormParam("name") String name,
-			@PathParam("courseid") String courseid,
+			@PathParam("topicid") String topicid,
     		@FormParam("title") String title,     		
     		@FormParam("subtitle") String subtitle,
     		@FormParam("description") String description,
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
-		UpdateCourseResponse operResp = null;
+		UpdateTopicResponse operResp = null;
 		try
 		{
-			logger.trace("About to update course record = "+courseid);
+			logger.trace("About to update topic record = "+topicid);
 			
-			Course course = new Course();
-			course.setId(Integer.valueOf(courseid));
-			course.setName(name);
-			course.setSubTitle(subtitle);
-			course.setTitle(title);
-			course.setDescription(description);
+			Topic topic = new Topic();
+			topic.setId(Integer.valueOf(topicid));
+			topic.setName(name);
+			topic.setSubTitle(subtitle);
+			topic.setTitle(title);
+			topic.setDescription(description);
 			
-			UpdateCourseRequest req = new UpdateCourseRequest();
-			req.setCourse(course);
+			UpdateTopicRequest req = new UpdateTopicRequest();
+			req.setTopic(topic);
 			
 			String schoolId = CommonUtils.getSubDomain(uri);
-			CourseComponent courseComp = new CourseComponent(schoolId);
-			operResp = courseComp.updateCourse(req);
+			TopicComponent topicComp = new TopicComponent(schoolId);
+			operResp = topicComp.updateTopic(req);
 			operResp.setSuccess(true);
 		}
 		catch(Exception ex)
@@ -189,7 +189,7 @@ public class CourseService
 	 * 
 	 * @param request
 	 * @param uri
-	 * @param courseid
+	 * @param topicid
 	 * @param resp
 	 * @param asyncResp
 	 */
@@ -197,20 +197,20 @@ public class CourseService
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
-	@Path("/{courseid}")
-	public void updateCourse(@Context HttpServletRequest request, @Context UriInfo uri,	@PathParam("courseid") String courseid,			
+	@Path("/{topicid}")
+	public void updateTopic(@Context HttpServletRequest request, @Context UriInfo uri,	@PathParam("topicid") String topicid,			
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
-		DeleteCourseResponse operResp = new DeleteCourseResponse();
+		DeleteTopicResponse operResp = new DeleteTopicResponse();
 		try
 		{
-			logger.trace("About to delete course record = "+courseid);						
+			logger.trace("About to delete topic record = "+topicid);						
 			
 			String schoolId = CommonUtils.getSubDomain(uri);
-			CourseComponent courseComp = new CourseComponent(schoolId);
-			DeleteCourseRequest req = new DeleteCourseRequest();
-			req.setId(Integer.valueOf(courseid));
-			operResp = courseComp.deleteCourse(req);
+			TopicComponent topicComp = new TopicComponent(schoolId);
+			DeleteTopicRequest req = new DeleteTopicRequest();
+			req.setId(Integer.valueOf(topicid));
+			operResp = topicComp.deleteTopic(req);
 			operResp.setSuccess(true);
 		}
 		catch(Exception ex)
@@ -237,24 +237,24 @@ public class CourseService
 	@Produces(MediaType.APPLICATION_JSON)
 	@ManagedAsync
 	@Path("/search")
-	public void searchCourses(@Context HttpServletRequest request, @Context UriInfo uri,@Context HttpServletResponse resp,
+	public void searchTopics(@Context HttpServletRequest request, @Context UriInfo uri,@Context HttpServletResponse resp,
 			@QueryParam("q") String name,@QueryParam("page") String page,@QueryParam("start") String start, @Suspended final AsyncResponse asyncResp)
 	{    				
 		
 		logger.trace("inside search query = "+name);
 		
-		SearchCourseResponse searchResp = new SearchCourseResponse();		
-		SearchCourseRequest req = new SearchCourseRequest();
+		SearchTopicsResponse searchResp = new SearchTopicsResponse();		
+		SearchTopicsRequest req = new SearchTopicsRequest();
 		try 
 		{
 			req.setPage(Integer.valueOf(page));
 			req.setPageOffset(Integer.valueOf(start));		
 			req.setQuery(name);
-			req.setRecordType("COURSE");
+			req.setRecordType("TOPIC");
 			
 			String schoolId = CommonUtils.getSubDomain(uri);
-			CourseComponent courseComp = new CourseComponent(schoolId);
-			searchResp = courseComp.searchCourses(req);
+			TopicComponent topicComp = new TopicComponent(schoolId);
+			searchResp = topicComp.searchTopic(req);
 		
 		} 
 		catch (Exception e) 

@@ -11,22 +11,22 @@ package com.taksila.veda.model.api.course.v1_0;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import com.taksila.veda.model.api.base.v1_0.BaseResponse;
+import com.taksila.veda.model.api.base.v1_0.SearchResponse;
 
 
 /**
  * 
- * 				This represents the api structure of the DeleteCourseResponse response 				
+ * 				This represents the api structure of the SearchChaptersResponse response 				
  * 			
  * 
- * <p>Java class for DeleteCourseResponse complex type.
+ * <p>Java class for SearchChaptersResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="DeleteCourseResponse">
+ * &lt;complexType name="SearchChaptersResponse">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}SearchResponse">
  *       &lt;sequence>
  *       &lt;/sequence>
  *     &lt;/extension>
@@ -37,9 +37,9 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DeleteCourseResponse")
-public class DeleteCourseResponse
-    extends BaseResponse
+@XmlType(name = "SearchChaptersResponse")
+public class SearchChaptersResponse
+    extends SearchResponse
 {
 
 

@@ -12,24 +12,24 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import com.taksila.veda.model.api.base.v1_0.BaseResponse;
+import com.taksila.veda.model.api.base.v1_0.BaseRequest;
 
 
 /**
  * 
- * 				This represents the api structure of the UpdateCourseResponse response 				
+ * 				This represents the api structure of the CreateTopicRequest				
  * 			
  * 
- * <p>Java class for UpdateCourseResponse complex type.
+ * <p>Java class for CreateTopicRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="UpdateCourseResponse">
+ * &lt;complexType name="CreateTopicRequest">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseRequest">
  *       &lt;sequence>
- *         &lt;element name="course" type="{http://www.taksila.com/veda/model/api/course/v1_0}Course"/>
+ *         &lt;element name="topic" type="{http://www.taksila.com/veda/model/api/course/v1_0}Topic"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,38 +39,38 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "UpdateCourseResponse", propOrder = {
-    "course"
+@XmlType(name = "CreateTopicRequest", propOrder = {
+    "topic"
 })
-public class UpdateCourseResponse
-    extends BaseResponse
+public class CreateTopicRequest
+    extends BaseRequest
 {
 
     @XmlElement(required = true)
-    protected Course course;
+    protected Topic topic;
 
     /**
-     * Gets the value of the course property.
+     * Gets the value of the topic property.
      * 
      * @return
      *     possible object is
-     *     {@link Course }
+     *     {@link Topic }
      *     
      */
-    public Course getCourse() {
-        return course;
+    public Topic getTopic() {
+        return topic;
     }
 
     /**
-     * Sets the value of the course property.
+     * Sets the value of the topic property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Course }
+     *     {@link Topic }
      *     
      */
-    public void setCourse(Course value) {
-        this.course = value;
+    public void setTopic(Topic value) {
+        this.topic = value;
     }
 
 }

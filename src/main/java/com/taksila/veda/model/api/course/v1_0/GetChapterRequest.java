@@ -17,15 +17,15 @@ import com.taksila.veda.model.api.base.v1_0.BaseRequest;
 
 /**
  * 
- * 				This represents the api structure of the DeleteCourseRequest				
+ * 				This represents the api structure of the GetChapterInfoRequest api request 				
  * 			
  * 
- * <p>Java class for DeleteCourseRequest complex type.
+ * <p>Java class for GetChapterRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="DeleteCourseRequest">
+ * &lt;complexType name="GetChapterRequest">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseRequest">
  *       &lt;sequence>
@@ -39,10 +39,10 @@ import com.taksila.veda.model.api.base.v1_0.BaseRequest;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DeleteCourseRequest", propOrder = {
+@XmlType(name = "GetChapterRequest", propOrder = {
     "id"
 })
-public class DeleteCourseRequest
+public class GetChapterRequest
     extends BaseRequest
 {
 
