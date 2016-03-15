@@ -9,7 +9,7 @@
 	<xs:element name="title" type="xs:string" />
 	<xs:element name="subTitle" type="xs:string" />
 	<xs:element name="description" type="xs:string" />
-	<xs:element name="binaryContent" type="xs:byte" />
+	<xs:element name="contentImageId" type="xs:string" />
 	<xs:element name="textContent" type="xs:string" />
 	<xs:element name="tags" type="xs:string" />	
 	<xs:element name="lastUpdatedDateTime" type="xs:dateTime" />
@@ -61,8 +61,7 @@
 			<xs:element ref="name"/>
 			<xs:element ref="title"/>
 			<xs:element ref="subTitle"/>	
-			<xs:element ref="description"/>		
-			<xs:element ref="binaryContent"/>
+			<xs:element ref="description"/>					
 			<xs:element ref="textContent"/>
 			<xs:element ref="tags" maxOccurs="unbounded"/>	
 			<xs:element ref="notes" maxOccurs="unbounded"/>						

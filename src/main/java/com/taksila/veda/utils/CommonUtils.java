@@ -66,22 +66,14 @@ public class CommonUtils
 	static final BigDecimal mileUnit = new BigDecimal("0.621371");
 	public static final String BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36";
 			
-	public static String readFile(String fileName)
-	{
-		try 
-		{
-			ClassLoader classLoader = CommonUtils.class.getClassLoader();	
-			InputStream fileInputStream = classLoader.getResourceAsStream(fileName);	
-			StringWriter writer = new StringWriter();
-			IOUtils.copy(fileInputStream, writer,"UTF-8");			
-			fileInputStream.close();
-			return writer.toString();
-		} 
-		catch (Exception e) 
-		{	
-			e.printStackTrace();
-			return new String("{\"error\":\"error occured ="+e.getMessage()+"}\"");
-		}
+	public static String readFile(String fileName) throws IOException
+	{		
+		ClassLoader classLoader = CommonUtils.class.getClassLoader();	
+		InputStream fileInputStream = classLoader.getResourceAsStream(fileName);	
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(fileInputStream, writer,"UTF-8");			
+		fileInputStream.close();
+		return writer.toString();
 	 
 	}
 	
@@ -307,6 +299,11 @@ public class CommonUtils
 		 {
 			NamingException nameEx = (NamingException) e;								
 			targetResp.setErrorInfo(CommonUtils.buildErrorInfo("NAMING_EXCEPTION ", nameEx.getMessage()+":"+nameEx.getExplanation()));
+		 }
+		 else if (IOException.class.isInstance(e))
+		 {
+			IOException ioEx = (IOException) e;								
+			targetResp.setErrorInfo(CommonUtils.buildErrorInfo("FILE_EXCEPTION ", ioEx.getMessage()+":"+ioEx.getLocalizedMessage()));
 		 }
 		 else
 		 {
@@ -593,7 +590,8 @@ public class CommonUtils
 	}
 	
 	
-	public static <E> E fromJsonFile(String jsonFilePath, Class<E> destClass) {
+	public static <E> E fromJsonFile(String jsonFilePath, Class<E> destClass) throws IOException 
+	{
 		String jsonFile = readFile(jsonFilePath);
 		E resultObj = fromJson(jsonFile, destClass);
 		return resultObj;

@@ -2,6 +2,7 @@ package com.taksila.veda.utils;
 
 import javax.ws.rs.ApplicationPath;
 
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 /**
  * The @ApplicationPath annotation is used to define the URL mapping for the application. 
@@ -18,7 +19,6 @@ public class ApplicationApiConfig extends ResourceConfig
 	public ApplicationApiConfig()
 	{
 		System.out.println("Inside veda application api config !!!!!!!!!!!!!");
-		
 	}
 	
 }

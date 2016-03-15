@@ -25,20 +25,6 @@
     </xs:complexType>
 			
 	
-	<xs:complexType name="Topic">
-		<xs:annotation>
-			<xs:documentation>
-				Extension of the db model for api response				
-			</xs:documentation>
-		</xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="cdb:TopicTable">      
-            	<xs:sequence>      	
-            	</xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-	</xs:complexType>
-	
 	<xs:complexType name="Slide">
 		<xs:annotation>
 			<xs:documentation>
@@ -47,6 +33,20 @@
 		</xs:annotation>
         <xs:complexContent>
             <xs:extension base="cdb:SlideTable">      
+            	<xs:sequence>      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="Topic">
+		<xs:annotation>
+			<xs:documentation>
+				Extension of the db model for api response				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="cdb:TopicTable">      
             	<xs:sequence>      	
             	</xs:sequence>
             </xs:extension>
@@ -520,6 +520,156 @@
 		<xs:annotation>
 			<xs:documentation>
 				This represents the api structure of the DeleteTopicResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            						
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- Slides -->	
+	<xs:complexType name="GetSlideRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetChapterInfoRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+					<xs:element ref="base:id" />	
+					<xs:element ref="base:name" />							
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="GetSlideResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetSlideInfoResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="slide" type="Slide" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="SearchSlidesRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchSlidesRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchRequest">  
+            	<xs:sequence>											
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="SearchSlidesResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchSlidesResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchResponse">  
+            	<xs:sequence>				
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CreateSlideRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateSlideRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="slide" type="Slide" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="CreateSlideResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateSlideResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="slide" type="Slide" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateSlideRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateSlideRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="slide" type="Slide" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateSlideResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateSlideResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="slide" type="Slide" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteSlideRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteSlideRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element ref="base:id" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteSlideResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteSlideResponse response 				
 			</xs:documentation>
 		</xs:annotation>
         <xs:complexContent>
