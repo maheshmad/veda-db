@@ -74,26 +74,12 @@ public class SQLDataBaseManager
 				if (conn == null || conn.isClosed()) 
 				{
 					logger.debug("############     	OPENING CONNECTION  (in class "+this.instantiatedFromClassName+")  ############");					
-//					try 
-//					{						
-//							String DRIVER = "com.mysql.jdbc.Driver";
-//							String URL = this.dbProperties.get(DB_PROPERTIES.DB_SQL_JDBC_HOST_URL.name());
-//							String USERNAME = this.dbProperties.get(DB_PROPERTIES.DB_SQL_JDBC_UID.name());
-//							String PASSWORD = this.dbProperties.get(DB_PROPERTIES.DB_SQL_JDBC_PWD.name());
-//							
-//							Class.forName(DRIVER);
-//							conn = DriverManager.getConnection(URL, USERNAME,PASSWORD);
-														
-							Context initContext = new InitialContext();
-							Context envContext  = (Context)initContext.lookup("java:/comp/env");
-							DataSource ds = (DataSource)envContext.lookup("jdbc/xe1");
-							conn = ds.getConnection();
-//					} 					
-//					catch (SQLException e) 
-//					{
-//						e.printStackTrace();
-//					}
-					
+
+					Context initContext = new InitialContext();
+					Context envContext  = (Context)initContext.lookup("java:/comp/env");
+					DataSource ds = (DataSource)envContext.lookup("jdbc/xe1");
+					conn = ds.getConnection();
+
 				}
 				else;
 				

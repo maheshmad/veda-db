@@ -2,6 +2,7 @@ package com.taksila.veda.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -679,8 +681,22 @@ public class CommonUtils
 	 	
 	 }
 
-	
-	 
+	 public static String readSQLTextColumn(ResultSet rs, String columnName) throws SQLException, IOException
+	 {
+		 StringBuilder sb = new StringBuilder();
+		 Reader in = rs.getCharacterStream(columnName);
+		 int buf = -1;
+		 
+		 if (in == null)
+			 return "";
+		 
+		 while((buf = in.read()) > -1) 
+		 {
+		       sb.append((char)buf);
+		 }
+		 in.close();
+		 return sb.toString();		 
+	 }
 	 
 		
 }

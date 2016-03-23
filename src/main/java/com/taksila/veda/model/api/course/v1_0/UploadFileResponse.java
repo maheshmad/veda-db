@@ -17,19 +17,19 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 
 /**
  * 
- * 				This represents the api structure of the GetTopicInfoResponse response 				
+ * 				This represents the api structure of the GetSlideInfoResponse response 				
  * 			
  * 
- * <p>Java class for GetTopicResponse complex type.
+ * <p>Java class for UploadFileResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="GetTopicResponse">
+ * &lt;complexType name="UploadFileResponse">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
  *       &lt;sequence>
- *         &lt;element name="topic" type="{http://www.taksila.com/veda/model/api/course/v1_0}Topic"/>
+ *         &lt;element name="fileid" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,38 +39,38 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "GetTopicResponse", propOrder = {
-    "topic"
+@XmlType(name = "UploadFileResponse", propOrder = {
+    "fileid"
 })
-public class GetTopicResponse
+public class UploadFileResponse
     extends BaseResponse
 {
 
     @XmlElement(required = true)
-    protected Topic topic;
+    protected String fileid;
 
     /**
-     * Gets the value of the topic property.
+     * Gets the value of the fileid property.
      * 
      * @return
      *     possible object is
-     *     {@link Topic }
+     *     {@link String }
      *     
      */
-    public Topic getTopic() {
-        return topic;
+    public String getFileid() {
+        return fileid;
     }
 
     /**
-     * Sets the value of the topic property.
+     * Sets the value of the fileid property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Topic }
+     *     {@link String }
      *     
      */
-    public void setTopic(Topic value) {
-        this.topic = value;
+    public void setFileid(String value) {
+        this.fileid = value;
     }
 
 }

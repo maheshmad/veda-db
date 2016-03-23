@@ -19,8 +19,8 @@ import javax.servlet.http.Part;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
+import com.taksila.veda.model.api.course.v1_0.UploadFileResponse;
 import com.taksila.veda.utils.CommonUtils;
 
 /**
@@ -49,10 +49,10 @@ public class SlidesPPTXUploadServlet extends HttpServlet
     	response.setContentType("text/json;charset=UTF-8");
         // Create path components to save the file
         final String path = "C:\\files\\upload\\";
-        final Part filePart = request.getPart("file");
-        final String fileName = getFileName(filePart);
+        final Part filePart = request.getPart("slidecontent");
+        final String fileName = System.currentTimeMillis()+getFileName(filePart);        
         
-        BaseResponse baseResp = new BaseResponse();
+        UploadFileResponse fileUploadResp = new UploadFileResponse();
         OutputStream out = null;
         InputStream filecontent = null;
         final PrintWriter writer = response.getWriter();
@@ -70,19 +70,20 @@ public class SlidesPPTXUploadServlet extends HttpServlet
                 out.write(bytes, 0, read);
             }
             
-            baseResp.setStatus(StatusType.SUCCESS);
-            baseResp.setSuccess(true);
-            baseResp.setMsg("New file " + fileName + " created at " + path);
+            fileUploadResp.setStatus(StatusType.SUCCESS);
+            fileUploadResp.setSuccess(true);
+            fileUploadResp.setMsg("New file " + fileName + " created at " + path);
+            fileUploadResp.setFileid(fileName);
             logger.trace("File{0}being uploaded to {1}", new Object[]{fileName, path});
         } 
         catch (FileNotFoundException fne) 
         {
-           CommonUtils.handleExceptionForResponse(baseResp, fne);
+           CommonUtils.handleExceptionForResponse(fileUploadResp, fne);
            logger.trace( "Problems during file upload. Error: {0}",  new Object[]{fne.getMessage()});
         } 
         finally 
         {        	        
-        	writer.write(CommonUtils.toJson(baseResp));
+        	writer.write(CommonUtils.toJson(fileUploadResp));
         	if (out != null) 
             {
                 out.close();
@@ -102,10 +103,13 @@ public class SlidesPPTXUploadServlet extends HttpServlet
     {
         final String partHeader = part.getHeader("content-disposition");
         logger.trace( "Part Header = {0}", partHeader);
-        for (String content : part.getHeader("content-disposition").split(";")) {
-            if (content.trim().startsWith("filename")) {
-                return content.substring(
-                        content.indexOf('=') + 1).trim().replace("\"", "");
+        for (String content : part.getHeader("content-disposition").split(";")) 
+        {
+            if (content.trim().startsWith("filename")) 
+            {
+                String name = content.substring(content.indexOf('=') + 1).trim().replace("\"", "");
+                name = name.replaceAll(" ", "_"); 
+                return name;
             }
         }
         return null;

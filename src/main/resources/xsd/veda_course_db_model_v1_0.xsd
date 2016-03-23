@@ -5,6 +5,7 @@
 	elementFormDefault="qualified">
 
 	<xs:element name="id" type="xs:int" />
+	<xs:element name="topicid" type="xs:int" />
 	<xs:element name="name" type="xs:string" />
 	<xs:element name="title" type="xs:string" />
 	<xs:element name="subTitle" type="xs:string" />
@@ -58,11 +59,14 @@
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element ref="id" />
+			<xs:element ref="topicid" />
 			<xs:element ref="name"/>
 			<xs:element ref="title"/>
 			<xs:element ref="subTitle"/>	
 			<xs:element ref="description"/>					
 			<xs:element ref="textContent"/>
+			<xs:element ref="updatedBy"/>
+			<xs:element ref="lastUpdatedDateTime"/>
 			<xs:element ref="tags" maxOccurs="unbounded"/>	
 			<xs:element ref="notes" maxOccurs="unbounded"/>						
 		</xs:sequence>

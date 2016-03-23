@@ -1,5 +1,28 @@
 package com.taksila.veda.course.slides;
 
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.util.List;
+import java.util.Locale;
+
+import javax.imageio.ImageIO;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 /*
  *  ====================================================================
  *    Licensed to the Apache Software Foundation (ASF) under one or more
@@ -28,7 +51,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackagePart;
-import org.apache.poi.sl.draw.DrawFactory;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.usermodel.XSLFComments;
 import org.apache.poi.xslf.usermodel.XSLFImageRenderer;
@@ -42,34 +64,9 @@ import com.taksila.veda.model.api.course.v1_0.CreateSlideRequest;
 import com.taksila.veda.model.api.course.v1_0.CreateSlideResponse;
 import com.taksila.veda.model.api.course.v1_0.GetSlideRequest;
 import com.taksila.veda.model.api.course.v1_0.GetSlideResponse;
-import com.taksila.veda.model.api.course.v1_0.SearchSlidesRequest;
-import com.taksila.veda.model.api.course.v1_0.SearchSlidesResponse;
 import com.taksila.veda.model.api.course.v1_0.Slide;
 import com.taksila.veda.model.api.course.v1_0.UpdateSlideResponse;
 import com.taksila.veda.utils.CommonUtils;
-
-import javax.imageio.ImageIO;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Convert each slide of a .pptx presentation into SVG
@@ -84,71 +81,72 @@ public class Pptx2Image
 	{
 		double scale = 1;
 		String filename = "";
-		String format = "png";		
+		String format = "png";
+		public int topicid;		
 		
 		
 	}
 	
-    public static void convertToSvg(String filename) throws Exception 
-    {
-         System.out.println("Processing " + filename);
-
-        // read the .pptx file
-//        File f = new File(filename);
-//        InputStream st = new FileInputStream(f);
-        XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open("C:\\files\\"+filename));
-//        XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open(f));
-
-        Dimension pgsize = ppt.getPageSize();
-
-        // convert each slide into a .svg file
-        List<XSLFSlide> slides = ppt.getSlides();
-        int i = 0;
-		for (XSLFSlide slide: slides) 
-        {
-            i++;
-			// Create initial SVG DOM
-            DOMImplementation domImpl = SVGDOMImplementation.getDOMImplementation();
-            Document doc = domImpl.createDocument("http://www.w3.org/2000/svg", "svg", null);
-            /*
-             * Use Batik SVG Graphics2D driver
-             */
-            SVGGraphics2D graphics = new SVGGraphics2D(doc);
-            graphics.setRenderingHint(XSLFRenderingHint.IMAGE_RENDERER, new WMFImageRender());
-            graphics.setSVGCanvasSize(pgsize);
-
-            String title = slide.getTitle();
-            System.out.println("Rendering slide " + (i) + (title == null ? "" : ": " + title));
-
-            /*
-             *  draw stuff. All the heavy-lifting happens here
-             */
-            slide.draw(graphics);
-
-            /*
-             *  save the result.
-             */
-            int sep = filename.lastIndexOf(".");
-            String fname = filename.substring(0, sep == -1 ? filename.length() : sep) + "-" + (i + 1) + ".svg";
-            OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream("C:\\files\\svg\\"+fname), "UTF-8");
-            DOMSource domSource = new DOMSource(graphics.getRoot());
-            StreamResult streamResult = new StreamResult(out);
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer serializer = tf.newTransformer();
-            serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-            serializer.transform(domSource, streamResult);
-            out.flush();
-            out.close();
-        }
-        System.out.println("Done");
-    }
+//    public static void convertToSvg(String filename) throws Exception 
+//    {
+//         System.out.println("Processing " + filename);
+//
+//        // read the .pptx file
+////        File f = new File(filename);
+////        InputStream st = new FileInputStream(f);
+//        XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open("C:\\files\\"+filename));
+////        XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open(f));
+//
+//        Dimension pgsize = ppt.getPageSize();
+//
+//        // convert each slide into a .svg file
+//        List<XSLFSlide> slides = ppt.getSlides();
+//        int i = 0;
+//		for (XSLFSlide slide: slides) 
+//        {
+//            i++;
+//			// Create initial SVG DOM
+//            DOMImplementation domImpl = SVGDOMImplementation.getDOMImplementation();
+//            Document doc = domImpl.createDocument("http://www.w3.org/2000/svg", "svg", null);
+//            /*
+//             * Use Batik SVG Graphics2D driver
+//             */
+//            SVGGraphics2D graphics = new SVGGraphics2D(doc);
+//            graphics.setRenderingHint(XSLFRenderingHint.IMAGE_RENDERER, new WMFImageRender());
+//            graphics.setSVGCanvasSize(pgsize);
+//
+//            String title = slide.getTitle();
+//            System.out.println("Rendering slide " + (i) + (title == null ? "" : ": " + title));
+//
+//            /*
+//             *  draw stuff. All the heavy-lifting happens here
+//             */
+//            slide.draw(graphics);
+//
+//            /*
+//             *  save the result.
+//             */
+//            int sep = filename.lastIndexOf(".");
+//            String fname = filename.substring(0, sep == -1 ? filename.length() : sep) + "-" + (i + 1) + ".svg";
+//            OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream("C:\\files\\svg\\"+fname), "UTF-8");
+//            DOMSource domSource = new DOMSource(graphics.getRoot());
+//            StreamResult streamResult = new StreamResult(out);
+//            TransformerFactory tf = TransformerFactory.newInstance();
+//            Transformer serializer = tf.newTransformer();
+//            serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+//            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+//            serializer.transform(domSource, streamResult);
+//            out.flush();
+//            out.close();
+//        }
+//        System.out.println("Done");
+//    }
 
     
     public static String convertToImage(Pptx2ImageOptions options) throws IOException, Exception 
     {
     	int i = 0;    
-    	System.out.println("Processing " + options.filename);
+    	System.out.println("Processing " + options.filename +" and topicid "+options.topicid);
     	String tempFolderId = "";
      	
     	if (StringUtils.isBlank(options.filename)) 
@@ -159,6 +157,11 @@ public class Pptx2Image
         if (StringUtils.isBlank(options.filename)) 
         {
         	throw new Exception("File not specified or it doesn't exist");
+        }
+        
+        if (options.topicid <= 0) 
+        {
+        	throw new Exception("Topic id not specified");
         }
          
 //         if (StringUtils.isBlank(options.filename) outdir == null || !outdir.exists() || !outdir.isDirectory()) 
@@ -182,7 +185,8 @@ public class Pptx2Image
          // read the .pptx file
 //         File f = new File(filename);
 //         InputStream st = new FileInputStream(f);
-         XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open(baseDirectory+options.filename));
+         
+         XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open(baseDirectory+"\\upload\\"+options.filename));
 //         XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open(f));
 
          Dimension pgsize = ppt.getPageSize();
@@ -250,16 +254,24 @@ public class Pptx2Image
 		             newSlideReq.setSlide(targetSlide);
 		             targetSlide.setDescription(desc);
 		             targetSlide.setTitle(title);
-		             targetSlide.setName(outname);		             		             
+		             targetSlide.setName(outname);
+		             targetSlide.setTopicid(options.topicid);
 		             CreateSlideResponse newSlideResp = slideComp.createNewSlide(newSlideReq);
+		             targetSlide = newSlideResp.getSlide();
 	             }
 	             
-	             
-            	 UpdateSlideResponse imgUptResp = slideComp.updateSlideImage(targetSlide.getId(), imgis, options.format,options.scale);
-            	 if (!imgUptResp.isSuccess())
-            	 {
-            		 logger.trace(CommonUtils.toJson(imgUptResp));
-            	 }
+	             if (targetSlide != null)
+	             {
+	            	 UpdateSlideResponse imgUptResp = slideComp.updateSlideImage(targetSlide.getId(), imgis, options.format,options.scale);
+	            	 if (!imgUptResp.isSuccess())
+	            	 {
+	            		 logger.trace(CommonUtils.toJson(imgUptResp));
+	            	 }
+	             }
+	             else
+	             {
+	            	 logger.trace(" FAILED TO LOAD THE IMAGE for slide =  "+outname);
+	             }
 	            	 
 	            
 	             

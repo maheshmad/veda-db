@@ -23,8 +23,7 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
-			
-	
+				
 	<xs:complexType name="Slide">
 		<xs:annotation>
 			<xs:documentation>
@@ -531,7 +530,23 @@
 		</xs:complexContent>
 	</xs:complexType>
 	
-	<!-- Slides -->	
+	<!-- Slides -->
+	
+	<xs:complexType name="UploadFileResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetSlideInfoResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="fileid" type="xs:string" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+		
 	<xs:complexType name="GetSlideRequest">
 		<xs:annotation>
 			<xs:documentation>
@@ -541,7 +556,8 @@
         <xs:complexContent>
             <xs:extension base="base:BaseRequest">  
             	<xs:sequence>
-					<xs:element ref="base:id" />	
+					<xs:element ref="base:id" />
+					<xs:element name="topicid" type="xs:string" />	
 					<xs:element ref="base:name" />							
 				</xs:sequence>
 			</xs:extension>
@@ -571,7 +587,8 @@
 		</xs:annotation>
         <xs:complexContent>
             <xs:extension base="base:SearchRequest">  
-            	<xs:sequence>											
+            	<xs:sequence>
+            			<xs:element name="searchParam" type="Slide" ></xs:element>											
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>	

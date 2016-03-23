@@ -27,7 +27,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ManagedAsync;
 
-import com.taksila.veda.course.slides.Pptx2Image.Pptx2ImageOptions;
 import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 import com.taksila.veda.model.api.course.v1_0.CreateSlideRequest;
 import com.taksila.veda.model.api.course.v1_0.CreateSlideResponse;
@@ -58,9 +57,13 @@ public class SlideService
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@ManagedAsync
-	@Path("/generate")
-	public void convertSlides(@Context HttpServletRequest request, @Context UriInfo uri,@Context HttpServletResponse resp,
-			 @Suspended final AsyncResponse asyncResp)
+	@Path("/generate/{topicid}/{uploadedfileid}")
+	public void convertSlides(@Context HttpServletRequest request, 
+			@Context final UriInfo uri,
+			@PathParam("topicid") final int topicid,
+			@PathParam("uploadedfileid") final String uploadedfileid,
+			@Context HttpServletResponse resp,
+			@Suspended final AsyncResponse asyncResp)
 	{    						
 		logger.trace("********  inside pptx to ");
 		
@@ -71,25 +74,14 @@ public class SlideService
 				logger.trace("********  inside thread to convert images  ");
 				
 				BaseResponse bResp = new BaseResponse(); 
+				String schoolId = CommonUtils.getSubDomain(uri);
+				SlideComponent slideComp = new SlideComponent(schoolId);
 				try 
 				{
-		//			PPTX2SVG.convertToSvg("sample-learning.pptx");
-					Pptx2ImageOptions options = new Pptx2ImageOptions(); 
-					options.filename = "sample-learning.pptx";
-					options.format= "png";
-					options.scale = 1;
-					
-					Pptx2Image.convertToImage(options);
-					
-					logger.trace("---------------generating thumbs ------------------");
-					options.scale = 0.25;
-					Pptx2Image.convertToImage(options);
-					
-					bResp.setSuccess(true);
+					bResp = slideComp.generateImagesFromPptx(topicid,uploadedfileid);
 				} 
 				catch (Exception e) 
 				{		
-					e.printStackTrace();
 					CommonUtils.handleExceptionForResponse(bResp, e);
 				}
 				
@@ -210,6 +202,55 @@ public class SlideService
 		
 		
 		logger.trace("********  exiting getSlide service ");
+		
+	}
+	
+	
+	/**
+	 * 
+	 * @param request
+	 * @param uri
+	 * @param slideid
+	 * @param resp
+	 * @param asyncResp
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@ManagedAsync
+	@Path("/topic/{topicid}")
+	public void getSlidesOfTopicId(@Context HttpServletRequest request, @Context final UriInfo uri,		
+			@PathParam("topicid") final int topicid,
+			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
+	{    				
+		
+		executor.execute(new Runnable() 
+		{
+			public void run() 
+			{	
+				SearchSlidesResponse operResp = new SearchSlidesResponse();
+				try 
+				{
+					SearchSlidesRequest req = new SearchSlidesRequest();
+					req.setSearchParam(new Slide());
+					req.getSearchParam().setTopicid(topicid);
+					
+					String schoolId = CommonUtils.getSubDomain(uri);
+					SlideComponent slideComp = new SlideComponent(schoolId);
+					operResp = slideComp.getSlidesByTopicId(req); 			
+					operResp.setSuccess(true);
+				} 
+				catch (Exception ex) 
+				{		
+					ex.printStackTrace();
+					CommonUtils.handleExceptionForResponse(operResp, ex);
+				}
+				
+				asyncResp.resume(Response.ok(operResp).build());
+			}
+		});
+		
+		
+		logger.trace("********  exiting getSlidesOfTopicId service ");
 		
 	}
 	

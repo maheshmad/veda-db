@@ -1,8 +1,8 @@
 package com.taksila.veda.course.slides;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -39,12 +39,17 @@ public class SlideComponent
 		this.slideDAO = new SlidesDAO(this.schoolId);				
 	}
 	
-	public BaseResponse generateImagesFromPptx(Pptx2ImageOptions options)
+	public BaseResponse generateImagesFromPptx(int topicid, String uploadedfileid)
 	{    						
 		logger.trace("inside pptx to image converter");
 		BaseResponse bResp = new BaseResponse(); 
 		try 
 		{
+			Pptx2ImageOptions options = new Pptx2ImageOptions(); 
+			options.filename = uploadedfileid;
+			options.topicid = topicid;
+			options.format= "png";
+			options.scale = 1.5;
 			Pptx2Image.convertToImage(options);
 			
 			logger.trace("---------------generating thumbs ------------------");
@@ -62,7 +67,7 @@ public class SlideComponent
 		return bResp;
 		
 	}
-
+	
 	/**
 	 * 
 	 * @param req
@@ -74,6 +79,47 @@ public class SlideComponent
 		try 
 		{
 			List<Slide> courseSearchHits = slideDAO.searchSlidesByTitle(req.getQuery());
+			
+			for(Slide course: courseSearchHits)
+			{
+				SearchHitRecord rec = new SearchHitRecord();
+				/*
+				 * map search hits
+				 */
+				rec.setRecordId(String.valueOf(course.getId()));
+				rec.setRecordTitle(course.getTitle());
+				rec.setRecordSubtitle(course.getSubTitle());				
+				
+				resp.getHits().add(rec);
+			}
+			
+			resp.setRecordType("SLIDE");
+			resp.setPage(req.getPage());
+			resp.setPageOffset(req.getPageOffset());
+			resp.setTotalHits(courseSearchHits.size());
+
+		} 
+		catch (Exception e) 
+		{			
+			CommonUtils.handleExceptionForResponse(resp, e);
+		}
+		return resp;
+	}
+	
+	/**
+	 * 
+	 * @param req
+	 * @return
+	 */
+	public SearchSlidesResponse getSlidesByTopicId(SearchSlidesRequest req)
+	{
+		SearchSlidesResponse resp = new SearchSlidesResponse();
+		try 
+		{
+			List<Slide> courseSearchHits = new ArrayList<Slide>();
+			
+			if (req != null && req.getSearchParam() != null)
+				courseSearchHits = slideDAO.searchSlidesByTopicId(req.getSearchParam().getTopicid());			
 			
 			for(Slide course: courseSearchHits)
 			{
