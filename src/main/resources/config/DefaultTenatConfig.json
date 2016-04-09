@@ -1,0 +1,415 @@
+{
+	"tenantName" : "",
+	"tenantFullName" : "",
+	"tenantStatus" : "INACTIVE",
+	"sectionGroup" : [{
+			"section" : "OAUTH",
+			"sectionId" : "OAUTH",
+			"footerNote" : "",
+			"headerNote" : "OAUTH Information",
+			"icon" : "oauth.png",
+			"allowedRole" : ["sysadmin", "tenantadmin"],
+			"configGroup" : [{
+					"configGroupId" : "OAUTH",
+					"configName" : "OAUTH Configuration",
+					"configType" : "form",
+					"allowedRole" : ["sysadmin", "tenantadmin"],
+					"headerNote" : "OAUTH Configuration",
+					"footerNote" : "",
+					"config" : [{
+							"name" : "OAUTH_SERVER_BASE_URI",
+							"displayField" : "Server Base Uri",
+							"value" : "",
+							"type" : "URI"
+							
+						}, {
+							"name" : "OAUTH_REQUEST_TOKEN_URI",
+							"displayField" : "Request Token",
+							"value" : "/api/consumer/request_token",
+							"type" : "URI"
+							
+						}, {
+							"name" : "OAUTH_USER_AUTH_INFO_URI",
+							"displayField" : "User Auth Info Uri",
+							"value" : "/api/user",    
+							"type" : "URI"
+							
+						}, {
+							"name" : "OAUTH_AUTHORIZE",
+							"displayField" : "Authorize",
+							"value" : "/api/authorize",
+							"type" : "URI"
+							
+						}, {
+							"name" : "OAUTH_CONSUMER_AUTH_ID",
+							"displayField" : "Consumer Authentication Id",
+							"value" : "app1",
+							"type" : "TEXT"
+							
+						}, {
+							"name" : "OAUTH_CONSUMER_AUTH_PWD",
+							"displayField" : "Consumer Authentication Password",
+							"value" : "app1@123",
+							"type" : "PWD"
+							
+						}
+					]
+				}
+			]
+		}, {
+			"section" : "LDAP",
+			"sectionId" : "LDAP",
+			"footerNote" : "",
+			"headerNote" : "LDAP Information",
+			"icon" : "ldap.png",
+			"allowedRole" : ["sysadmin", "tenantadmin"],
+			"configGroup" : [{
+					"configGroupId" : "LDAP",
+					"configName" : "LDAP Configuration",
+					"configType" : "form",
+					"allowedRole" : ["sysadmin", "tenantadmin"],
+					"headerNote" : "LDAP Configuration",
+					"footerNote" : "",
+					"config" : [{
+							"name" : "LDAP_SWITCH",
+							"displayField" : "Enable LDAP",
+							"value" : "NO",
+							"type" : "RADIO"
+							
+						},{
+							"name" : "LDAP_HOST",
+							"displayField" : "Host",
+							"value" : "",
+							"type" : "URI"
+							
+						}, {
+							"name" : "LDAP_BASE_DN",
+							"displayField" : "Base DN",
+							"value" : "dc=cloud,dc=com",
+							"type" : "TEXT"
+							
+						}, {
+							"name" : "LDAP_PEOPLE_BASE_DN",
+							"displayField" : "People Base DN",
+							"value" : "ou=people,dc=cloud,dc=com",
+							"type" : "TEXT"
+							
+						}, {
+							"name" : "LDAP_BIND_DN",
+							"displayField" : "Bind DN",
+							"value" : "uid=admin,ou=system",
+							"type" : "TEXT"
+							
+						}, {
+							"name" : "LDAP_BIND_PWD",
+							"displayField" : "Bind Password",
+							"value" : "root@123",
+							"type" : "PWD"
+							
+						},{
+							"name" : "LDAP_TENANT_ADMIN_GROUP_NAME",
+							"displayField" : "Tenant Admin Group Name",
+							"value" : "admin",
+							"type" : "TEXT"
+							
+						},{
+							"name" : "LDAP_USER_GROUPS",
+							"displayField" : "Group List",
+							"value" : "admin,user,superuser",
+							"type" : "TEXT"
+							
+						}, {
+							"name" : "LDAP_ATTRIBUTE_MAPPING",
+							"displayField" : "LDAP Attribute Mapping",
+							"value" : "{'pwdAttribute' : 'pwdAttribute','pwdMustChange' : 'pwdMustChange','userPassword' : 'userPassword','mail' : 'mail','cn' : 'cn','sn' : 'sn','uid' : 'uid','mobileTelephoneNumber' : 'mobileTelephoneNumber','telephoneNumber' : 'telephoneNumber','organizationalUnitName' : 'organizationalUnitName','streetAddress' : 'streetAddress','l' : 'l','st' : 'st','postalCode' : 'postalcode','co' : 'co'}",
+							"type" : "TEXT"
+						}
+					]
+				}
+			]
+		}, {
+			"section" : "Data Reports",
+			"sectionId" : "DATAREPORTS",
+			"footerNote" : "",
+			"headerNote" : "Data Reports Information",
+			"icon" : "datareport.png",
+			"allowedRole" : ["sysadmin", "tenantadmin"],
+			"configGroup" : [{
+					"configGroupId" : "DATAREPORTS",
+					"configName" : "Data Reports Configuration",
+					"configType" : "form",
+					"allowedRole" : ["sysadmin", "tenantadmin"],
+					"headerNote" : "Data Reports Configuration",
+					"footerNote" : "",
+					"config" : [{
+							"name" : "DATAREPORTS_INSTANCE_TYPE",
+							"displayField" : "Instance Type",
+							"value" : "DATAREPORTS_FLEET",
+							"type" : "TEXT"
+							
+						}, {
+							"name" : "DATAREPORTS_ORDER_FROM_PAID_SOURCES",
+							"displayField" : "Order From Paid Sources",
+							"value" : "NO",
+							"type" : "RADIO"
+							
+						}, {
+							"name" : "DATAREPORTS_ORDER_MVR",
+							"displayField" : "Order MVR",
+							"value" : "NO",
+							"type" : "RADIO"
+							
+						}, {
+							"name" : "DATAREPORTS_ORDER_EXPERIAN",
+							"displayField" : "Order EXPERIAN",
+							"value" : "NO",
+							"type" : "RADIO"
+							
+						}, {
+							"name" : "DATAREPORTS_ORDER_RISKMETER",
+							"displayField" : "Order RISKMETER",
+							"value" : "NO",
+							"type" : "RADIO"
+							
+						}
+						
+					]
+				}
+			]
+		}, {
+			"section" : "Carrier",
+			"sectionId" : "CARRIER",
+			"footerNote" : "",
+			"headerNote" : "Carrier Information",
+			"icon" : "carrier.png",
+			"allowedRole" : ["sysadmin", "tenantadmin"],
+			"configGroup" : [{
+					"configGroupId" : "CARRIER",
+					"configName" : "Carrier Configuration",
+					"configType" : "form",
+					"allowedRole" : ["sysadmin", "tenantadmin"],
+					"headerNote" : "Carrier Configuration",
+					"footerNote" : "",
+					"config" : [{
+							"name" : "CARRIER_ENABLE",
+							"displayField" : "Enable",
+							"value" : "NO",
+							"type" : "RADIO"
+							
+						}, {
+							"name" : "CARRIER_HOST_URI",
+							"value" : "",
+							"displayField" : "Host Uri",
+							"type" : "URI"
+							
+						}, {
+							"name" : "CARRIER_POLICY_SERVICE_API",
+							"displayField" : "Policy Service",
+							"value" : "/api/policy",
+							"type" : "URI"
+							
+						}, {
+							"name" : "CARRIER_POLICY_SEARCH_SERVICE_API",
+							"displayField" : "Policy Search Serivce",
+							"value" : "/api/policy/search",
+							"type" : "URI"
+							
+						}, {
+							"name" : "CARRIER_POLICY_LOBREPORT_SERVICE_API",
+							"displayField" : "Policy LOB Report Service",
+							"value" : "/api/policy/stats",
+							"type" : "URI"
+							
+						}, {
+							"name" : "CARRIER_CUST_PERFORMANCE_SERVICE_API",
+							"displayField" : "Customer Performance Service",
+							"value" : "/api/customer/{customerid}/stats",
+							"type" : "URI"
+							
+						}, {
+							"name" : "CARRIER_CUST_SEARCH_SERVICE_API",
+							"displayField" : "Customer Search Service",
+							"value" : "/api/customer/search",
+							"type" : "URI"
+							
+						}, {
+							"name" : "CARRIER_POLICIES_SERVICE_API",
+							"displayField" : "Customer Policies Service",
+							"value" : "/api/policies",
+							"type" : "URI"
+							
+						}, {
+							"name" : "CARRIER_QUOTES_SERVICE_API",
+							"displayField" : "Customer Quotes Service",
+							"value" : "/api/quotes",
+							"type" : "URI"
+							
+						}, {
+							"name" : "CARRIER_CLAIMS_SERVICE_API",
+							"displayField" : "Customer Claims Service",
+							"value" : "/api/claims",
+							"type" : "URI"
+							
+						}
+					]
+				}
+			]
+		} , {
+			
+			"section" : "MAIL",
+			"sectionId" : "MAIL_CONFIG",
+			"footerNote" : "",
+			"headerNote" : "Mail Configuration",
+			"icon" : "mail.png",
+			"allowedRole" : ["sysadmin", "tenantadmin", "admin", "d2cadmin"],
+			"configGroup" : [{
+					"configGroupId" : "MAIL_CONFIG",
+					"configName" : "Mail Configuration",
+					"configType" : "form",
+					"allowedRole" : ["sysadmin", "tenantadmin"],
+					"headerNote" : "Mail Configuration",
+					"footerNote" : "",
+					"config" : [{
+							"name" : "MAIL_CONFIG_DOMAIN",
+							"displayField" : "Mail Domain",
+							"value" : "intellectdesign.com",
+							"type" : "TEXT"
+						}
+					]
+				}
+			]
+		
+		},
+		
+		{
+			
+			"section" : "RULES",
+			"sectionId" : "RULES_CONFIG",
+			"footerNote" : "",
+			"headerNote" : "Rules configuration",
+			"icon" : "carrier.png",
+			"allowedRole" : ["sysadmin", "tenantadmin"],
+			"configGroup" : [{
+								"configGroupId" : "RULES_RISK_SCORE_CONFIG",
+								"configName" : "Rules risk score configuration",
+								"configType" : "form",
+								"allowedRole" : ["sysadmin", "tenantadmin"],
+								"headerNote" : "Rules risk score configuration",
+								"footerNote" : "",
+								"config" : [
+											{
+												"name" : "RISK_CLASS_UNDESIRED_VALUE",
+												"displayField" : "Priority High",
+												"value" : "100",
+												"type" : "TEXT"
+											},								
+											{
+												"name" : "RISK_CLASS_DESIRED_VALUE",
+												"displayField" : "Priority Medium",
+												"value" : "30",
+												"type" : "TEXT"
+											},
+											{
+												"name" : "RISK_CLASS_PREFERRED_VALUE",
+												"displayField" : "Priority Low",
+												"value" : "10",
+												"type" : "TEXT"
+											}
+																					
+										]
+							}]			
+		
+		},
+		
+		{
+			
+			"section" : "User Management",
+			"sectionId" : "USER_MANAGEMENT",
+			"footerNote" : "",
+			"headerNote" : "User Management",
+			"icon" : "user-management.png",
+			"allowedRole" : ["sysadmin", "tenantadmin", "admin", "d2cadmin"],
+			"configGroup" : [{
+					"configGroupId" : "USER_MANAGEMENT",
+					"configName" : "User Management",
+					"configType" : "view",
+					"allowedRole" : ["sysadmin", "tenantadmin"],
+					"headerNote" : "CARRIER Configuration",
+					"footerNote" : "",
+					"viewXtype" : "admin-usermanagementview"
+				}
+			]
+		
+		},
+		{			
+			"section" : "SECURITY",
+			"sectionId" : "SECURITY_CONFIG",
+			"footerNote" : "",
+			"headerNote" : "Security Configuration",
+			"icon" : "Security.png",
+			"allowedRole" : ["sysadmin", "tenantadmin"],
+			"configGroup" : [{
+					"configGroupId" : "API_KEY_CONFIG",
+					"configName" : "API authorization configuration",
+					"configType" : "form",
+					"allowedRole" : ["tenantadmin"],
+					"headerNote" : "API Key Authentication Configuration",
+					"footerNote" : "Security configuration for accessing the rest services using API key authentication. Api client userid / password should be a valid account.  ",
+					"config" : [{
+									"name" : "API_KEY",
+									"displayField" : "Api key",
+									"value" : "",
+									"type" : "TEXT",
+									"allowBlankValue" : true
+								},
+								{
+									"name" : "API_AUTH_UID",
+									"displayField" : "Api client userid",
+									"value" : "",
+									"type" : "TEXT",
+									"allowBlankValue" : true
+								},
+								{
+									"name" : "API_AUTH_PWD",
+									"displayField" : "Api client password",
+									"value" : "",
+									"type" : "PWD",
+									"allowBlankValue" : true
+								},
+								{
+									"name" : "API_AUTH_CLIENT_IP_ADDRS",
+									"displayField" : "Allowed IP addr(s)",
+									"value" : "*",
+									"type" : "TEXT",
+									"allowBlankValue" : true
+								}
+					]
+				}
+			]
+		
+		},
+		
+		{
+			
+			"section" : "User Group Role Management",
+			"sectionId" : "USER_GROUP_ROLE_MANAGEMENT",
+			"footerNote" : "",
+			"headerNote" : "User Group Role Management",
+			"icon" : "user-management.png",
+			"allowedRole" : ["sysadmin", "tenantadmin"],
+			"configGroup" : [{
+					"configGroupId" : "USER_GROUP_ROLE_MANAGEMENT",
+					"configName" : "User Group Role Management",
+					"configType" : "view",
+					"allowedRole" : ["sysadmin", "tenantadmin"],
+					"headerNote" : "User Group Role Management",
+					"footerNote" : "Mapping user groups to roles",
+					"viewXtype" : "sysadmin-grouprolemanagementview"
+				}
+			]
+		
+		}
+		
+	]
+	
+}

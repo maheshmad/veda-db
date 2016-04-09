@@ -87,7 +87,7 @@ public class CoursesDAO
 	{
 		Course course = new Course();		
 		
-		course.setId(resultSet.getInt(COURSE_TABLE.id.value()));
+		course.setId(String.valueOf(resultSet.getInt(COURSE_TABLE.id.value())));
 		course.setName(resultSet.getString(COURSE_TABLE.coursename.value()));
 		course.setTitle(resultSet.getString(COURSE_TABLE.title.value()));
 		course.setSubTitle(resultSet.getString(COURSE_TABLE.subTitle.value()));
@@ -201,7 +201,7 @@ public class CoursesDAO
 			ResultSet rs = stmt.getGeneratedKeys();			
 			if (rs.next())
 			{
-				course.setId(rs.getInt(1));
+				course.setId(String.valueOf(rs.getInt(1)));
 			}
 			
 			return course;
@@ -239,7 +239,7 @@ public class CoursesDAO
 			stmt.setString(2, course.getTitle());
 			stmt.setString(3, course.getSubTitle());
 			stmt.setString(4, course.getDescription());
-			stmt.setInt(5, course.getId());
+			stmt.setInt(5, Integer.valueOf(course.getId()));
 			
 			int t = stmt.executeUpdate();
 			if (t > 0)

@@ -1,20 +1,25 @@
 <?xml version="1.0"?>
 <xs:schema xmlns="http://www.taksila.com/veda/model/db/course/v1_0"
 	targetNamespace="http://www.taksila.com/veda/model/db/course/v1_0"
-	xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:basedb="http://www.taksila.com/veda/model/db/base/v1_0" 
+	attributeFormDefault="unqualified"
 	elementFormDefault="qualified">
-
+	
+	<xs:import schemaLocation="veda_base_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/base/v1_0"></xs:import>
+	
 	<xs:element name="id" type="xs:int" />
 	<xs:element name="topicid" type="xs:int" />
 	<xs:element name="name" type="xs:string" />
+	<xs:element name="filename" type="xs:string" />
+	<xs:element name="fileType" type="xs:string" />
+	<xs:element name="fileProcessingCode" type="xs:string" />
 	<xs:element name="title" type="xs:string" />
 	<xs:element name="subTitle" type="xs:string" />
 	<xs:element name="description" type="xs:string" />
 	<xs:element name="contentImageId" type="xs:string" />
 	<xs:element name="textContent" type="xs:string" />
-	<xs:element name="tags" type="xs:string" />	
-	<xs:element name="lastUpdatedDateTime" type="xs:dateTime" />
-	<xs:element name="updatedBy" type="xs:string" />		
+	<xs:element name="tags" type="xs:string" />			
 	<xs:element name="notes" type="NoteTable"  />			
 	
 	<xs:complexType name="ChapterTable">
@@ -24,14 +29,17 @@
 				Each chapter will have list of topics								
 			</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="id" />
-			<xs:element ref="name"/>
-			<xs:element ref="title"/>
-			<xs:element ref="subTitle"/>	
-			<xs:element ref="description"/>					
-			<xs:element name="topics" type="TopicTable" maxOccurs="unbounded" />					
-		</xs:sequence>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable">  
+            	<xs:sequence>
+					<xs:element ref="name"/>
+					<xs:element ref="title"/>
+					<xs:element ref="subTitle"/>	
+					<xs:element ref="description"/>					
+					<xs:element name="topics" type="TopicTable" maxOccurs="unbounded" />	
+				</xs:sequence>
+			</xs:extension>						
+		</xs:complexContent>
 	</xs:complexType>
 	
 	<xs:complexType name="TopicTable">
@@ -40,14 +48,17 @@
 				Topic inside a chapter								
 			</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="id" />
-			<xs:element ref="name"/>
-			<xs:element ref="title"/>
-			<xs:element ref="subTitle"/>	
-			<xs:element ref="description"/>		
-			<xs:element name="slides" type="SlideTable" maxOccurs="unbounded" />						
-		</xs:sequence>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable">  
+            	<xs:sequence>
+					<xs:element ref="name"/>
+					<xs:element ref="title"/>
+					<xs:element ref="subTitle"/>	
+					<xs:element ref="description"/>		
+					<xs:element name="slides" type="SlideTable" maxOccurs="unbounded" />						
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>		
 	</xs:complexType>
 	
 	<xs:complexType name="SlideTable">
@@ -57,19 +68,39 @@
 				compose a topic								
 			</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="id" />
-			<xs:element ref="topicid" />
-			<xs:element ref="name"/>
-			<xs:element ref="title"/>
-			<xs:element ref="subTitle"/>	
-			<xs:element ref="description"/>					
-			<xs:element ref="textContent"/>
-			<xs:element ref="updatedBy"/>
-			<xs:element ref="lastUpdatedDateTime"/>
-			<xs:element ref="tags" maxOccurs="unbounded"/>	
-			<xs:element ref="notes" maxOccurs="unbounded"/>						
-		</xs:sequence>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable">  
+            	<xs:sequence>
+					<xs:element ref="topicid" />
+					<xs:element ref="name"/>
+					<xs:element ref="title"/>
+					<xs:element ref="subTitle"/>	
+					<xs:element ref="description"/>					
+					<xs:element ref="textContent"/>					
+					<xs:element ref="tags" maxOccurs="unbounded"/>	
+					<xs:element ref="notes" maxOccurs="unbounded"/>						
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UploadedFileTable">
+		<xs:annotation>
+			<xs:documentation>
+				Uploaded files table. This table stores all the files uploaded by the user in its original form. This will
+				also be used to track the processing jobs.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable">  
+            	<xs:sequence>
+					<xs:element ref="topicid" />
+					<xs:element ref="filename"/>									
+					<xs:element ref="fileType"/>
+					<xs:element ref="fileProcessingCode"/>								
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>	
 	</xs:complexType>
 	
 	<xs:complexType name="NoteTable">
@@ -79,10 +110,13 @@
 				any object
 			</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="id" />						
-			<xs:element ref="textContent"/>									
-		</xs:sequence>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable">  
+            	<xs:sequence>
+					<xs:element ref="textContent"/>									
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>		
 	</xs:complexType>          
 	
 	<xs:complexType name="CourseTable">
@@ -91,14 +125,17 @@
 				Course table has list of courses and its contents								
 			</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="id" />
-			<xs:element ref="name"/>
-			<xs:element ref="title"/>
-			<xs:element ref="subTitle"/>	
-			<xs:element ref="description"/>	
-			<xs:element name="chapters" type="ChapterTable" maxOccurs="unbounded" />
-		</xs:sequence>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable">  
+            	<xs:sequence>
+					<xs:element ref="name"/>
+					<xs:element ref="title"/>
+					<xs:element ref="subTitle"/>	
+					<xs:element ref="description"/>	
+					<xs:element name="chapters" type="ChapterTable" maxOccurs="unbounded" />	
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>		
 	</xs:complexType>   
 		
 </xs:schema>

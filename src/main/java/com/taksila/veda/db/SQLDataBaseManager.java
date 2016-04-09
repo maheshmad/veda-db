@@ -185,7 +185,7 @@ public class SQLDataBaseManager
 	/*
 	 * 
 	 */
-	public ResultSet executeQuery(String Query)
+	public ResultSet executeQuery(String Query) throws SQLException
 	{
 		ResultSet rs = null;
 		Statement st = null;
@@ -218,7 +218,7 @@ public class SQLDataBaseManager
 	 * 
 	 */
 	
-	public boolean executeUpdate(String Query)
+	public boolean executeUpdate(String Query) throws SQLException
 	{
 		Statement st = null;
 		try
@@ -249,10 +249,11 @@ public class SQLDataBaseManager
 	 * 
 	 * @param SQLStmt
 	 * @return
+	 * @throws SQLException 
 	 */
 	
 	
-	public PreparedStatement getPreparedStatement(String SQLStmt)
+	public PreparedStatement getPreparedStatement(String SQLStmt) throws SQLException
 	{
 		PreparedStatement prepStmt = null;
 		try
@@ -272,8 +273,9 @@ public class SQLDataBaseManager
 	 * 
 	 * @param ErrorInMethod
 	 * @param sqlex
+	 * @throws SQLException 
 	 */
-	private void HandleException(String ErrorInMethod, SQLException sqlex)
+	private void HandleException(String ErrorInMethod, SQLException sqlex) throws SQLException
 	{
 		try 
 		{			
@@ -288,6 +290,7 @@ public class SQLDataBaseManager
 		catch (SQLException e) 
 		{	
 			e.printStackTrace();
+			throw sqlex;
 		}
 		finally
 		{
@@ -331,8 +334,9 @@ public class SQLDataBaseManager
 	 * 
 	 * @param autoCommit
 	 * @param TransactionType
+	 * @throws SQLException 
 	 */
-	public void setAutoCommit(boolean autoCommit, String TransactionType) 
+	public void setAutoCommit(boolean autoCommit, String TransactionType) throws SQLException 
 	{
 		if (conn != null) 
 		{
@@ -340,13 +344,39 @@ public class SQLDataBaseManager
 			{
 				logger.debug("############     	SETTING AUTOCOMMIT IN DB      ############");
 				conn.setAutoCommit(autoCommit);
-			} catch (SQLException e) 
+			} 
+			catch (SQLException e) 
 			{
 				this.HandleException("setAutoCommit()", e);
+				throw e;
 			}
 		}
 	}
 	
+	
+	/**
+	 * 
+	 * @param autoCommit
+	 * @param TransactionType
+	 * @throws SQLException 
+	 */
+	public void commit() throws SQLException 
+	{
+		if (conn != null) 
+		{
+			try 
+			{
+				logger.debug("############     	COMMITTING BATCH OPERATION ############");
+				conn.commit();
+			} 
+			catch (SQLException e) 
+			{
+				if (conn.isValid(10000))
+					conn.rollback();
+				this.HandleException("commit", e);
+			}
+		}
+	}
 	
 	
 	

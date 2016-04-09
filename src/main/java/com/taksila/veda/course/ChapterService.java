@@ -161,7 +161,7 @@ public class ChapterService
 			logger.trace("About to update chapter record = "+chapterid);
 			
 			Chapter chapter = new Chapter();
-			chapter.setId(Integer.valueOf(chapterid));
+			chapter.setId(chapterid);
 			chapter.setName(name);
 			chapter.setSubTitle(subtitle);
 			chapter.setTitle(title);

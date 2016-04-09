@@ -274,7 +274,7 @@ public class SlideComponent
 	 * @param req
 	 * @return
 	 */
-	public UpdateSlideResponse updateSlideImage(int slideId,InputStream slideContentImageIs, String imageType, double scale)
+	public UpdateSlideResponse updateSlideImage(String slideId,InputStream slideContentImageIs, String imageType, double scale)
 	{
 		logger.trace("++++++++  ABOUT to insert image into Slides id= "+slideId);
 		UpdateSlideResponse resp = new UpdateSlideResponse();

@@ -161,7 +161,7 @@ public class CourseService
 			logger.trace("About to update course record = "+courseid);
 			
 			Course course = new Course();
-			course.setId(Integer.valueOf(courseid));
+			course.setId(courseid);
 			course.setName(name);
 			course.setSubTitle(subtitle);
 			course.setTitle(title);

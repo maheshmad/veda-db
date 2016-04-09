@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<xs:schema xmlns="http://www.taksila.com/veda/model/api/config/v1_0"
+	targetNamespace="http://www.taksila.com/veda/model/api/config/v1_0"
+	xmlns:cfgdb="http://www.taksila.com/veda/model/db/config/v1_0"
+	xmlns:base="http://www.taksila.com/veda/model/api/base/v1_0"
+	xmlns:basedb="http://www.taksila.com/veda/model/db/base/v1_0"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+	elementFormDefault="qualified">
+	
+	<xs:import schemaLocation="veda_config_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/config/v1_0"></xs:import>
+	<xs:import schemaLocation="veda_base_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/base/v1_0"></xs:import>
+	<xs:import schemaLocation="veda_base_model_v1.0.xsd" namespace="http://www.taksila.com/veda/model/api/base/v1_0"></xs:import>
+	
+	<xs:element name="flagId" type="xs:string"/>
+	<xs:element name="flagValue" type="xs:string"/>
+	<xs:element name="forRole" type="basedb:UserRole"  ></xs:element>												
+	
+		
+	<xs:complexType name="Flag">
+		<xs:sequence>
+			<xs:element ref="flagId" />
+			<xs:element ref="flagValue" />
+		</xs:sequence>
+	</xs:complexType>
+			
+	<!-- APIs -->
+	
+	
+	<!-- Configs -->	
+	<xs:complexType name="GetConfigurationRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetConfigurationRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element ref="forRole"></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="GetConfigurationResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetConfigurationResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element ref="forRole"></xs:element>		            		
+					<xs:element name="sections" type="cfgdb:ConfigSection" maxOccurs="unbounded" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateConfigRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateConfigRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="configs" type="cfgdb:Config" maxOccurs="unbounded" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateConfigResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateConfigResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- api txn for Flags -->	
+	<xs:complexType name="GetApplicationFlagsRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetApplicationFlagsRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="GetApplicationFlagsResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetApplicationFlagsResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="flags" type="Flag" maxOccurs="unbounded" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+		
+</xs:schema>
+

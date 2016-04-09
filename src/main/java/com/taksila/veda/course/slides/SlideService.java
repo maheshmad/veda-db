@@ -341,7 +341,7 @@ public class SlideService
 					logger.trace("About to update slide record = "+slideid);
 					
 					Slide slide = new Slide();
-					slide.setId(Integer.valueOf(slideid));
+					slide.setId(slideid);
 					slide.setName(name);
 					slide.setSubTitle(subtitle);
 					slide.setTitle(title);

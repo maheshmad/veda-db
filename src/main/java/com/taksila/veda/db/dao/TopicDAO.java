@@ -80,7 +80,7 @@ public class TopicDAO
 	{
 		Topic topic = new Topic();		
 		
-		topic.setId(resultSet.getInt(TOPIC_TABLE.id.value()));
+		topic.setId(String.valueOf(resultSet.getInt(TOPIC_TABLE.id.value())));
 		topic.setName(resultSet.getString(TOPIC_TABLE.topicname.value()));
 		topic.setTitle(resultSet.getString(TOPIC_TABLE.title.value()));
 		topic.setSubTitle(resultSet.getString(TOPIC_TABLE.subTitle.value()));
@@ -195,7 +195,7 @@ public class TopicDAO
 			ResultSet rs = stmt.getGeneratedKeys();			
 			if (rs.next())
 			{
-				topic.setId(rs.getInt(1));
+				topic.setId(String.valueOf(rs.getInt(1)));
 			}
 			
 			return topic;
@@ -233,7 +233,7 @@ public class TopicDAO
 			stmt.setString(2, topic.getTitle());
 			stmt.setString(3, topic.getSubTitle());
 			stmt.setString(4, topic.getDescription());
-			stmt.setInt(5, topic.getId());
+			stmt.setInt(5, Integer.valueOf(topic.getId()));
 			
 			int t = stmt.executeUpdate();
 			if (t > 0)

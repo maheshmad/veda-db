@@ -79,6 +79,20 @@
             </xs:extension>
         </xs:complexContent>
 	</xs:complexType> 
+	
+	<xs:complexType name="UploadedFile">
+		<xs:annotation>
+			<xs:documentation>
+				Extension of the db model for api response				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="cdb:UploadedFileTable">      
+            	<xs:sequence>      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType> 
 			
 	<!-- APIs -->
 	

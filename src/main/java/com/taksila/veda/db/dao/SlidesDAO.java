@@ -131,7 +131,7 @@ public class SlidesDAO
 	{
 		Slide slide = new Slide();		
 		
-		slide.setId(resultSet.getInt(SLIDE_TABLE.id.value()));
+		slide.setId(String.valueOf(resultSet.getInt(SLIDE_TABLE.id.value())));
 		slide.setTopicid(resultSet.getInt(SLIDE_TABLE.topicid.value()));
 		slide.setName(resultSet.getString(SLIDE_TABLE.slidename.value()));
 		slide.setTitle(resultSet.getString(SLIDE_TABLE.title.value()));
@@ -323,7 +323,7 @@ public class SlidesDAO
 			ResultSet rs = stmt.getGeneratedKeys();			
 			if (rs.next())
 			{
-				slide.setId(rs.getInt(1));
+				slide.setId(String.valueOf(rs.getInt(1)));
 			}
 			
 			return slide;
@@ -362,7 +362,7 @@ public class SlidesDAO
 			stmt.setString(3, slide.getSubTitle());
 			stmt.setString(4, slide.getDescription());			
 			stmt.setString(5, slide.getTextContent());
-			stmt.setInt(6, slide.getId());
+			stmt.setInt(6, Integer.valueOf(slide.getId()));
 			
 			int t = stmt.executeUpdate();
 			if (t > 0)
@@ -388,7 +388,7 @@ public class SlidesDAO
 	 * @return
 	 * @throws Exception
 	 */	
-	public boolean updateSlideImage(int slideId,InputStream slideContentImageIs, String imageType, double scale) throws Exception 
+	public boolean updateSlideImage(String slideId,InputStream slideContentImageIs, String imageType, double scale) throws Exception 
 	{
 		logger.debug("Entering into updateSlideLargeImage():::::");		
 		PreparedStatement stmt = null;
@@ -403,7 +403,7 @@ public class SlidesDAO
 			
 			stmt.setBinaryStream(1, slideContentImageIs);
 			stmt.setString(2, imageType);			
-			stmt.setInt(3, slideId);
+			stmt.setInt(3, Integer.valueOf(slideId));
 			
 			int t = stmt.executeUpdate();
 			if (t > 0)

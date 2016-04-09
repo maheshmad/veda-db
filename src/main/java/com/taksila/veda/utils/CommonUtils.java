@@ -13,6 +13,7 @@ import java.net.URLEncoder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -37,6 +39,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -290,6 +293,8 @@ public class CommonUtils
 	 {
 		 e.printStackTrace();
 		 logger.error("exception occured cause = "+e.getLocalizedMessage());
+		 if (targetResp == null)
+			 targetResp = (T) new BaseResponse();
 		 targetResp.setSuccess(false);
 		 targetResp.setStatus(StatusType.EXCEPTION);
 		 if (SQLException.class.isInstance(e))
@@ -698,6 +703,20 @@ public class CommonUtils
 		 return sb.toString();		 
 	 }
 	 
+	 public static XMLGregorianCalendar getXMLGregorianCalendarDateTimestamp(java.sql.Date sqlDate) throws DatatypeConfigurationException
+	 {		
+		 GregorianCalendar cal = new GregorianCalendar();
+		 cal.setTime(sqlDate);
+		 XMLGregorianCalendar gc = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+		 return gc;
+	 }
+	 
+	 
+	 public static List<String> removeDuplicates(List<String> originalList)
+	 {
+		 Set<String> s = new LinkedHashSet<String>(originalList);
+		return new ArrayList<String>(s);
+	 }
 		
 }
 

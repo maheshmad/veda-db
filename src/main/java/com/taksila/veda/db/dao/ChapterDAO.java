@@ -80,7 +80,7 @@ public class ChapterDAO
 	{
 		Chapter chapter = new Chapter();		
 		
-		chapter.setId(resultSet.getInt(CHAPTER_TABLE.id.value()));
+		chapter.setId(String.valueOf(resultSet.getInt(CHAPTER_TABLE.id.value())));
 		chapter.setName(resultSet.getString(CHAPTER_TABLE.chaptername.value()));
 		chapter.setTitle(resultSet.getString(CHAPTER_TABLE.title.value()));
 		chapter.setSubTitle(resultSet.getString(CHAPTER_TABLE.subTitle.value()));
@@ -195,7 +195,7 @@ public class ChapterDAO
 			ResultSet rs = stmt.getGeneratedKeys();			
 			if (rs.next())
 			{
-				chapter.setId(rs.getInt(1));
+				chapter.setId(String.valueOf(rs.getInt(1)));
 			}
 			
 			return chapter;
@@ -233,7 +233,7 @@ public class ChapterDAO
 			stmt.setString(2, chapter.getTitle());
 			stmt.setString(3, chapter.getSubTitle());
 			stmt.setString(4, chapter.getDescription());
-			stmt.setInt(5, chapter.getId());
+			stmt.setInt(5, Integer.valueOf(chapter.getId()));
 			
 			int t = stmt.executeUpdate();
 			if (t > 0)

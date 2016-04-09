@@ -161,7 +161,7 @@ public class TopicService
 			logger.trace("About to update topic record = "+topicid);
 			
 			Topic topic = new Topic();
-			topic.setId(Integer.valueOf(topicid));
+			topic.setId(topicid);
 			topic.setName(name);
 			topic.setSubTitle(subtitle);
 			topic.setTitle(title);
