@@ -25,6 +25,7 @@
         <xs:complexContent>
             <xs:extension base="base:BaseRequest">  
             	<xs:sequence>
+            		<xs:element ref="base:id"></xs:element>	
             		<xs:element ref="umgmtdb:userId"></xs:element>												
 				</xs:sequence>
 			</xs:extension>
@@ -40,7 +41,7 @@
         <xs:complexContent>
             <xs:extension base="base:BaseResponse">  
             	<xs:sequence>
-					<xs:element name="userinfo" type="umgmtdb:User" maxOccurs="unbounded" ></xs:element>					
+					<xs:element name="user" type="umgmtdb:User"></xs:element>					
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>
@@ -69,7 +70,8 @@
 		</xs:annotation>
         <xs:complexContent>
             <xs:extension base="base:SearchResponse">  
-            	<xs:sequence>				
+            	<xs:sequence>
+            			<xs:element name="user" type="umgmtdb:User" maxOccurs="unbounded"></xs:element>					
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>
@@ -99,7 +101,7 @@
         <xs:complexContent>
             <xs:extension base="base:BaseResponse">  
             	<xs:sequence>
-            		<xs:element name="userinfo" type="umgmtdb:User" ></xs:element>					
+            		<xs:element name="user" type="umgmtdb:User" ></xs:element>					
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>
@@ -114,7 +116,7 @@
         <xs:complexContent>
             <xs:extension base="base:BaseRequest">  
             	<xs:sequence>
-            		<xs:element name="userinfo" type="umgmtdb:User" ></xs:element>												
+            		<xs:element name="user" type="umgmtdb:User" ></xs:element>												
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>	
@@ -129,7 +131,7 @@
         <xs:complexContent>
             <xs:extension base="base:BaseResponse">  
             	<xs:sequence>
-            		<xs:element name="userinfo" type="umgmtdb:User" ></xs:element>					
+            		<xs:element name="user" type="umgmtdb:User" ></xs:element>					
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>

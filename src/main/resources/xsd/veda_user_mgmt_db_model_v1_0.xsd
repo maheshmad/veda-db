@@ -9,6 +9,7 @@
 	<xs:import schemaLocation="veda_base_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/base/v1_0"></xs:import>
 	
 	<xs:element name="firstName" type="xs:string" />
+	<xs:element name="middleName" type="xs:string" />
 	<xs:element name="lastName" type="xs:string" />
 	<xs:element name="userId" type="xs:string" />
 	<xs:element name="userPswd" type="xs:string" />
@@ -26,48 +27,7 @@
 	<xs:element name="postalcode" type="xs:string" />
 	<xs:element name="userrole" type="basedb:UserRole" />
 	<xs:element name="activity" type="basedb:Activity" />
-	
-	<xs:complexType name="Address">
-		<xs:annotation>
-			<xs:documentation>
-				5x 30 address line 				
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexContent>
-            <xs:extension base="basedb:BaseTable"> 
-            	<xs:sequence>
-					<xs:element ref="addressLine1" />
-					<xs:element ref="addressLine2" />												
-					<xs:element ref="city" />
-					<xs:element ref="state" />
-					<xs:element ref="country" />					
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	
-	
-	<xs:complexType name="Contact">
-		<xs:annotation>
-			<xs:documentation>
-				Config section table stores all the config groups.						
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexContent>
-            <xs:extension base="basedb:BaseTable"> 
-            	<xs:sequence>												
-					<xs:element name="address" type="Address" />
-					<xs:element ref="cellphone" />
-					<xs:element ref="okToText" />
-					<xs:element ref="cellphone" />
-					<xs:element ref="officephone" />
-					<xs:element ref="landlinephone" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	
-	
+		
 	<xs:complexType name="User">
 		<xs:annotation>
 			<xs:documentation>
@@ -77,12 +37,24 @@
 		<xs:complexContent>
             <xs:extension base="basedb:BaseTable"> 
             	<xs:sequence>
+					<xs:element ref="userId" />
 					<xs:element ref="emailId" />
 					<xs:element ref="firstName" />
+					<xs:element ref="middleName" />
 					<xs:element ref="lastName" />
-					<xs:element ref="userPswd" />
-					<xs:element ref="userrole" maxOccurs="unbounded" />																				
-					<xs:element name="contactInfo" type="Contact"/>										
+					<xs:element ref="userPswd" />					
+					<xs:element ref="cellphone" />
+					<xs:element ref="okToText" />
+					<xs:element ref="officephone" />
+					<xs:element ref="officephoneExt" />
+					<xs:element ref="landlinephone" />
+					<xs:element ref="addressLine1" />
+					<xs:element ref="addressLine2" />												
+					<xs:element ref="city" />
+					<xs:element ref="state" />
+					<xs:element ref="country" />	
+					<xs:element ref="postalcode" />				
+					<xs:element ref="userrole" />																																	
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>

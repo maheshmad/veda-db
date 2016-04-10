@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,6 +35,29 @@ public class DaoUtils
 		return userRolesList;
 
 	}
+	
+	
+	public static String getStringFromRolesList(List<UserRole> roles)
+	{
+		String userRolesString = "";
+		try
+		{
+			for (UserRole role: roles)
+			{
+				userRolesString += role.value()+",";
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();			
+		}
+		
+		userRolesString = StringUtils.removeEnd(userRolesString, ",");
+		
+		return userRolesString;
+
+	}
+	
 	
 	public static List<UserRole> removeDuplicates(List<UserRole> originalList)
 	{
