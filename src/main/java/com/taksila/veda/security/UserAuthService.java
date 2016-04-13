@@ -27,7 +27,9 @@ import org.glassfish.jersey.server.ManagedAsync;
 
 import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
+import com.taksila.veda.model.api.security.v1_0.ResetPasswordResponse;
 import com.taksila.veda.model.api.security.v1_0.UserLoginResponse;
+import com.taksila.veda.model.db.security.v1_0.UserSession;
 import com.taksila.veda.utils.CommonUtils;
 
 @Path("/auth")
@@ -45,8 +47,8 @@ public class UserAuthService
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
-    public void post(@FormParam("username") String userid, @Context HttpServletRequest request,@Context HttpServletResponse response,
-    		@Context UriInfo uri,@FormParam("password") String password,@Suspended final AsyncResponse asyncResp) 
+    public void post(@FormParam("user") String userid, @Context HttpServletRequest request,@Context HttpServletResponse response,
+    		@Context UriInfo uri,@FormParam("pwd") String password,@Suspended final AsyncResponse asyncResp) 
     {    	
 		UserLoginResponse loginResp = new UserLoginResponse();
 		try 
@@ -58,15 +60,17 @@ public class UserAuthService
 			 * get user info
 			 */			
 			UserAuthComponent userAuthComponent = new UserAuthComponent(tenantId);
-			loginResp = userAuthComponent.authenticate(userid,password,session.getId());
+			UserSession userSession  = this.buildUserSession(userid, session.getId(), request);			
+			loginResp = userAuthComponent.authenticate(userid,password,userSession);
 			logger.trace(CommonUtils.toJson(loginResp));
+			loginResp.setSuccess(true);
 			if (loginResp.getErrorInfo() != null)
 			{			
 				asyncResp.resume(Response.status(403).entity(loginResp).build());
 			}
 			else
 			{
-				NewCookie cookie = new NewCookie(USER_AUTH_SESSION_COOKIE_NAME, loginResp.getSessionid());
+				NewCookie cookie = new NewCookie(USER_AUTH_SESSION_COOKIE_NAME, userSession.getId());
 				asyncResp.resume(Response.ok(loginResp).cookie(cookie).build());
 			}
 		} 
@@ -77,10 +81,55 @@ public class UserAuthService
 			loginResp.setErrorInfo(CommonUtils.buildErrorInfo(e));
 			loginResp.setMsg(e.getMessage());			
 		}
-		    	
+		
+		loginResp.setSuccess(true);
 		asyncResp.resume(Response.ok(loginResp).build());
 		        
     }
+	
+	/*
+	 * Login using local LDAP without oauth
+	 */
+	@POST
+	@Path("/updatepassword")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@ManagedAsync
+    public void changePassword(	@FormParam("newpswd") String newpassword,
+    		@FormParam("newpswdconfirm") String confirmpassword,
+    		@FormParam("pswdChgAuthToken") String authSessionToken,
+    		@Context HttpServletRequest request,
+    		@Context HttpServletResponse response,
+    		@Context UriInfo uri,    		
+    		@Suspended final AsyncResponse asyncResp) 
+    {    	
+		ResetPasswordResponse chgPswdResp = new ResetPasswordResponse();
+		try 
+		{
+			logger.trace("About to authenticate ");			
+			String tenantId = CommonUtils.getSubDomain(uri.getBaseUri());				
+			chgPswdResp.setSuccess(true);
+			/*
+			 * get user info
+			 */			
+			UserAuthComponent userAuthComponent = new UserAuthComponent(tenantId);
+			chgPswdResp = userAuthComponent.changePassword(authSessionToken, newpassword, confirmpassword);
+			logger.trace(CommonUtils.toJson(chgPswdResp));	
+			chgPswdResp.setSuccess(true);
+			asyncResp.resume(Response.ok(chgPswdResp).build());
+			
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			CommonUtils.handleExceptionForResponse(chgPswdResp, e);		
+		}
+		
+		chgPswdResp.setSuccess(true);
+		asyncResp.resume(Response.ok(chgPswdResp).build());
+		        
+    }
+	
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -176,6 +225,19 @@ public class UserAuthService
         
     }
 	
-
+	/*
+	 * 
+	 */
+	private UserSession buildUserSession(String userId, String sessionId, HttpServletRequest request)
+	{
+		UserSession userSession = new UserSession();
+		userSession.setId(sessionId);
+		userSession.setClient(request.getHeader("User-Agent"));
+		userSession.setIpAddr(CommonUtils.getClientIpAddr(request));
+		userSession.setUserId(userId);
+		userSession.setExpiresOn(CommonUtils.getXMLGregorianCalendarNow());
+		
+		return userSession;
+	}
 	
 }

@@ -3,46 +3,18 @@
 	targetNamespace="http://www.taksila.com/veda/model/api/security/v1_0"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
 	xmlns:secdb="http://www.taksila.com/veda/model/db/security/v1_0"
+	xmlns:umgmt="http://www.taksila.com/veda/model/db/usermgmt/v1_0"
 	xmlns:base="http://www.taksila.com/veda/model/api/base/v1_0"
 	attributeFormDefault="unqualified" elementFormDefault="qualified">
 
 	<xs:import schemaLocation="veda_base_model_v1.0.xsd" namespace="http://www.taksila.com/veda/model/api/base/v1_0"></xs:import>
+	<xs:import schemaLocation="veda_user_mgmt_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/usermgmt/v1_0"></xs:import>
 	<xs:import schemaLocation="security_db_model.xsd" namespace="http://www.taksila.com/veda/model/db/security/v1_0"></xs:import>
 
 	<xs:element name="newPassword" type="xs:string" />
 	<xs:element name="newPasswordConfirm" type="xs:string" />
-	
-	
-	<!-- Complex types -->
-	<xs:complexType name="PasswordResetVerificationToken">
-		<xs:annotation>
-			<xs:documentation>
-				Extension of the db model for api response				
-			</xs:documentation>
-		</xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="secdb:PasswordResetVerificationTokenTable">      
-            	<xs:sequence>      	
-            	</xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-	<xs:complexType name="GenerateVerificationTokenResponse">
-		<xs:annotation>
-			<xs:documentation>
-				This represents the api structure of the GenerateVerificationTokenResponse response 				
-			</xs:documentation>
-		</xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="base:BaseResponse">  
-            	<xs:sequence>					
-					<xs:element name="passwordResetVerificationToken" type="PasswordResetVerificationToken" />										
-				</xs:sequence>
-			</xs:extension>	
-		</xs:complexContent>
-	</xs:complexType>
-	
+		
+	<!-- Complex types -->		
 	<xs:complexType name="ResetPasswordRequest">
 		<xs:annotation>
 			<xs:documentation>
@@ -52,8 +24,8 @@
         <xs:complexContent>
             <xs:extension base="base:BaseRequest">  
             	<xs:sequence>
-					<xs:element ref="secdb:token" />
-					<xs:element ref="secdb:username" />
+					<xs:element ref="secdb:sessionToken" />
+					<xs:element ref="secdb:userId" />
 					<xs:element ref="newPassword" />
 					<xs:element ref="newPasswordConfirm" />				
 				</xs:sequence>
@@ -90,22 +62,7 @@
 			</xs:extension>	
 		</xs:complexContent>
 	</xs:complexType>
-	
-	
-	<xs:complexType name="UserInfo">
-		<xs:annotation>
-			<xs:documentation>
-				This represents the api structure of the UserInfo response 				
-			</xs:documentation>
-		</xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="secdb:UserTable">  
-            	<xs:sequence>
-				</xs:sequence>
-			</xs:extension>	
-		</xs:complexContent>
-	</xs:complexType>
-	
+			
 	<xs:complexType name="UserLoginResponse">
 		<xs:annotation>
 			<xs:documentation>
@@ -115,76 +72,14 @@
         <xs:complexContent>
             <xs:extension base="base:BaseResponse">  
             	<xs:sequence>
-					<xs:element name="userInfo" type="UserInfo"></xs:element>
-					<xs:element ref="secdb:sessionid"></xs:element>						
+					<xs:element name="userInfo" type="umgmt:User"></xs:element>
+					<xs:element name="sessionInfo" type="secdb:UserSession"></xs:element>						
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>
 	</xs:complexType>
 	
 	
-	<xs:complexType name="GetUserInfoRequest">
-		<xs:annotation>
-			<xs:documentation>
-				This represents the api structure of the GetUserInfoRequest api request 				
-			</xs:documentation>
-		</xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="base:BaseRequest">  
-            	<xs:sequence>
-					<xs:element ref="secdb:userId" />							
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>	
-	</xs:complexType>
-	
-	<xs:complexType name="GetUserInfoResponse">
-		<xs:annotation>
-			<xs:documentation>
-				This represents the api structure of the GetUserInfoResponse response 				
-			</xs:documentation>
-		</xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="base:BaseResponse">  
-            	<xs:sequence>
-					<xs:element name="userInfo" type="UserInfo" ></xs:element>					
-				</xs:sequence>
-			</xs:extension>	
-		</xs:complexContent>
-	</xs:complexType>
-	
-	<xs:complexType name="SearchUsersRequest">
-		<xs:annotation>
-			<xs:documentation>
-				This represents the api structure of the SearchUsersRequest api request 				
-			</xs:documentation>
-		</xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="base:BaseRequest">  
-            	<xs:sequence>
-					<xs:element ref="secdb:username" />							
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>	
-	</xs:complexType>
-	
-	<xs:complexType name="SearchUsersResponse">
-		<xs:annotation>
-			<xs:documentation>
-				This represents the api structure of the SearchUsersResponse response 				
-			</xs:documentation>
-		</xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="base:BaseResponse">  
-            	<xs:sequence>
-					<xs:element name="users" type="UserInfo" maxOccurs="unbounded" minOccurs="0" ></xs:element>
-					<xs:element name="totalHits" type="xs:int"></xs:element>
-					<xs:element name="page" type="xs:int"></xs:element>							
-					<xs:element name="pageOffset" type="xs:int"></xs:element>
-				</xs:sequence>
-			</xs:extension>	
-		</xs:complexContent>
-	</xs:complexType>
 	
 	
 </xs:schema>

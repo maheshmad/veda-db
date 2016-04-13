@@ -134,12 +134,9 @@ public class UserService
 				GetUserResponse operResp = new GetUserResponse();
 				try 
 				{
-					GetUserRequest req = new GetUserRequest();
-					req.setId(id);;
-					
 					String schoolId = CommonUtils.getSubDomain(uri);
 					UserComponent userComp = new UserComponent(schoolId);
-					operResp = userComp.getUser(req); 			
+					operResp = userComp.getUser(id); 			
 					operResp.setSuccess(true);
 				} 
 				catch (Exception ex) 

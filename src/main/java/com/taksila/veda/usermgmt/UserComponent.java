@@ -7,11 +7,12 @@ import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.taksila.veda.config.ConfigComponent;
 import com.taksila.veda.db.dao.UsersDAO;
-import com.taksila.veda.db.dao.UsersDAO.USER_TABLE;
 import com.taksila.veda.model.api.base.v1_0.SearchHitRecord;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
 import com.taksila.veda.model.api.usermgmt.v1_0.CreateNewUserRequest;
@@ -25,8 +26,10 @@ import com.taksila.veda.model.api.usermgmt.v1_0.SearchUserResponse;
 import com.taksila.veda.model.api.usermgmt.v1_0.UpdateUserRequest;
 import com.taksila.veda.model.api.usermgmt.v1_0.UpdateUserResponse;
 import com.taksila.veda.model.db.base.v1_0.UserRole;
+import com.taksila.veda.model.db.config.v1_0.ConfigId;
 import com.taksila.veda.model.db.usermgmt.v1_0.User;
 import com.taksila.veda.utils.CommonUtils;
+import com.taksila.veda.utils.EmailUtils;
 
 
 public class UserComponent 
@@ -86,16 +89,47 @@ public class UserComponent
 	 * @param req
 	 * @return
 	 */
-	public GetUserResponse getUser(GetUserRequest req)
+	public GetUserResponse getUser(int id)
 	{
 		GetUserResponse resp = new GetUserResponse();
 		try 
 		{
-			User user = usersDAO.getUserById(req.getId());
+			User user = usersDAO.getUserById(id);
 			
 			if (user == null)
 			{	
-				resp.setMsg("Did not find any records with id = "+req.getId());
+				resp.setMsg("Did not find any records with id = "+id);
+			}
+			else
+			{
+				resp.setUser(user);
+			}
+			
+			logger.trace("++++++++  exiting getUser component ");
+
+		} 
+		catch (Exception e) 
+		{
+			CommonUtils.handleExceptionForResponse(resp, e);
+		}
+		return resp;
+	}
+	
+	/**
+	 * 
+	 * @param req
+	 * @return
+	 */
+	public GetUserResponse getUser(String userid)
+	{
+		GetUserResponse resp = new GetUserResponse();
+		try 
+		{
+			User user = usersDAO.getUserByUserId(userid);
+			
+			if (user == null)
+			{	
+				resp.setMsg("Did not find any records with userid = "+userid);
 			}
 			else
 			{
@@ -155,13 +189,22 @@ public class UserComponent
 		CreateNewUserResponse resp = new CreateNewUserResponse();
 		try 
 		{
-			//TODO validation
-			
+			/*
+			 * generate temporary password
+			 */
+			String temppassword = RandomStringUtils.random(8, true, true);
+			req.getNewUser().setUserPswd(CommonUtils.getSecureHash(temppassword));
 			User user = usersDAO.insertUser(req.getNewUser());			
 			resp.setUser(user);
-			resp.setStatus(StatusType.SUCCESS);
-			resp.setMsg("New user : "+user.getFirstName()+" "+user.getLastName()+" successfully added, record id = "+user.getId());
+			resp.setStatus(StatusType.SUCCESS);			
 			resp.setSuccess(true);
+			
+			/*
+			 * send invitation email 
+			 */
+			boolean emailSent = this.sendInvitationEmail(user, temppassword);	
+			resp.setMsg("New user : "+user.getFirstName()+" "+user.getLastName()+" successfully added, record id = "+user.getId()+"<br /> Email sent = "+emailSent);
+			
 			logger.trace("********  exiting user component createNewUser ");
 		} 
 		catch (Exception e) 
@@ -238,7 +281,7 @@ public class UserComponent
 			 */
 			GetUserRequest req = new GetUserRequest();
 			req.setId(id);
-			GetUserResponse userResp = this.getUser(req);
+			GetUserResponse userResp = this.getUser(id);
 			
 			/*
 			 * check if the record exists before it can be updated
@@ -409,8 +452,8 @@ public class UserComponent
 			if (StringUtils.equals(key, "cellphone"))
 				user.setCellphone(formParams.getFirst("cellphone"));
 			
-			if (StringUtils.equals(key, "emailId"))
-				user.setOkToText(Boolean.getBoolean(formParams.getFirst("emailId")));
+			if (StringUtils.equals(key, "okToText"))
+				user.setOkToText(Boolean.getBoolean(formParams.getFirst("okToText")));
 			
 			if (StringUtils.equals(key, "landlinephone"))
 				user.setLandlinephone(formParams.getFirst("landlinephone"));
@@ -423,9 +466,55 @@ public class UserComponent
 			
 			if (StringUtils.equals(key, "updatedBy"))
 				user.setUpdatedBy(formParams.getFirst("updatedBy"));
+			
+			if (StringUtils.equals(key, "accountDisabled"))
+				user.setOkToText(Boolean.getBoolean(formParams.getFirst("accountDisabled")));
+			
+			if (StringUtils.equals(key, "accountDeleted"))
+				user.setOkToText(Boolean.getBoolean(formParams.getFirst("accountDeleted")));
 		}
 		
 		
+		
+	}
+	
+	/*
+	 * send invitation
+	 */
+	private boolean sendInvitationEmail(User user,String tempPassword)
+	{
+		try
+		{
+			String invitationUrl = ConfigComponent.getConfig(ConfigId.GENERAL_DOMAIN_ROOT);
+			String msg = "Hello "+user.getFirstName()+", <br /><br /><br />"
+					+ "Welcome to Veda. <br />"
+					+ "Please click below to activate and set up your account.<br /><br />"
+					+ "<span style = \"padding-left:16%\">"
+					+ invitationUrl
+					+ "</span><br/><br/><br/>"
+					+ "Your credentials are below.<br /><br />"
+					+ "<div style = \"padding-left:20%\">"
+					+ "User Id : "
+					+ user.getEmailId()
+					+ "<br/>Temporary Password : "
+					+ tempPassword  
+					+ "<br/></div>"
+					+ "You will be required to change your password on your first login.<br/><br/>"
+					+ "If you have any questions about your account, please feel free to reach us at support@xxxxxxxxx.com or call us on +1xxxxxx.<br/><br/>"
+					+ "<address>"
+					+ "<br/>";
+			
+			EmailUtils emailUtil = new EmailUtils();
+			emailUtil.sendMail(user.getEmailId(), "support@localhost.com", "Welcome", msg, null);
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+			
+		
+		return true;
 		
 	}
 

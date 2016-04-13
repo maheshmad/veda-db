@@ -242,7 +242,7 @@ public class ConfigDAO
 	 * @throws SQLException
 	 * @throws Exception
 	 */
-	public Map<ConfigId, String> getConfigsByRole(UserRole sysadmin) throws SQLException,Exception
+	public Map<ConfigId, String> getConfigsByRole(UserRole userrole) throws SQLException,Exception
 	{		
 		Map<ConfigId, String> configsMap = new HashMap<ConfigId, String>();
 		
@@ -252,10 +252,10 @@ public class ConfigDAO
 			this.sqlDBManager.connect();
 			
 			stmt = this.sqlDBManager.getPreparedStatement(select_config_by_role_sql);
-			if (sysadmin != null)
-				stmt.setString(1,sysadmin.name());
+			if (userrole == null)
+				stmt.setString(1,"%");
 			else
-				stmt.setString(1,"");
+				stmt.setString(1,userrole.name());
 			
 			ResultSet resultSet = stmt.executeQuery();
 			while (resultSet.next()) 

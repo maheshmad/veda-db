@@ -8,6 +8,7 @@
 	
 	<xs:import schemaLocation="veda_base_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/base/v1_0"></xs:import>
 	
+	<xs:element name="isSysAdmin" type="xs:boolean" />
 	<xs:element name="firstName" type="xs:string" />
 	<xs:element name="middleName" type="xs:string" />
 	<xs:element name="lastName" type="xs:string" />
@@ -27,6 +28,15 @@
 	<xs:element name="postalcode" type="xs:string" />
 	<xs:element name="userrole" type="basedb:UserRole" />
 	<xs:element name="activity" type="basedb:Activity" />
+	<xs:element name="changePswd" type="xs:boolean" />
+	<xs:element name="accountDisabled" type="xs:boolean" />
+	<xs:element name="accountDeleted" type="xs:boolean" />
+	<xs:element name="lastLoginIp" type="xs:string" />
+	
+	<xs:element name="pswdEncryptSalt" type="xs:string" />
+	<xs:element name="tokenExpiryDateTime" type="xs:dateTime" />
+	<xs:element name="userAgreementAccepted" type="xs:boolean" />
+ 	<xs:element name="privacyPolicyAgreementAccepted" type="xs:boolean" />
 		
 	<xs:complexType name="User">
 		<xs:annotation>
@@ -54,7 +64,11 @@
 					<xs:element ref="state" />
 					<xs:element ref="country" />	
 					<xs:element ref="postalcode" />				
-					<xs:element ref="userrole" />																																	
+					<xs:element ref="userrole" />
+					<xs:element ref="changePswd" />
+					<xs:element ref="accountDeleted" />
+					<xs:element ref="accountDisabled" />
+					<xs:element ref="lastLoginIp" />																																	
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>

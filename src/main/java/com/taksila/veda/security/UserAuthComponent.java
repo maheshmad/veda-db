@@ -1,14 +1,17 @@
 package com.taksila.veda.security;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.taksila.veda.db.dao.UserManagementDAO;
 import com.taksila.veda.db.dao.UserSessionDAO;
+import com.taksila.veda.db.dao.UsersDAO;
 import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
-import com.taksila.veda.model.api.security.v1_0.UserInfo;
+import com.taksila.veda.model.api.security.v1_0.ResetPasswordResponse;
 import com.taksila.veda.model.api.security.v1_0.UserLoginResponse;
+import com.taksila.veda.model.db.security.v1_0.UserSession;
+import com.taksila.veda.model.db.usermgmt.v1_0.User;
 import com.taksila.veda.utils.CommonUtils;
 import com.taksila.veda.utils.ValidationUtils;
 
@@ -16,7 +19,7 @@ import com.taksila.veda.utils.ValidationUtils;
 public class UserAuthComponent 
 {	
 	private String tenantId =null;	
-	private UserManagementDAO userManagementDAO = null;
+	private UsersDAO usersDAO = null;
 	private UserSessionDAO userSessionDAO = null;
 	private String dateFormat = "MM/dd/yyyy HH:mm:ss z";
 	static Logger logger = LogManager.getLogger(UserAuthComponent.class.getName());
@@ -24,7 +27,7 @@ public class UserAuthComponent
 	public UserAuthComponent(String tenantId) 
 	{
 		this.tenantId = tenantId;
-		this.userManagementDAO = new UserManagementDAO(tenantId);
+		this.usersDAO = new UsersDAO(tenantId);
 		this.userSessionDAO = new UserSessionDAO(tenantId);
 		
 	}
@@ -34,42 +37,67 @@ public class UserAuthComponent
 		UserLoginResponse resp = new UserLoginResponse();
 		try 
 		{
-			UserInfo userInfo = userSessionDAO.getUserFromSession(sessionid);
+			UserSession userSession = userSessionDAO.getValidSession(sessionid);
+			User userInfo = usersDAO.getUserByUserId(userSession.getUserId());
 			resp.setUserInfo(userInfo);
-			resp.setSessionid(sessionid);
+			resp.setSessionInfo(userSession);
 		} 
 		catch (Exception e) 
 		{
 			e.printStackTrace();
-			resp.setStatus(StatusType.FAILED);
-			resp.setErrorInfo(CommonUtils.buildErrorInfo("FAILED", e.getMessage()));
+			CommonUtils.handleExceptionForResponse(resp, e);
 		}
 		return resp;
 	}
 	
-	public BaseResponse changePassword(String userId,String oldPassword,String newPassword)
+	/**
+	 * 
+	 * @param userId
+	 * @param authTokenId
+	 * @param newPassword
+	 * @param confirmpassword
+	 * @return
+	 */
+	public ResetPasswordResponse changePassword(String authTokenId,String newPassword, String confirmpassword)
 	{
-		BaseResponse baseResponse = new BaseResponse();
+		ResetPasswordResponse resetResponse = new ResetPasswordResponse();
 		try 
 		{
-			String passWordValidationRes = ValidationUtils.doPasswordValidation(newPassword);
-			if("PASS".equals(passWordValidationRes)) 
+			UserSession userSession = this.userSessionDAO.getValidSession(authTokenId);
+			if(userSession == null) 
 			{
-				userManagementDAO.changePassword(userId,oldPassword, newPassword);
+				resetResponse.setStatus(StatusType.FAILED);
+				resetResponse.setMsg("Un-authorized attempt to update the password. Please check your input!");								
 			} 
 			else 
 			{
-				baseResponse.setStatus(StatusType.FAILED);
-				baseResponse.setErrorInfo(CommonUtils.buildErrorInfo("ERROR", passWordValidationRes));
+				if (!StringUtils.equals(newPassword, confirmpassword))
+				{
+					resetResponse.setStatus(StatusType.FAILED);
+					resetResponse.setMsg("Passwords does not match. Please check your input!");			
+				}
+				else
+				{
+					if (this.usersDAO.updatePassword(userSession.getUserId(), CommonUtils.getSecureHash(newPassword)))
+					{
+						this.userSessionDAO.invalidateUserSession(userSession.getId());
+						resetResponse.setStatus(StatusType.SUCCESS);
+						resetResponse.setMsg("<span style='color:green'>Password successfully changed! Please login with your new password</span>");							
+					}
+					else
+					{
+						resetResponse.setStatus(StatusType.FAILED);
+						resetResponse.setMsg("Attempt to change password failed. Please try again later or call support!");		
+					}
+				}
 			}
 		} 
 		catch (Exception e) 
 		{
 			e.printStackTrace();
-			baseResponse.setStatus(StatusType.FAILED);
-			baseResponse.setErrorInfo(CommonUtils.buildErrorInfo("ERROR", e.getMessage()));
+			CommonUtils.handleExceptionForResponse(resetResponse, e);
 		}
-		return baseResponse;
+		return resetResponse;
 	}
 	
 	
@@ -99,25 +127,30 @@ public class UserAuthComponent
 	 * @param sessionid
 	 * @return
 	 */
-	public UserLoginResponse authenticate(String userid, String pwd, String sessionid) 
+	public UserLoginResponse authenticate(String userid, String pwd, UserSession session) 
 	{
 		UserLoginResponse loginResp = new UserLoginResponse();
 		try 
 		{
 			logger.trace("About to validate user = "+userid+" pwd = "+pwd);
-			UserInfo userInfo = userManagementDAO.authenticate(userid, pwd);
-			if (userInfo != null)
+			User user = usersDAO.authenticate(userid, pwd);
+						
+			if (user != null && userSessionDAO.addSession(session))
 			{	
-				loginResp.setUserInfo(userInfo);
-				loginResp.setSuccess(true);
-				loginResp.setStatus(StatusType.SUCCESS);
-				userSessionDAO.authorizeSession(sessionid, userid);
-				loginResp.setSessionid(sessionid);
+				loginResp.setUserInfo(user);				
+				loginResp.setStatus(StatusType.SUCCESS);				
+				loginResp.setSessionInfo(session);
+			}
+			else
+			{
+				loginResp.setStatus(StatusType.FAILED);
+				loginResp.setMsg("Login failed, please check your userid / password");
 			}
 		} 
 		catch (Exception e) 
 		{
 			e.printStackTrace();
+			CommonUtils.handleExceptionForResponse(loginResp, e);
 		}
 		
 		return loginResp;

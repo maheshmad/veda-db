@@ -72,9 +72,18 @@ public class UsersDAO
 																		USER_TABLE.lastUpdatedBy.value()+" = ?"+
 															" WHERE "+USER_TABLE.id.value()+" = ? ";
 	
+	private static String update_user_password = "UPDATE USERS SET "+ USER_TABLE.pswd.value()+" = ? ,"+
+																USER_TABLE.changePswd.value()+" = ? "+	
+														" WHERE "+USER_TABLE.userid.value()+" = ? ";
+	
 	private static String delete_user_sql = "DELETE FROM USERS WHERE "+USER_TABLE.id.value()+" = ? ";	
 	
 	private static String search_users_by_id_sql = "SELECT * FROM USERS WHERE "+USER_TABLE.id.value()+" = ?";
+	private static String search_users_by_userid_sql = "SELECT * FROM USERS WHERE "+USER_TABLE.userid.value()+" = ?";
+	private static String authenticate_user_sql = "SELECT * FROM USERS WHERE ("+
+													USER_TABLE.userid.value()+" = ? OR "+
+													USER_TABLE.emailid.value()+" = ?) AND "+
+													USER_TABLE.pswd.value()+" = ? ";
 																	
 	private static String search_all_users_sql = "SELECT * FROM USERS";
 	
@@ -120,6 +129,10 @@ public class UsersDAO
 		officePhone("office_phone"),
 		officePhoneExt("office_phone_ext"),
 		lastUpdatedBy("last_updated_by"),
+		changePswd("change_pswd"),
+		accountDeleted("account_deleted"),
+		accountDisabled("account_disabled"),
+		lastLoginIp("last_login_ip"),
 		lastUpdatedOn("last_updated_on");
 
 		private String name;       
@@ -164,6 +177,11 @@ public class UsersDAO
 		user.setOfficephone(resultSet.getString(USER_TABLE.officePhone.value()));
 		user.setOfficephoneExt(resultSet.getString(USER_TABLE.officePhoneExt.value()));
 		
+		user.setChangePswd(resultSet.getBoolean(USER_TABLE.changePswd.value()));
+		user.setAccountDeleted(resultSet.getBoolean(USER_TABLE.accountDeleted.value()));
+		user.setAccountDisabled(resultSet.getBoolean(USER_TABLE.accountDisabled.value()));
+		
+		user.setLastLoginIp(resultSet.getString(USER_TABLE.lastLoginIp.value()));
 		user.setUpdatedBy(resultSet.getString(USER_TABLE.lastUpdatedBy.value()));
 		user.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(USER_TABLE.lastUpdatedOn.value())));
 
@@ -427,6 +445,113 @@ public class UsersDAO
 	public ByteArrayOutputStream readUserImage(int userId, double scale) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+
+	/**
+	 * 
+	 * @param id
+	 * @return
+	 * @throws Exception 
+	 */
+	public User getUserByUserId(String userid) throws Exception
+	{						
+		PreparedStatement stmt = null;	
+		User user = null;
+		try
+		{
+			this.sqlDBManager.connect();
+			stmt = this.sqlDBManager.getPreparedStatement(search_users_by_userid_sql);
+			stmt.setString(1, userid);
+			ResultSet resultSet = stmt.executeQuery();	
+			if (resultSet.next()) 
+			{
+				user = mapRow(resultSet);
+			}
+			
+			return user;
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally
+		{
+			this.sqlDBManager.close(stmt);
+		}
+				
+	}
+	
+	/*
+	 * 
+	 */
+	public User authenticate(String userid, String pswd) throws Exception
+	{
+		PreparedStatement stmt = null;	
+		User user = null;
+		try
+		{
+			this.sqlDBManager.connect();
+			stmt = this.sqlDBManager.getPreparedStatement(authenticate_user_sql);
+			stmt.setString(1, userid);
+			stmt.setString(2, userid);
+			stmt.setString(3, CommonUtils.getSecureHash(pswd));
+			ResultSet resultSet = stmt.executeQuery();	
+			if (resultSet.next()) 
+			{
+				user = mapRow(resultSet);
+			}
+			
+			return user;
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally
+		{
+			this.sqlDBManager.close(stmt);
+		}
+	}
+
+	/**
+	 * 
+	 * @param userId
+	 * @param passwordHash
+	 * @return
+	 * @throws Exception
+	 */
+	public boolean updatePassword(String userId, String passwordHash) throws Exception 
+	{
+		logger.debug("Entering into updatePassword():::::");		
+		PreparedStatement stmt = null;
+		try
+		{
+			this.sqlDBManager.connect();	
+			stmt = this.sqlDBManager.getPreparedStatement(update_user_password);
+			
+			stmt.setString(1, passwordHash);
+			stmt.setBoolean(2, false);
+			stmt.setString(3, userId);
+						
+			int t = stmt.executeUpdate();
+			if (t > 0)
+				return true;
+			else
+				return false;
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();			
+			throw ex;
+		}
+		finally
+		{
+			this.sqlDBManager.close(stmt);
+		}
+		
 	}
 
 	

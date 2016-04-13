@@ -36,7 +36,7 @@ public class ConfigComponent
 
 	public static String getConfig(ConfigId key)
 	{
-		if (configsMap == null)
+		if (configsMap == null || configsMap.isEmpty())
 		{
 			logger.trace("About to load configuration from database");
 			loadConfigs(true);
@@ -45,7 +45,10 @@ public class ConfigComponent
 		if (configsMap.get(key) == null)
 			CommonUtils.logEyeCatchingMessage("Config KEY = "+key.toString()+" Not found, please check your config file", true);	
 		else
-			configsMap.get(key).trim();
+		{
+			logger.trace("Accessing config = "+key.name()+ " = "+configsMap.get(key).trim());
+			return configsMap.get(key).trim();
+		}
 
 		return null;
 	}

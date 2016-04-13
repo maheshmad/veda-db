@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,6 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -44,6 +46,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -70,7 +73,22 @@ public class CommonUtils
 	
 	static final BigDecimal mileUnit = new BigDecimal("0.621371");
 	public static final String BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36";
-			
+	
+	private static DatatypeFactory datatypeFactory = null;
+	
+	static
+	{
+	    try 
+	    {
+	        datatypeFactory = DatatypeFactory.newInstance();
+	    } 
+	    catch (DatatypeConfigurationException e) 
+	    {
+	        throw new RuntimeException("Init Error!", e);
+	    }
+	}
+
+	
 	public static String readFile(String fileName) throws IOException
 	{		
 		ClassLoader classLoader = CommonUtils.class.getClassLoader();	
@@ -707,8 +725,19 @@ public class CommonUtils
 	 {		
 		 GregorianCalendar cal = new GregorianCalendar();
 		 cal.setTime(sqlDate);
-		 XMLGregorianCalendar gc = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+		 XMLGregorianCalendar gc = datatypeFactory.newXMLGregorianCalendar(cal);
 		 return gc;
+	 }
+	 
+	 public static java.sql.Date geSQLDateTimestamp(XMLGregorianCalendar xmlDate) throws DatatypeConfigurationException
+	 {		
+		 if (xmlDate == null)
+			 return null;
+		 GregorianCalendar c = xmlDate.toGregorianCalendar();
+		 Date dt = c.getTime();
+		 java.sql.Date sqlDate = new java.sql.Date(dt.getTime());
+		 
+		 return sqlDate;
 	 }
 	 
 	 
@@ -717,6 +746,35 @@ public class CommonUtils
 		 Set<String> s = new LinkedHashSet<String>(originalList);
 		return new ArrayList<String>(s);
 	 }
+
+	 public static String getSecureHash(String pswd) 
+	 {
+		if (pswd == null)
+			return "----------";
+		 return DigestUtils.sha1Hex(pswd);		 
+	 }
 		
+	 
+	 public static String getClientIpAddr(HttpServletRequest request) 
+	 {  
+	        String ip = request.getHeader("X-Forwarded-For");  
+	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	            ip = request.getHeader("Proxy-Client-IP");  
+	        }  
+	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	            ip = request.getHeader("WL-Proxy-Client-IP");  
+	        }  
+	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	            ip = request.getHeader("HTTP_CLIENT_IP");  
+	        }  
+	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	            ip = request.getHeader("HTTP_X_FORWARDED_FOR");  
+	        }  
+	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	            ip = request.getRemoteAddr();  
+	        }  
+	        return ip;  
+	    }  
+	 
 }
 
