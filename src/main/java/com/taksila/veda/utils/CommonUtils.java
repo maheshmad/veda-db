@@ -33,6 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.NamingException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -346,7 +347,17 @@ public class CommonUtils
 		return errInfo;
 	 }
 	 
+	 public static ErrorInfo buildErrorInfo(ErrorInfo errorInfo, String field, String msg)
+	 {
+		if (errorInfo == null)
+			errorInfo = new ErrorInfo();	
 		
+		errorInfo.getErrors().add(buildErr(field, msg));
+		
+		return errorInfo;
+	 }
+	 
+	 
 	public static <T> T fromJson(String jsonString, Class<T> destclass)
 	{
 		if (jsonString != null && jsonString.length() > 0)
@@ -774,7 +785,27 @@ public class CommonUtils
 	            ip = request.getRemoteAddr();  
 	        }  
 	        return ip;  
-	    }  
+	 }
+	 
+	 /**
+	  * gets cookie from servlet request
+	  * 
+	  * @param cookiename
+	  * @param request
+	  * @return
+	  */
+	 public String getCookie(String cookiename, HttpServletRequest request)
+	 {		 
+		 for (Cookie cookie: request.getCookies())
+		 {
+			if (StringUtils.equals(cookie.getName(),cookiename))
+			{
+				return cookie.getValue();
+			}
+		 }
+		 		 		 
+		 return "";
+	 }
 	 
 }
 

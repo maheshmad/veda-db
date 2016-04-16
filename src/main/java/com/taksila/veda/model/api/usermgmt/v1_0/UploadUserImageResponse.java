@@ -12,25 +12,25 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import com.taksila.veda.model.api.base.v1_0.BaseRequest;
-import com.taksila.veda.model.db.usermgmt.v1_0.User;
+import com.taksila.veda.model.api.base.v1_0.BaseResponse;
+import com.taksila.veda.model.db.usermgmt.v1_0.UserImageInfo;
 
 
 /**
  * 
- * 				This represents the api structure of the UpdateUserRequest				
+ * 				This represents the api structure of the UploadUserImageResponse response 				
  * 			
  * 
- * <p>Java class for UpdateUserRequest complex type.
+ * <p>Java class for UploadUserImageResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="UpdateUserRequest">
+ * &lt;complexType name="UploadUserImageResponse">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseRequest">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
  *       &lt;sequence>
- *         &lt;element name="user" type="{http://www.taksila.com/veda/model/db/usermgmt/v1_0}User"/>
+ *         &lt;element name="userImageInfo" type="{http://www.taksila.com/veda/model/db/usermgmt/v1_0}UserImageInfo"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -40,38 +40,38 @@ import com.taksila.veda.model.db.usermgmt.v1_0.User;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "UpdateUserRequest", propOrder = {
-    "user"
+@XmlType(name = "UploadUserImageResponse", propOrder = {
+    "userImageInfo"
 })
-public class UpdateUserRequest
-    extends BaseRequest
+public class UploadUserImageResponse
+    extends BaseResponse
 {
 
     @XmlElement(required = true)
-    protected User user;
+    protected UserImageInfo userImageInfo;
 
     /**
-     * Gets the value of the user property.
+     * Gets the value of the userImageInfo property.
      * 
      * @return
      *     possible object is
-     *     {@link User }
+     *     {@link UserImageInfo }
      *     
      */
-    public User getUser() {
-        return user;
+    public UserImageInfo getUserImageInfo() {
+        return userImageInfo;
     }
 
     /**
-     * Sets the value of the user property.
+     * Sets the value of the userImageInfo property.
      * 
      * @param value
      *     allowed object is
-     *     {@link User }
+     *     {@link UserImageInfo }
      *     
      */
-    public void setUser(User value) {
-        this.user = value;
+    public void setUserImageInfo(UserImageInfo value) {
+        this.userImageInfo = value;
     }
 
 }

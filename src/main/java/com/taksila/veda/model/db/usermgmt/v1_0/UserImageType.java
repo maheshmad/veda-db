@@ -6,47 +6,39 @@
 //
 
 
-package com.taksila.veda.model.db.base.v1_0;
+package com.taksila.veda.model.db.usermgmt.v1_0;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for UserRole.
+ * <p>Java class for UserImageType.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="UserRole">
+ * &lt;simpleType name="UserImageType">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="SYSADMIN"/>
- *     &lt;enumeration value="ADMIN"/>
- *     &lt;enumeration value="STUDENT"/>
- *     &lt;enumeration value="TEACHER"/>
- *     &lt;enumeration value="PRINCIPAL"/>
- *     &lt;enumeration value="PARENT"/>
+ *     &lt;enumeration value="PROFILE_IMAGE"/>
+ *     &lt;enumeration value="SOCIAL_IMAGE"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "UserRole")
+@XmlType(name = "UserImageType")
 @XmlEnum
-public enum UserRole {
+public enum UserImageType {
 
-    SYSADMIN,
-    ADMIN,
-    STUDENT,
-    TEACHER,
-    PRINCIPAL,
-    PARENT;
+    PROFILE_IMAGE,
+    SOCIAL_IMAGE;
 
     public String value() {
         return name();
     }
 
-    public static UserRole fromValue(String v) {
+    public static UserImageType fromValue(String v) {
         return valueOf(v);
     }
 

@@ -42,6 +42,7 @@
 			<xs:enumeration value="GOOGLE_MAPS_CLIENT_ID" />
 			<xs:enumeration value="GOOGLE_MAPS_API_KEY_SECRET" />
 			<xs:enumeration value="GENERAL_DOMAIN_ROOT" />
+			<xs:enumeration value="TEMP_FILE_PATH" />
 		</xs:restriction>
 	</xs:simpleType>
 	

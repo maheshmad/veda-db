@@ -1,17 +1,24 @@
 package com.taksila.veda.usermgmt;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.taksila.veda.config.ConfigComponent;
+import com.taksila.veda.db.dao.UserImagesDAO;
 import com.taksila.veda.db.dao.UsersDAO;
 import com.taksila.veda.model.api.base.v1_0.SearchHitRecord;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
@@ -28,6 +35,8 @@ import com.taksila.veda.model.api.usermgmt.v1_0.UpdateUserResponse;
 import com.taksila.veda.model.db.base.v1_0.UserRole;
 import com.taksila.veda.model.db.config.v1_0.ConfigId;
 import com.taksila.veda.model.db.usermgmt.v1_0.User;
+import com.taksila.veda.model.db.usermgmt.v1_0.UserImageInfo;
+import com.taksila.veda.model.db.usermgmt.v1_0.UserImageType;
 import com.taksila.veda.utils.CommonUtils;
 import com.taksila.veda.utils.EmailUtils;
 
@@ -36,12 +45,14 @@ public class UserComponent
 {
 	static Logger logger = LogManager.getLogger(UserComponent.class.getName());	
 	private UsersDAO usersDAO = null;
+	private UserImagesDAO userImagesDAO = null;
 	private String schoolId =null;	
 	
 	public UserComponent(String tenantId) 
 	{
 		this.schoolId = tenantId;
-		this.usersDAO = new UsersDAO(this.schoolId);				
+		this.usersDAO = new UsersDAO(this.schoolId);		
+		this.userImagesDAO = new UserImagesDAO(this.schoolId);		
 	}
 	
 	/**
@@ -103,6 +114,13 @@ public class UserComponent
 			else
 			{
 				resp.setUser(user);
+				List<UserImageInfo> hits = this.getUserImageInfoAll(user.getUserId(), UserImageType.PROFILE_IMAGE);
+				if (hits.size() > 0)
+					resp.setProfileImageInfo(hits.get(0));				
+				/*
+				 * get other images
+				 */				
+				resp.getSocialImagesList().addAll(this.getUserImageInfoAll(user.getUserId(), UserImageType.SOCIAL_IMAGE));
 			}
 			
 			logger.trace("++++++++  exiting getUser component ");
@@ -133,7 +151,15 @@ public class UserComponent
 			}
 			else
 			{
-				resp.setUser(user);
+				resp.setUser(user);										
+				List<UserImageInfo> hits = this.getUserImageInfoAll(userid, UserImageType.PROFILE_IMAGE);
+				if (hits.size() > 0)
+					resp.setProfileImageInfo(hits.get(0));				
+				/*
+				 * get other images
+				 */				
+				resp.getSocialImagesList().addAll(this.getUserImageInfoAll(userid, UserImageType.SOCIAL_IMAGE));
+				
 			}
 			
 			logger.trace("++++++++  exiting getUser component ");
@@ -396,6 +422,21 @@ public class UserComponent
 	}
 	
 	/**
+	 * 
+	 * @param imageid
+	 * @param scale
+	 * @return
+	 * @throws Exception
+	 */
+	public ByteArrayOutputStream getImage(String imageid, double scale) throws Exception 
+	{
+		return this.userImagesDAO.readUserImageContent(imageid,scale);
+	}
+	
+	
+	
+	
+	/**
 	 * This function is used by both create new user and update user
 	 * 
 	 * @param formParams
@@ -517,6 +558,83 @@ public class UserComponent
 		return true;
 		
 	}
-
 	
+	/**
+	 * 
+	 * @param user
+	 * @param fileId
+	 * @return
+	 * @throws Exception 
+	 */
+	public UserImageInfo processUserImageFile(String userid,String fileId) throws Exception 
+	{		
+		GetUserResponse userResp = this.getUser(userid);		
+		if (userResp == null || userResp.getUser() == null)
+			throw new Exception("Invalid user");
+		
+		User user = userResp.getUser();
+		/*
+		 * search if the image already exists.
+		 * If not create a new entry
+		 */
+		UserImageInfo searchUserImage = new UserImageInfo();
+		searchUserImage.setUserImageType(UserImageType.PROFILE_IMAGE);
+		searchUserImage.setUserId(user.getUserId());
+		
+		List<UserImageInfo> userImages = this.userImagesDAO.search(searchUserImage);		
+		UserImageInfo userImageInfo = null;
+		if (userImages != null && !userImages.isEmpty())
+		{
+			userImageInfo = userImages.get(0);
+		}
+		else
+		{
+			userImageInfo = new UserImageInfo();
+			userImageInfo.setImageid(fileId);
+			userImageInfo.setUserId(user.getUserId());			
+		}
+		
+		/*
+		 * save the original file to db 
+		 */		      
+		userImageInfo.setUserImageType(UserImageType.PROFILE_IMAGE);				
+		File imageFile = new File(getUserTempFilePath(user.getUserId()) +"\\"+ fileId);
+		InputStream imgis =  new FileInputStream(imageFile);
+		InputStream imgisthumb =  new FileInputStream(imageFile);
+		UserImageInfo uimgInfo = this.userImagesDAO.insertUserImageInfo(userImageInfo, imgis, imgisthumb);
+		
+		FileUtils.deleteQuietly(imageFile);
+		
+		return uimgInfo;
+	}
+	
+	public UserImageInfo getUserImageInfo(String imageid) throws Exception 
+	{		
+		return this.userImagesDAO.getUserImageInfoById(imageid);
+	}
+	
+	public List<UserImageInfo> getUserImageInfoAll(String userid, UserImageType imgType) throws Exception 
+	{				
+		UserImageInfo searchUserImage = new UserImageInfo();
+		searchUserImage.setUserId(userid);
+		searchUserImage.setUserImageType(imgType);
+		List<UserImageInfo> hits = userImagesDAO.search(searchUserImage);
+		return hits;
+	}
+	
+	
+	
+	
+	
+	/*
+	 * get temp file path
+	 */
+	public String getUserTempFilePath(String userid)
+	{
+		String basePath = ConfigComponent.getConfig(ConfigId.TEMP_FILE_PATH);
+		basePath = StringUtils.removeEnd(basePath, "\\");
+		String dirPath = ConfigComponent.getConfig(ConfigId.TEMP_FILE_PATH)+"\\users\\"+userid+"\\";
+		boolean dirExits = new File(dirPath).mkdirs();
+		return dirPath;  
+	}
 }

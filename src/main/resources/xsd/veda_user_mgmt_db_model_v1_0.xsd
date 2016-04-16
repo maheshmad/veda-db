@@ -32,11 +32,37 @@
 	<xs:element name="accountDisabled" type="xs:boolean" />
 	<xs:element name="accountDeleted" type="xs:boolean" />
 	<xs:element name="lastLoginIp" type="xs:string" />
-	
+	<xs:element name="userImageType" type="UserImageType" />
 	<xs:element name="pswdEncryptSalt" type="xs:string" />
 	<xs:element name="tokenExpiryDateTime" type="xs:dateTime" />
 	<xs:element name="userAgreementAccepted" type="xs:boolean" />
  	<xs:element name="privacyPolicyAgreementAccepted" type="xs:boolean" />
+ 	<xs:element name="imageid" type="xs:string" />
+	
+	<xs:simpleType name="UserImageType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="PROFILE_IMAGE" />			
+			<xs:enumeration value="SOCIAL_IMAGE" />			
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:complexType name="UserImageInfo">
+		<xs:annotation>
+			<xs:documentation>
+				UserInfo table to store the complete user information						
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable"> 
+            	<xs:sequence>
+					<xs:element ref="userId" />
+					<xs:element ref="imageid" />
+					<xs:element ref="userImageType" />																									
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
 		
 	<xs:complexType name="User">
 		<xs:annotation>
@@ -68,7 +94,7 @@
 					<xs:element ref="changePswd" />
 					<xs:element ref="accountDeleted" />
 					<xs:element ref="accountDisabled" />
-					<xs:element ref="lastLoginIp" />																																	
+					<xs:element ref="lastLoginIp" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>

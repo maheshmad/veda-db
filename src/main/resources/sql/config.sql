@@ -4,9 +4,11 @@ INSERT INTO `xe1`.`config_section`(`config_section_id`,`config_section_name`,`vi
 INSERT INTO `xe1`.`config_section`(`config_section_id`,`config_section_name`,`view_xtype`,`allowed_roles`,`updated_by`,`last_updated_on`) VALUES("SECURITY_SECTION","Security",null,"SYSADMIN","mahesh",CURRENT_TIMESTAMP);
 INSERT INTO `xe1`.`config_section`(`config_section_id`,`config_section_name`,`view_xtype`,`allowed_roles`,`updated_by`,`last_updated_on`) VALUES("GENERAL_SECTION","General",null,"SYSADMIN","mahesh",CURRENT_TIMESTAMP);
 
+
 -- configuration groups
 -- GENERAL
 INSERT INTO `xe1`.`config_group`(`config_group_id`,`config_section_id`,`config_group_name`,`footer_note`,`header_note`,`allowed_roles`,`updated_by`,`last_updated_on`) VALUES("GEN_CFG_GRP_001","GENERAL_SECTION","General settings","General domain settings","","SYSADMIN","mahesh",CURRENT_TIMESTAMP);
+INSERT INTO `xe1`.`config_group`(`config_group_id`,`config_section_id`,`config_group_name`,`footer_note`,`header_note`,`allowed_roles`,`updated_by`,`last_updated_on`) VALUES("GEN_CFG_GRP_002","GENERAL_SECTION","General settings","Temporary file path ","","SYSADMIN","mahesh",CURRENT_TIMESTAMP);
 
 -- SMTP
 INSERT INTO `xe1`.`config_group`(`config_group_id`,`config_section_id`,`config_group_name`,`footer_note`,`header_note`,`allowed_roles`,`updated_by`,`last_updated_on`) VALUES("SMTP_CFG_GRP_001","SMTP_SECTION","SMTP settings","Email server configuration, all tenants will share this configuration to send and recieve emails","","SYSADMIN","mahesh",CURRENT_TIMESTAMP);
@@ -22,6 +24,7 @@ INSERT INTO `xe1`.`config_group`(`config_group_id`,`config_section_id`,`config_g
 
 -- GENERAL
 INSERT INTO `xe1`.`config`(`config_id`,`config_group_id`,`config_name`,`config_value`,`updated_by`,`last_updated_on`) VALUES("GENERAL_DOMAIN_ROOT","GEN_CFG_GRP_001","General domain root","cloud.localhost/xe1","mahesh",CURRENT_TIMESTAMP);
+INSERT INTO `xe1`.`config`(`config_id`,`config_group_id`,`config_name`,`config_value`,`updated_by`,`last_updated_on`) VALUES("TEMP_FILE_PATH","GEN_CFG_GRP_002","Temporary file path","C:\\","mahesh",CURRENT_TIMESTAMP);
 
 -- SMTP
 INSERT INTO `xe1`.`config`(`config_id`,`config_group_id`,`config_name`,`config_value`,`updated_by`,`last_updated_on`) VALUES("SMTP_HOST_URL","SMTP_CFG_GRP_001","SMTP Host URL","mail.intellectseeclabs.com","mahesh",CURRENT_TIMESTAMP);

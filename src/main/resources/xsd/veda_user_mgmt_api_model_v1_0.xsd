@@ -41,7 +41,9 @@
         <xs:complexContent>
             <xs:extension base="base:BaseResponse">  
             	<xs:sequence>
-					<xs:element name="user" type="umgmtdb:User"></xs:element>					
+					<xs:element name="user" type="umgmtdb:User"></xs:element>
+					<xs:element name="profileImageInfo" type="umgmtdb:UserImageInfo" ></xs:element>					
+					<xs:element name="socialImagesList" type="umgmtdb:UserImageInfo" maxOccurs="unbounded" ></xs:element>					
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>
@@ -132,6 +134,21 @@
             <xs:extension base="base:BaseResponse">  
             	<xs:sequence>
             		<xs:element name="user" type="umgmtdb:User" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UploadUserImageResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UploadUserImageResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="userImageInfo" type="umgmtdb:UserImageInfo" ></xs:element>					
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>

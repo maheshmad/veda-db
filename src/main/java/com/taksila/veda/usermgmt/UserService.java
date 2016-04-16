@@ -166,11 +166,11 @@ public class UserService
 	@GET
 	@Produces("image/*")
 	@ManagedAsync
-	@Path("/image/{size}/{userid}")
+	@Path("/image/{scale}/{imageid}")
 	public void getUserImage(@Context HttpServletRequest request, 
 			@Context final UriInfo uri,		
-			@PathParam("userid") final String userid,
-			@PathParam("size") final String size,
+			@PathParam("imageid") final String imageid,
+			@PathParam("scale") final String scale,
 			@Context HttpServletResponse resp,
 			@Suspended final AsyncResponse asyncResp)
 	{    				
@@ -184,8 +184,10 @@ public class UserService
 				{										
 					String schoolId = CommonUtils.getSubDomain(uri);
 					UserComponent userComp = new UserComponent(schoolId);
-					double scale = "large".equals(size)?1.0:0.5;
-					operResp = userComp.getUserImage(Integer.parseInt(userid), scale); 								
+					if (StringUtils.equals(scale, "thumb"))
+						operResp = userComp.getImage(imageid, 0.5);
+					else
+						operResp = userComp.getImage(imageid, 1);
 				} 
 				catch (Exception ex) 
 				{		
@@ -193,9 +195,13 @@ public class UserService
 				}
 				
 				if (operResp != null)
+				{
+					logger.trace("found image ....sending it back ");
 					asyncResp.resume(Response.ok(operResp.toByteArray()).build());
-				else
+				}
+				else				
 					Response.ok(CommonUtils.readImageFile("defaultprofileimage-128.png")).build();
+				
 			}
 		});
 		
