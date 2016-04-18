@@ -1,5 +1,6 @@
 package com.taksila.veda.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -35,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import javax.naming.NamingException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -61,10 +63,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.taksila.veda.config.ConfigComponent;
 import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 import com.taksila.veda.model.api.base.v1_0.Err;
 import com.taksila.veda.model.api.base.v1_0.ErrorInfo;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
+import com.taksila.veda.model.db.config.v1_0.ConfigId;
 
 
 public class CommonUtils 
@@ -794,7 +798,7 @@ public class CommonUtils
 	  * @param request
 	  * @return
 	  */
-	 public String getCookie(String cookiename, HttpServletRequest request)
+	 public static String getCookie(String cookiename, HttpServletRequest request)
 	 {		 
 		 for (Cookie cookie: request.getCookies())
 		 {
@@ -807,5 +811,36 @@ public class CommonUtils
 		 return "";
 	 }
 	 
+	 /*
+	  * get file name from http
+	  */
+	 public static String getFileName(final Part part) 
+	 {
+	        final String partHeader = part.getHeader("content-disposition");
+	        logger.trace( "Part Header = {0}", partHeader);
+	        for (String content : part.getHeader("content-disposition").split(";")) 
+	        {
+	            if (content.trim().startsWith("filename")) 
+	            {
+	                String name = content.substring(content.indexOf('=') + 1).trim().replace("\"", "");
+	                name = name.replaceAll(" ", "_"); 
+	                return name;
+	            }
+	        }
+	        return null;
+	 }
+	 
+	 
+	public static String getUserTempFilePath(String type, String additionalFolderId) 
+	{
+		String basePath = ConfigComponent.getConfig(ConfigId.TEMP_FILE_PATH);
+		basePath = StringUtils.removeEnd(basePath, "\\");
+		String dirPath = ConfigComponent.getConfig(ConfigId.TEMP_FILE_PATH)+"\\"+type+"\\";
+		if (StringUtils.isNotBlank(additionalFolderId))
+			dirPath = dirPath + additionalFolderId+"\\";
+		boolean dirExits = new File(dirPath).mkdirs();
+		return dirPath;  
+			
+	}
 }
 

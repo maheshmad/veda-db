@@ -49,6 +49,7 @@ import org.apache.batik.transcoder.wmf.tosvg.WMFRecordStore;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.FileUtils;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackagePart;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
@@ -185,8 +186,12 @@ public class Pptx2Image
          // read the .pptx file
 //         File f = new File(filename);
 //         InputStream st = new FileInputStream(f);
+         String filePath = CommonUtils.getUserTempFilePath("slides",options.topicid)+"\\"+options.filename;
+         File f = new File(filePath);
+         if (!f.exists())
+        	 throw new Exception("File "+options.filename+"not found ..");   
          
-         XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open(baseDirectory+"\\upload\\"+options.filename));
+         XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open(filePath));         
 //         XMLSlideShow ppt = new XMLSlideShow(OPCPackage.open(f));
 
          Dimension pgsize = ppt.getPageSize();

@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ManagedAsync;
 
 import com.taksila.veda.model.api.base.v1_0.BaseResponse;
+import com.taksila.veda.model.api.base.v1_0.StatusType;
 import com.taksila.veda.model.api.course.v1_0.CreateSlideRequest;
 import com.taksila.veda.model.api.course.v1_0.CreateSlideResponse;
 import com.taksila.veda.model.api.course.v1_0.DeleteSlideRequest;
@@ -79,6 +80,9 @@ public class SlideService
 				try 
 				{
 					bResp = slideComp.generateImagesFromPptx(topicid,uploadedfileid);
+					bResp.setStatus(StatusType.SUCCESS);
+					bResp.setMsg("File was successfully processed");
+					
 				} 
 				catch (Exception e) 
 				{		
