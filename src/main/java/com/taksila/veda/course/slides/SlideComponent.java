@@ -39,7 +39,7 @@ public class SlideComponent
 		this.slideDAO = new SlidesDAO(this.schoolId);				
 	}
 	
-	public BaseResponse generateImagesFromPptx(int topicid, String uploadedfileid)
+	public BaseResponse generateImagesFromPptx(String topicid, String uploadedfileid)
 	{    						
 		logger.trace("inside pptx to image converter");
 		BaseResponse bResp = new BaseResponse(); 

@@ -1,11 +1,17 @@
 package com.taksila.veda.course;
 
+import java.sql.SQLException;
 import java.util.List;
 
+import javax.naming.NamingException;
+
+import org.apache.commons.lang.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.taksila.veda.db.dao.ChapterDAO;
+import com.taksila.veda.db.dao.TopicDAO;
 import com.taksila.veda.model.api.base.v1_0.SearchHitRecord;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
 import com.taksila.veda.model.api.course.v1_0.Chapter;
@@ -26,13 +32,16 @@ public class ChapterComponent
 {	
 	private String schoolId =null;	
 	private ChapterDAO chapterDAO = null;
+	private TopicDAO topicDAO = null;
 	static Logger logger = LogManager.getLogger(ChapterComponent.class.getName());
 	
 	public ChapterComponent(String tenantId) 
 	{
 		this.schoolId = tenantId;
-		this.chapterDAO = new ChapterDAO(this.schoolId);				
+		this.chapterDAO = new ChapterDAO(this.schoolId);
+		this.topicDAO = new TopicDAO(this.schoolId);
 	}
+			
 	
 	/**
 	 * 
@@ -44,17 +53,17 @@ public class ChapterComponent
 		SearchChaptersResponse resp = new SearchChaptersResponse();
 		try 
 		{
-			List<Chapter> courseSearchHits = chapterDAO.searchChaptersByTitle(req.getQuery());
+			List<Chapter> chapterSearchHits = chapterDAO.searchChaptersByTitle(req.getQuery());
 			
-			for(Chapter course: courseSearchHits)
+			for(Chapter chapter: chapterSearchHits)
 			{
 				SearchHitRecord rec = new SearchHitRecord();
 				/*
 				 * map search hits
 				 */
-				rec.setRecordId(String.valueOf(course.getId()));
-				rec.setRecordTitle(course.getTitle());
-				rec.setRecordSubtitle(course.getSubTitle());				
+				rec.setRecordId(String.valueOf(chapter.getId()));
+				rec.setRecordTitle(chapter.getTitle());
+				rec.setRecordSubtitle(chapter.getSubTitle());				
 				
 				resp.getHits().add(rec);
 			}
@@ -62,7 +71,7 @@ public class ChapterComponent
 			resp.setRecordType("CHAPTER");
 			resp.setPage(req.getPage());
 			resp.setPageOffset(req.getPageOffset());
-			resp.setTotalHits(courseSearchHits.size());
+			resp.setTotalHits(chapterSearchHits.size());
 
 		} 
 		catch (Exception e) 
@@ -90,6 +99,7 @@ public class ChapterComponent
 			}
 			else
 			{
+				chapter.getTopics().addAll(this.topicDAO.searchTopicsByChapterid(req.getId()));
 				resp.setChapter(chapter);
 			}					
 
@@ -111,11 +121,11 @@ public class ChapterComponent
 	{
 		CreateChapterResponse resp = new CreateChapterResponse();
 		try 
-		{
-			//TODO validation
-			
+		{							
 			Chapter course = chapterDAO.insertChapter(req.getChapter());
 			resp.setChapter(course);
+			resp.setStatus(StatusType.SUCCESS);
+			resp.setMsg("Successfully created a new chapter id = "+resp.getChapter().getId());
 		} 
 		catch (Exception e) 
 		{

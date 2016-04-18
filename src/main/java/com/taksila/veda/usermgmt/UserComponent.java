@@ -536,7 +536,7 @@ public class UserComponent
 					+ "Your credentials are below.<br /><br />"
 					+ "<div style = \"padding-left:20%\">"
 					+ "User Id : "
-					+ user.getEmailId()
+					+ user.getUserId()
 					+ "<br/>Temporary Password : "
 					+ tempPassword  
 					+ "<br/></div>"

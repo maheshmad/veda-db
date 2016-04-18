@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.taksila.veda.db.dao.ChapterDAO;
 import com.taksila.veda.db.dao.CoursesDAO;
 import com.taksila.veda.model.api.base.v1_0.SearchHitRecord;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
@@ -26,12 +27,14 @@ public class CourseComponent
 {	
 	private String schoolId =null;	
 	private CoursesDAO coursesDAO = null;
+	private ChapterDAO chapterDAO = null;
 	static Logger logger = LogManager.getLogger(CourseComponent.class.getName());
 	
 	public CourseComponent(String tenantId) 
 	{
 		this.schoolId = tenantId;
-		this.coursesDAO = new CoursesDAO(this.schoolId);				
+		this.coursesDAO = new CoursesDAO(this.schoolId);	
+		this.chapterDAO = new ChapterDAO(this.schoolId);
 	}
 	
 	/**
@@ -90,6 +93,10 @@ public class CourseComponent
 			}
 			else
 			{
+				/*
+				 * get chapters for the course
+				 */
+				course.getChapters().addAll(this.chapterDAO.searchChaptersByCourseId(req.getId()));
 				resp.setCourse(course);
 			}					
 
@@ -116,6 +123,8 @@ public class CourseComponent
 			
 			Course course = coursesDAO.insertCourse(req.getNewCourse());
 			resp.setCourse(course);
+			resp.setStatus(StatusType.SUCCESS);
+			resp.setMsg("Successfully added a new course id = "+course.getId());
 		} 
 		catch (Exception e) 
 		{

@@ -57,6 +57,7 @@ public class TopicService
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
     public void post(@Context HttpServletRequest request,@Context HttpServletResponse response,
+    		@FormParam("chapterid") String chapterid,
     		@FormParam("name") String name,
     		@FormParam("title") String title,     		
     		@FormParam("subtitle") String subtitle,
@@ -73,6 +74,7 @@ public class TopicService
 			topic.setSubTitle(subtitle);
 			topic.setTitle(title);
 			topic.setDescription(description);
+			topic.setChapterid(chapterid);
 			
 			CreateTopicRequest req = new CreateTopicRequest();
 			req.setTopic(topic);
@@ -148,6 +150,7 @@ public class TopicService
 	@ManagedAsync
 	@Path("/{topicid}")
 	public void updateTopic(@Context HttpServletRequest request, @Context UriInfo uri,	
+			@FormParam("chapterid") String chapterid,
 			@FormParam("name") String name,
 			@PathParam("topicid") String topicid,
     		@FormParam("title") String title,     		
@@ -166,6 +169,7 @@ public class TopicService
 			topic.setSubTitle(subtitle);
 			topic.setTitle(title);
 			topic.setDescription(description);
+			topic.setChapterid(chapterid);
 			
 			UpdateTopicRequest req = new UpdateTopicRequest();
 			req.setTopic(topic);

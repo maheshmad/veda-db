@@ -529,7 +529,8 @@ public class UsersDAO
 		PreparedStatement stmt = null;
 		try
 		{
-			this.sqlDBManager.connect();	
+			this.sqlDBManager.connect();
+			logger.debug("SQL ="+update_user_password +" userid = "+userId);
 			stmt = this.sqlDBManager.getPreparedStatement(update_user_password);
 			
 			stmt.setString(1, passwordHash);

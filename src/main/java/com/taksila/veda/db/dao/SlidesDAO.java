@@ -132,7 +132,7 @@ public class SlidesDAO
 		Slide slide = new Slide();		
 		
 		slide.setId(String.valueOf(resultSet.getInt(SLIDE_TABLE.id.value())));
-		slide.setTopicid(resultSet.getInt(SLIDE_TABLE.topicid.value()));
+		slide.setTopicid(String.valueOf(resultSet.getInt(SLIDE_TABLE.topicid.value())));
 		slide.setName(resultSet.getString(SLIDE_TABLE.slidename.value()));
 		slide.setTitle(resultSet.getString(SLIDE_TABLE.title.value()));
 		slide.setSubTitle(resultSet.getString(SLIDE_TABLE.subTitle.value()));
@@ -229,7 +229,7 @@ public class SlidesDAO
 	 * @return
 	 * @throws Exception 
 	 */
-	public List<Slide> searchSlidesByTopicId(int topicid) throws Exception
+	public List<Slide> searchSlidesByTopicId(String topicid) throws Exception
 	{
 		List<Slide> slideHits = new ArrayList<Slide>();				
 		PreparedStatement stmt = null;		
@@ -239,7 +239,7 @@ public class SlidesDAO
 		{
 			this.sqlDBManager.connect();						
 			stmt = this.sqlDBManager.getPreparedStatement(search_slides_by_topicid_sql);
-			stmt.setInt(1, topicid);
+			stmt.setInt(1, Integer.parseInt(topicid));
 			ResultSet resultSet = stmt.executeQuery();	
 			while (resultSet.next()) 
 			{
@@ -313,7 +313,7 @@ public class SlidesDAO
 			stmt = this.sqlDBManager.getPreparedStatement(insert_slide_sql);
 			
 			stmt.setString(1, slide.getName());
-			stmt.setInt(2, slide.getTopicid());
+			stmt.setInt(2, Integer.parseInt(slide.getTopicid()));
 			stmt.setString(3, slide.getTitle());
 			stmt.setString(4, slide.getSubTitle());
 			stmt.setString(5, slide.getDescription());			

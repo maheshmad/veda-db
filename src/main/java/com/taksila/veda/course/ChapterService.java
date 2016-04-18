@@ -57,6 +57,7 @@ public class ChapterService
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
     public void post(@Context HttpServletRequest request,@Context HttpServletResponse response,
+    		@FormParam("courseid") String courseid,
     		@FormParam("name") String name,
     		@FormParam("title") String title,     		
     		@FormParam("subtitle") String subtitle,
@@ -73,6 +74,7 @@ public class ChapterService
 			chapter.setSubTitle(subtitle);
 			chapter.setTitle(title);
 			chapter.setDescription(description);
+			chapter.setCourseid(courseid);
 			
 			CreateChapterRequest req = new CreateChapterRequest();
 			req.setChapter(chapter);
@@ -150,6 +152,7 @@ public class ChapterService
 	public void updateChapter(@Context HttpServletRequest request, @Context UriInfo uri,	
 			@FormParam("name") String name,
 			@PathParam("chapterid") String chapterid,
+			@PathParam("courseid") String courseid,
     		@FormParam("title") String title,     		
     		@FormParam("subtitle") String subtitle,
     		@FormParam("description") String description,
@@ -166,6 +169,7 @@ public class ChapterService
 			chapter.setSubTitle(subtitle);
 			chapter.setTitle(title);
 			chapter.setDescription(description);
+			chapter.setCourseid(courseid);
 			
 			UpdateChapterRequest req = new UpdateChapterRequest();
 			req.setChapter(chapter);

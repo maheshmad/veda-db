@@ -82,7 +82,7 @@ public class Pptx2Image
 		double scale = 1;
 		String filename = "";
 		String format = "png";
-		public int topicid;		
+		public String topicid;		
 		
 		
 	}
@@ -159,7 +159,7 @@ public class Pptx2Image
         	throw new Exception("File not specified or it doesn't exist");
         }
         
-        if (options.topicid <= 0) 
+        if (StringUtils.isBlank(options.topicid)) 
         {
         	throw new Exception("Topic id not specified");
         }

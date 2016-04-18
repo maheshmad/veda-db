@@ -60,7 +60,7 @@ public class SlideService
 	@Path("/generate/{topicid}/{uploadedfileid}")
 	public void convertSlides(@Context HttpServletRequest request, 
 			@Context final UriInfo uri,
-			@PathParam("topicid") final int topicid,
+			@PathParam("topicid") final String topicid,
 			@PathParam("uploadedfileid") final String uploadedfileid,
 			@Context HttpServletResponse resp,
 			@Suspended final AsyncResponse asyncResp)
@@ -219,7 +219,7 @@ public class SlideService
 	@ManagedAsync
 	@Path("/topic/{topicid}")
 	public void getSlidesOfTopicId(@Context HttpServletRequest request, @Context final UriInfo uri,		
-			@PathParam("topicid") final int topicid,
+			@PathParam("topicid") final String topicid,
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
 		

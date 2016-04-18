@@ -25,21 +25,24 @@ import com.taksila.veda.model.api.course.v1_0.Chapter;
 public class ChapterDAO 
 {
 	private String schoolId = null;	
-	private static String insert_chapter_sql = "INSERT INTO CHAPTERS("+CHAPTER_TABLE.chaptername.value()+","+
+	private static String insert_chapter_sql = "INSERT INTO CHAPTERS("+CHAPTER_TABLE.courseid.value()+","+
+																			CHAPTER_TABLE.chaptername.value()+","+
 																			CHAPTER_TABLE.title.value()+","+
 																			CHAPTER_TABLE.subTitle.value()+","+
 																			CHAPTER_TABLE.description.value()+") "+
-																	"VALUES (?,?,?,?);";		
+																	"VALUES (?,?,?,?,?);";		
 	
 	private static String update_chapter_sql = "UPDATE CHAPTERS SET "+CHAPTER_TABLE.chaptername.value()+" = ? ,"+
 															CHAPTER_TABLE.title.value()+" = ? ,"+
 															CHAPTER_TABLE.subTitle.value()+" = ? ,"+
 															CHAPTER_TABLE.description.value()+" = ? "+
+															CHAPTER_TABLE.courseid.value()+" = ? "+
 													" WHERE "+CHAPTER_TABLE.id.value()+" = ? ";
 	
 	private static String delete_chapter_sql = "DELETE FROM CHAPTERS WHERE "+CHAPTER_TABLE.id.value()+" = ? ";	
 	private static String search_chapter_by_title_sql = "SELECT * FROM CHAPTERS WHERE "+CHAPTER_TABLE.title.value()+" like ? ";
-	private static String search_chapter_by_id_sql = "SELECT * FROM CHAPTERS WHERE "+CHAPTER_TABLE.id.value()+" = ? ";	
+	private static String search_chapter_by_id_sql = "SELECT * FROM CHAPTERS WHERE "+CHAPTER_TABLE.id.value()+" = ? ";
+	private static String search_chapter_by_courseid_sql = "SELECT * FROM CHAPTERS WHERE "+CHAPTER_TABLE.courseid.value()+" = ? ";
 	private static String search_all_chapters_sql = "SELECT * FROM CHAPTERS";
 	
 	
@@ -59,6 +62,7 @@ public class ChapterDAO
 	public enum CHAPTER_TABLE
 	{
 		id("id"),
+		courseid("courseid"),
 		chaptername("name"),
 		title("title"),
 		subTitle("sub_title"),
@@ -88,6 +92,46 @@ public class ChapterDAO
 		
 		return chapter;
 	}
+	
+	/**
+	 * 
+	 * @param q
+	 * @return
+	 * @throws SQLException
+	 * @throws NamingException 
+	 */
+	public List<Chapter> searchChaptersByCourseId(int courseid) throws SQLException, NamingException
+	{
+		List<Chapter> chapterHits = new ArrayList<Chapter>();				
+		PreparedStatement stmt = null;		
+		logger.trace("searching chapters by courseid ="+courseid);
+
+		try
+		{
+			this.sqlDBManager.connect();			
+			stmt = this.sqlDBManager.getPreparedStatement(search_chapter_by_courseid_sql);
+			stmt.setInt(1, courseid);
+			
+			ResultSet resultSet = stmt.executeQuery();	
+			while (resultSet.next()) 
+			{
+				chapterHits.add(mapRow(resultSet));
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally
+		{
+			this.sqlDBManager.close(stmt);
+		}
+		
+		return chapterHits;
+		
+	}
+	
 	
 	/**
 	 * 
@@ -186,10 +230,11 @@ public class ChapterDAO
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(insert_chapter_sql);
 			
-			stmt.setString(1, chapter.getName());
-			stmt.setString(2, chapter.getTitle());
-			stmt.setString(3, chapter.getSubTitle());
-			stmt.setString(4, chapter.getDescription());
+			stmt.setInt(1, Integer.parseInt(chapter.getCourseid()));
+			stmt.setString(2, chapter.getName());
+			stmt.setString(3, chapter.getTitle());
+			stmt.setString(4, chapter.getSubTitle());
+			stmt.setString(5, chapter.getDescription());
 			
 			stmt.executeUpdate();			
 			ResultSet rs = stmt.getGeneratedKeys();			
@@ -233,7 +278,8 @@ public class ChapterDAO
 			stmt.setString(2, chapter.getTitle());
 			stmt.setString(3, chapter.getSubTitle());
 			stmt.setString(4, chapter.getDescription());
-			stmt.setInt(5, Integer.valueOf(chapter.getId()));
+			stmt.setInt(5, Integer.parseInt(chapter.getCourseid()));
+			stmt.setInt(6, Integer.valueOf(chapter.getId()));
 			
 			int t = stmt.executeUpdate();
 			if (t > 0)

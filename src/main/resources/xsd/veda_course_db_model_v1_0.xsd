@@ -8,8 +8,10 @@
 	
 	<xs:import schemaLocation="veda_base_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/base/v1_0"></xs:import>
 	
-	<xs:element name="id" type="xs:int" />
-	<xs:element name="topicid" type="xs:int" />
+	<xs:element name="id" type="xs:string" />
+	<xs:element name="topicid" type="xs:string" />
+	<xs:element name="courseid" type="xs:string" />
+	<xs:element name="chapterid" type="xs:string" />
 	<xs:element name="name" type="xs:string" />
 	<xs:element name="filename" type="xs:string" />
 	<xs:element name="fileType" type="xs:string" />
@@ -33,6 +35,7 @@
             <xs:extension base="basedb:BaseTable">  
             	<xs:sequence>
 					<xs:element ref="name"/>
+					<xs:element ref="courseid"/>
 					<xs:element ref="title"/>
 					<xs:element ref="subTitle"/>	
 					<xs:element ref="description"/>					
@@ -52,6 +55,7 @@
             <xs:extension base="basedb:BaseTable">  
             	<xs:sequence>
 					<xs:element ref="name"/>
+					<xs:element ref="chapterid"/>
 					<xs:element ref="title"/>
 					<xs:element ref="subTitle"/>	
 					<xs:element ref="description"/>		

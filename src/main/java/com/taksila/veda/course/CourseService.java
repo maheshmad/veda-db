@@ -59,7 +59,7 @@ public class CourseService
     public void post(@Context HttpServletRequest request,@Context HttpServletResponse response,
     		@FormParam("name") String name,
     		@FormParam("title") String title,     		
-    		@FormParam("subtitle") String subtitle,
+    		@FormParam("subTitle") String subtitle,
     		@FormParam("description") String description,
     		@Context UriInfo uri,	
     		@Suspended final AsyncResponse asyncResp) 
@@ -129,6 +129,8 @@ public class CourseService
 		asyncResp.resume(Response.ok(operResp).build());
 		
 	}
+		
+	
 	
 	/**
 	 * 
@@ -151,7 +153,7 @@ public class CourseService
 			@FormParam("name") String name,
 			@PathParam("courseid") String courseid,
     		@FormParam("title") String title,     		
-    		@FormParam("subtitle") String subtitle,
+    		@FormParam("subTitle") String subtitle,
     		@FormParam("description") String description,
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
@@ -267,6 +269,7 @@ public class CourseService
 		
 		
 	}
+	
 	
 	
 	

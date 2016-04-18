@@ -114,8 +114,10 @@ public class TopicComponent
 		{
 			//TODO validation
 			
-			Topic course = chapterDAO.insertTopic(req.getTopic());
-			resp.setTopic(course);
+			Topic topic = chapterDAO.insertTopic(req.getTopic());
+			resp.setTopic(topic);
+			resp.setStatus(StatusType.SUCCESS);
+			resp.setMsg("Successfully added topic id = "+topic.getId());
 		} 
 		catch (Exception e) 
 		{
@@ -140,7 +142,8 @@ public class TopicComponent
 			boolean updateSucceded = chapterDAO.updateTopic(req.getTopic());
 			if (updateSucceded)
 			{
-				resp.setStatus(StatusType.SUCCESS);
+				resp.setStatus(StatusType.SUCCESS);				
+				resp.setMsg("Successfully updated topic id = "+resp.getTopic().getId());
 				resp.setTopic(req.getTopic());
 			}
 			else

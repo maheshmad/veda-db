@@ -118,7 +118,7 @@ public class UploadedFileDAO
 		UploadedFile uploadedfile = new UploadedFile();		
 		
 		uploadedfile.setId(String.valueOf(resultSet.getInt(UPLOADED_FILES_TABLE.id.value())));
-		uploadedfile.setTopicid(resultSet.getInt(UPLOADED_FILES_TABLE.topicid.value()));
+		uploadedfile.setTopicid(String.valueOf(resultSet.getInt(UPLOADED_FILES_TABLE.topicid.value())));
 		uploadedfile.setFilename(resultSet.getString(UPLOADED_FILES_TABLE.filename.value()));	
 		uploadedfile.setFileType(resultSet.getString(UPLOADED_FILES_TABLE.fileType.value()));
 		uploadedfile.setFileProcessingCode(resultSet.getString(UPLOADED_FILES_TABLE.fileProcessingCode.value()));		
@@ -255,7 +255,7 @@ public class UploadedFileDAO
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(insert_uploadedfile_sql);
 						
-			stmt.setInt(1, uploadedfile.getTopicid());
+			stmt.setInt(1, Integer.parseInt(uploadedfile.getTopicid()));
 			stmt.setString(2, uploadedfile.getFilename());
 			stmt.setBinaryStream(3, uploadedfileContentImageIs);
 			stmt.setString(4, uploadedfile.getUpdatedBy());
