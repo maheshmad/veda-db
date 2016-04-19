@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<xs:schema xmlns="http://www.taksila.com/veda/model/db/classroom/v1_0"
+	targetNamespace="http://www.taksila.com/veda/model/db/classroom/v1_0"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:basedb="http://www.taksila.com/veda/model/db/base/v1_0" 
+	xmlns:usrmgmt="http://www.taksila.com/veda/model/db/usermgmt/v1_0"
+	attributeFormDefault="unqualified"
+	elementFormDefault="qualified">
+	
+	<xs:import schemaLocation="veda_base_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/base/v1_0"></xs:import>
+	<xs:import schemaLocation="veda_user_mgmt_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/usermgmt/v1_0"></xs:import>
+	
+	<xs:element name="courseid" type="xs:string" />	
+	<xs:element name="name" type="xs:string" />
+	<xs:element name="title" type="xs:string" />
+	<xs:element name="subTitle" type="xs:string" />
+	<xs:element name="description" type="xs:string" />
+	
+	<xs:complexType name="Classroom">
+		<xs:annotation>
+			<xs:documentation>
+				Classroom table has list of classrooms and its contents								
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable">  
+            	<xs:sequence>
+					<xs:element ref="name"/>
+					<xs:element ref="title"/>
+					<xs:element ref="subTitle"/>	
+					<xs:element ref="description"/>
+					<xs:element ref="courseid"/>	
+					<xs:element name="enrolledStudents" type="usrmgmt:User" maxOccurs="unbounded" />
+					<xs:element name="teacher" type="usrmgmt:User" />											
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>		
+	</xs:complexType>   
+		
+</xs:schema>
+

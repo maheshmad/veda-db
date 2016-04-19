@@ -5,5 +5,5 @@
 // Generated on: 2016.04.19 at 05:53:47 AM EDT 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.taksila.com/veda/model/api/base/v1_0", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package com.taksila.veda.model.api.base.v1_0;
+@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.taksila.com/veda/model/api/classroom/v1_0", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+package com.taksila.veda.model.api.classroom.v1_0;

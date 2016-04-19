@@ -6,7 +6,7 @@
 //
 
 
-package com.taksila.veda.model.db.base.v1_0;
+package com.taksila.veda.model.api.classroom.v1_0;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -15,17 +15,17 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * 
- * 				Records user activities and keep a log of it.							
+ * 				Extension of the db model for api response				
  * 			
  * 
- * <p>Java class for Activity complex type.
+ * <p>Java class for Classroom complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="Activity">
+ * &lt;complexType name="Classroom">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/db/base/v1_0}BaseTable">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/db/classroom/v1_0}Classroom">
  *       &lt;sequence>
  *       &lt;/sequence>
  *     &lt;/extension>
@@ -36,9 +36,9 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Activity")
-public class Activity
-    extends BaseTable
+@XmlType(name = "Classroom")
+public class Classroom
+    extends com.taksila.veda.model.db.classroom.v1_0.Classroom
 {
 
 
