@@ -12,24 +12,24 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import com.taksila.veda.model.api.base.v1_0.BaseResponse;
+import com.taksila.veda.model.api.base.v1_0.BaseRequest;
 
 
 /**
  * 
- * 				This represents the api structure of the CreateNewClassroomResponse response 				
+ * 				This represents the api structure of the DeleteEnrollmentRequest				
  * 			
  * 
- * <p>Java class for CreateClassroomResponse complex type.
+ * <p>Java class for DeleteEnrollmentRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CreateClassroomResponse">
+ * &lt;complexType name="DeleteEnrollmentRequest">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseRequest">
  *       &lt;sequence>
- *         &lt;element name="classroom" type="{http://www.taksila.com/veda/model/api/classroom/v1_0}Classroom"/>
+ *         &lt;element ref="{http://www.taksila.com/veda/model/api/base/v1_0}id"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,38 +39,38 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CreateClassroomResponse", propOrder = {
-    "classroom"
+@XmlType(name = "DeleteEnrollmentRequest", propOrder = {
+    "id"
 })
-public class CreateClassroomResponse
-    extends BaseResponse
+public class DeleteEnrollmentRequest
+    extends BaseRequest
 {
 
-    @XmlElement(required = true)
-    protected Classroom classroom;
+    @XmlElement(namespace = "http://www.taksila.com/veda/model/api/base/v1_0", required = true)
+    protected String id;
 
     /**
-     * Gets the value of the classroom property.
+     * Gets the value of the id property.
      * 
      * @return
      *     possible object is
-     *     {@link Classroom }
+     *     {@link String }
      *     
      */
-    public Classroom getClassroom() {
-        return classroom;
+    public String getId() {
+        return id;
     }
 
     /**
-     * Sets the value of the classroom property.
+     * Sets the value of the id property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Classroom }
+     *     {@link String }
      *     
      */
-    public void setClassroom(Classroom value) {
-        this.classroom = value;
+    public void setId(String value) {
+        this.id = value;
     }
 
 }

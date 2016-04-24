@@ -1,6 +1,8 @@
 package com.taksila.veda.course.slides;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -16,11 +18,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.logging.log4j.LogManager;
@@ -258,16 +262,9 @@ public class SlideService
 		
 	}
 	
-	/**
-	 * 
-	 * @param request
-	 * @param uri
-	 * @param slideid
-	 * @param resp
-	 * @param asyncResp
-	 */
+		
 	@GET
-	@Produces("image/*")
+	@Produces({ "image/png", "image/jpg" })
 	@ManagedAsync
 	@Path("/image/{size}/{slideid}")
 	public void getSlideImage(@Context HttpServletRequest request, 

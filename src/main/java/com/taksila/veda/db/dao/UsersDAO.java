@@ -109,7 +109,7 @@ public class UsersDAO
 	
 	public enum USER_TABLE
 	{
-		id("id"),
+		id("user_record_id"),
 		userid("userid"),
 		emailid("emailid"),
 		pswd("pswd"),
@@ -148,7 +148,7 @@ public class UsersDAO
 		
 	};
 	
-	private User mapRow(ResultSet resultSet) throws SQLException, IOException, DatatypeConfigurationException 
+	public static User mapRow(ResultSet resultSet) throws SQLException, IOException, DatatypeConfigurationException 
 	{
 		User user = new User();		
 		

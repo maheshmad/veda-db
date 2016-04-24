@@ -16,15 +16,15 @@ import com.taksila.veda.model.api.base.v1_0.SearchRequest;
 
 /**
  * 
- * 				This represents the api structure of the SearchClassroomRequest				
+ * 				This represents the api structure of the SearchEnrollmentRequest				
  * 			
  * 
- * <p>Java class for SearchClassroomRequest complex type.
+ * <p>Java class for SearchEnrollmentRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="SearchClassroomRequest">
+ * &lt;complexType name="SearchEnrollmentRequest">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}SearchRequest">
  *       &lt;sequence>
@@ -37,8 +37,8 @@ import com.taksila.veda.model.api.base.v1_0.SearchRequest;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SearchClassroomRequest")
-public class SearchClassroomRequest
+@XmlType(name = "SearchEnrollmentRequest")
+public class SearchEnrollmentRequest
     extends SearchRequest
 {
 

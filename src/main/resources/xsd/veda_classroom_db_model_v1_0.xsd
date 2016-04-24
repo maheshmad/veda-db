@@ -15,6 +15,20 @@
 	<xs:element name="title" type="xs:string" />
 	<xs:element name="subTitle" type="xs:string" />
 	<xs:element name="description" type="xs:string" />
+	<xs:element name="verified_by" type="xs:string" />
+	<xs:element name="classroomid" type="xs:string" />
+	<xs:element name="enrolled_on" type="xs:date" />
+	<xs:element name="start_date" type="xs:date" />
+	<xs:element name="end_date" type="xs:date" />
+	<xs:element name="enrollStatus" type="EnrollmentStatusType" />
+		
+	<xs:simpleType name="EnrollmentStatusType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ACTIVE" />			
+			<xs:enumeration value="SUSPENDED" />
+			<xs:enumeration value="CLOSED" />			
+		</xs:restriction>
+	</xs:simpleType>
 	
 	<xs:complexType name="Classroom">
 		<xs:annotation>
@@ -29,13 +43,32 @@
 					<xs:element ref="title"/>
 					<xs:element ref="subTitle"/>	
 					<xs:element ref="description"/>
-					<xs:element ref="courseid"/>	
-					<xs:element name="enrolledStudents" type="usrmgmt:User" maxOccurs="unbounded" />
-					<xs:element name="teacher" type="usrmgmt:User" />											
+					<xs:element ref="courseid"/>								
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>		
-	</xs:complexType>   
+	</xs:complexType>
+	
+	<xs:complexType name="Enrollment">
+		<xs:annotation>
+			<xs:documentation>
+				Classroom table has list of classrooms and its contents								
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable">  
+            	<xs:sequence>
+					<xs:element ref="classroomid"/>
+					<xs:element ref="usrmgmt:userId"/>
+					<xs:element ref="enrolled_on"/>	
+					<xs:element ref="verified_by"/>
+					<xs:element ref="start_date"/>	
+					<xs:element ref="end_date" />
+					<xs:element ref="enrollStatus"  />											
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>		
+	</xs:complexType>     
 		
 </xs:schema>
 

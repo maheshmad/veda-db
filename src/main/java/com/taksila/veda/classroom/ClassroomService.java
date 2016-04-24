@@ -114,7 +114,7 @@ public class ClassroomService
 		try 
 		{
 			GetClassroomRequest req = new GetClassroomRequest();
-			req.setId(Integer.valueOf(classroomid));;
+			req.setId(classroomid);;
 			
 			String schoolId = CommonUtils.getSubDomain(uri);
 			ClassroomComponent classroomComp = new ClassroomComponent(schoolId);
@@ -212,7 +212,7 @@ public class ClassroomService
 			String schoolId = CommonUtils.getSubDomain(uri);
 			ClassroomComponent classroomComp = new ClassroomComponent(schoolId);
 			DeleteClassroomRequest req = new DeleteClassroomRequest();
-			req.setId(Integer.valueOf(classroomid));
+			req.setId(classroomid);
 			operResp = classroomComp.deleteClassroom(req);
 			operResp.setSuccess(true);
 		}

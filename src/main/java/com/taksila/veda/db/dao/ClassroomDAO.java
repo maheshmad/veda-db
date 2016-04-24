@@ -62,7 +62,7 @@ public class ClassroomDAO
 	
 	public enum CLASSROOM_TABLE
 	{
-		id("id"),
+		id("classroomid"),
 		classname("name"),
 		title("title"),
 		subTitle("sub_title"),
@@ -81,7 +81,7 @@ public class ClassroomDAO
 	};
 			
 	
-	private Classroom mapRow(ResultSet resultSet) throws SQLException 
+	public static Classroom mapRow(ResultSet resultSet) throws SQLException 
 	{
 		Classroom classroom = new Classroom();		
 		
@@ -145,7 +145,7 @@ public class ClassroomDAO
 	 * @throws SQLException
 	 * @throws NamingException 
 	 */
-	public Classroom getClassroomById(int id) throws SQLException, NamingException
+	public Classroom getClassroomById(String id) throws SQLException, NamingException
 	{						
 		PreparedStatement stmt = null;	
 		Classroom classroom = null;
@@ -153,7 +153,7 @@ public class ClassroomDAO
 		{
 			this.sqlDBManager.connect();
 			stmt = this.sqlDBManager.getPreparedStatement(search_classroom_by_id_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			ResultSet resultSet = stmt.executeQuery();	
 			if (resultSet.next()) 
 			{
@@ -263,7 +263,7 @@ public class ClassroomDAO
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean deleteClassroom(int id) throws Exception 
+	public boolean deleteClassroom(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteClassroom():::::");
 		this.sqlDBManager.connect();	
@@ -271,7 +271,7 @@ public class ClassroomDAO
 		try
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(delete_classroom_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			int t = stmt.executeUpdate();
 			if (t > 0)
 				return true;

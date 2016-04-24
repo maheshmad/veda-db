@@ -55,6 +55,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -157,7 +159,7 @@ public class CommonUtils
 	        XMLGregorianCalendar now = null;
 			try {
 				GregorianCalendar gregorianCalendar = new GregorianCalendar();
-				DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+//				DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
 				now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -165,6 +167,18 @@ public class CommonUtils
 			}
 	        return now;
 	    }
+	 
+	public static XMLGregorianCalendar getXMLGregorianCalendarFromString(String dateString, String format) 	            
+	{	        
+		if (StringUtils.isBlank(dateString))
+			return null;
+		
+		DateTime date = DateTime.parse(dateString, DateTimeFormat.forPattern(format));
+		XMLGregorianCalendar xmlCal = datatypeFactory.newXMLGregorianCalendar(date.toGregorianCalendar());
+		
+		return	xmlCal;
+		
+	}
 	
 	public static String getNowDateTime(String format)
 	{
@@ -738,6 +752,8 @@ public class CommonUtils
 	 
 	 public static XMLGregorianCalendar getXMLGregorianCalendarDateTimestamp(java.sql.Date sqlDate) throws DatatypeConfigurationException
 	 {		
+		 if (sqlDate == null)
+			 return null;
 		 GregorianCalendar cal = new GregorianCalendar();
 		 cal.setTime(sqlDate);
 		 XMLGregorianCalendar gc = datatypeFactory.newXMLGregorianCalendar(cal);
@@ -799,7 +815,10 @@ public class CommonUtils
 	  * @return
 	  */
 	 public static String getCookie(String cookiename, HttpServletRequest request)
-	 {		 
+	 {		 		 
+		 if (request.getCookies() == null)
+			 return "";
+		 
 		 for (Cookie cookie: request.getCookies())
 		 {
 			if (StringUtils.equals(cookie.getName(),cookiename))

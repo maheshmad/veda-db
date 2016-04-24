@@ -12,24 +12,26 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import com.taksila.veda.model.api.base.v1_0.BaseResponse;
+import com.taksila.veda.model.db.classroom.v1_0.Classroom;
+import com.taksila.veda.model.db.usermgmt.v1_0.User;
 
 
 /**
  * 
- * 				This represents the api structure of the CreateNewClassroomResponse response 				
+ * 				Extension of the db model for api response				
  * 			
  * 
- * <p>Java class for CreateClassroomResponse complex type.
+ * <p>Java class for Enrollment complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CreateClassroomResponse">
+ * &lt;complexType name="Enrollment">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/db/classroom/v1_0}Enrollment">
  *       &lt;sequence>
- *         &lt;element name="classroom" type="{http://www.taksila.com/veda/model/api/classroom/v1_0}Classroom"/>
+ *         &lt;element name="student" type="{http://www.taksila.com/veda/model/db/usermgmt/v1_0}User"/>
+ *         &lt;element name="classroom" type="{http://www.taksila.com/veda/model/db/classroom/v1_0}Classroom"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,15 +41,42 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CreateClassroomResponse", propOrder = {
+@XmlType(name = "Enrollment", propOrder = {
+    "student",
     "classroom"
 })
-public class CreateClassroomResponse
-    extends BaseResponse
+public class Enrollment
+    extends com.taksila.veda.model.db.classroom.v1_0.Enrollment
 {
 
     @XmlElement(required = true)
+    protected User student;
+    @XmlElement(required = true)
     protected Classroom classroom;
+
+    /**
+     * Gets the value of the student property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link User }
+     *     
+     */
+    public User getStudent() {
+        return student;
+    }
+
+    /**
+     * Sets the value of the student property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link User }
+     *     
+     */
+    public void setStudent(User value) {
+        this.student = value;
+    }
 
     /**
      * Gets the value of the classroom property.
