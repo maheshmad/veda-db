@@ -27,7 +27,7 @@ public class EnrollmentDAO
 	private String schoolId = null;	
 	private static String insert_enrollment_sql = "INSERT INTO ENROLLMENTS("+ENROLLMENT_TABLE.id.value()+","+
 																			ENROLLMENT_TABLE.classroomid.value()+","+
-																			ENROLLMENT_TABLE.userid.value()+","+
+																			ENROLLMENT_TABLE.userRecordId.value()+","+
 																			ENROLLMENT_TABLE.enrolledOn.value()+","+
 																			ENROLLMENT_TABLE.verifiedBy.value()+","+
 																			ENROLLMENT_TABLE.startDate.value()+","+
@@ -50,7 +50,7 @@ public class EnrollmentDAO
 	private static String get_enrolled_students_sql =  	"	select * "+                
 												    	"		from enrollments as e "+ 
 												        "       join users as u "+ 
-												        "		on e."+ENROLLMENT_TABLE.userid.value()+" = u."+USER_TABLE.userid.value()+
+												        "		on e."+ENROLLMENT_TABLE.userRecordId.value()+" = u."+USER_TABLE.id.value()+
 												        "       where u."+USER_TABLE.roles.value()+" = 'STUDENT' "+
 												        "       and e."+ENROLLMENT_TABLE.classroomid.value()+" = ? ";
 	
@@ -58,13 +58,13 @@ public class EnrollmentDAO
 												    	"		from enrollments as e "+ 
 												        "       join classroom as cl "+ 
 												        "		on e."+ENROLLMENT_TABLE.classroomid.value()+" = cl."+CLASSROOM_TABLE.id.value()+												        
-												        "       where e."+ENROLLMENT_TABLE.userid.value()+" = ? ";
+												        "       where e."+ENROLLMENT_TABLE.userRecordId.value()+" = ? ";
 												        
 	private static String get_enrollment_by_id = "	select * "+                
 											    	"	from enrollments as e, "+
 											    	" classroom as c , users as u "+ 											        
 													" where e."+ENROLLMENT_TABLE.classroomid.value()+" = c."+CLASSROOM_TABLE.id.value()+
-													" and e."+ENROLLMENT_TABLE.userid.value()+" = u."+USER_TABLE.userid.value()+
+													" and e."+ENROLLMENT_TABLE.userRecordId.value()+" = u."+USER_TABLE.id.value()+
 													" and e."+ENROLLMENT_TABLE.id.value()+" = ?";
 											       
 	
@@ -85,7 +85,7 @@ public class EnrollmentDAO
 	private enum ENROLLMENT_TABLE
 	{		
 		id("id"),
-		userid("userid"),
+		userRecordId("user_record_id"),
 		classroomid("classroomid"),
 		enrolledOn("enrolled_on"),
 		verifiedBy("verified_by"),
@@ -126,7 +126,7 @@ public class EnrollmentDAO
 		enrollment.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.lastUpdatedOn.value())));
 		enrollment.setStartDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.startDate.value())));
 		enrollment.setUpdatedBy(resultSet.getString(ENROLLMENT_TABLE.updatedBy.value()));
-		enrollment.setUserId(resultSet.getString(ENROLLMENT_TABLE.userid.value()));
+		enrollment.setUserRecordId(resultSet.getString(ENROLLMENT_TABLE.userRecordId.value()));
 		enrollment.setVerifiedBy(resultSet.getString(ENROLLMENT_TABLE.verifiedBy.value()));
 		if (resultSet.getString(ENROLLMENT_TABLE.status.value()) != null)
 			enrollment.setEnrollStatus(EnrollmentStatusType.fromValue(resultSet.getString(ENROLLMENT_TABLE.status.value())));
@@ -272,7 +272,7 @@ public class EnrollmentDAO
 	{						
 		PreparedStatement stmt = null;	
 		Enrollment enrollment = null;
-		logger.trace("searching enrollments by id ="+enrollid);
+		logger.trace("searching enrollments by id ="+enrollid+" sql = "+get_enrollment_by_id);
 		try
 		{
 			this.sqlDBManager.connect();			
@@ -318,7 +318,7 @@ public class EnrollmentDAO
 			
 			stmt.setString(1, enrollment.getId());
 			stmt.setString(2, enrollment.getClassroomid());
-			stmt.setString(3, enrollment.getUserId());
+			stmt.setString(3, enrollment.getUserRecordId());
 			stmt.setDate(4, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
 			stmt.setString(5, enrollment.getVerifiedBy());
 			stmt.setDate(6, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));

@@ -4,6 +4,9 @@ import java.sql.SQLException;
 import java.util.List;
 
 import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -27,6 +30,8 @@ import com.taksila.veda.model.api.classroom.v1_0.SearchEnrollmentRequest;
 import com.taksila.veda.model.api.classroom.v1_0.SearchEnrollmentResponse;
 import com.taksila.veda.model.api.classroom.v1_0.UpdateEnrollmentRequest;
 import com.taksila.veda.model.api.classroom.v1_0.UpdateEnrollmentResponse;
+import com.taksila.veda.model.db.base.v1_0.UserRole;
+import com.taksila.veda.model.db.classroom.v1_0.EnrollmentStatusType;
 import com.taksila.veda.model.db.usermgmt.v1_0.User;
 import com.taksila.veda.utils.CommonUtils;
 
@@ -76,7 +81,6 @@ public class EnrollmentComponent
 					subtitle += ", Cellphone: "+(student.getCellphone() != null ? student.getCellphone() : "N/A");					
 											
 					rec.setRecordTitle(student.getLastName()+", "+student.getFirstName());
-					rec.setRecordId(student.getId());
 					
 				}
 				rec.setRecordSubtitle(subtitle);				
@@ -164,7 +168,6 @@ public class EnrollmentComponent
 			}
 			else
 			{
-				enrollment.setStudent(this.usersDAO.getUserByUserId(enrollment.getUserId()));
 				resp.setEnrollment(enrollment);
 			}					
 
@@ -201,13 +204,13 @@ public class EnrollmentComponent
 				/*
 				 * generate enrollment id 
 				 */
-				req.getEnrollment().setId(this.generateEnrollmentId(enroll.getUserId(), enroll.getClassroomid()));
+				req.getEnrollment().setId(this.generateEnrollmentId(enroll.getUserRecordId(), enroll.getClassroomid()));
 				
 				Boolean insertsuccess = enrollmentDAO.insertEnrollment(req.getEnrollment());	
 				if (insertsuccess)
 				{
 					resp.setStatus(StatusType.SUCCESS);
-					resp.setMsg("Successfully enrolled for user = "+req.getEnrollment().getUserId()+" in classroom "+req.getEnrollment().getClassroomid());
+					resp.setMsg("Successfully enrolled for user = "+req.getEnrollment().getUserRecordId()+" in classroom "+req.getEnrollment().getClassroomid());
 				}
 				else
 				{
@@ -250,7 +253,7 @@ public class EnrollmentComponent
 				{
 					resp.setStatus(StatusType.SUCCESS);
 					resp.setEnrollment(req.getEnrollment());
-					resp.setMsg("Successfully updated enrollment for user = "+req.getEnrollment().getUserId());
+					resp.setMsg("Successfully updated enrollment for user = "+req.getEnrollment().getUserRecordId());
 				}
 				else
 				{
@@ -311,13 +314,13 @@ public class EnrollmentComponent
 	private ErrorInfo validate(Enrollment enroll) throws Exception
 	{
 		ErrorInfo errorInfo = new ErrorInfo();
-		if (StringUtils.isBlank(enroll.getUserId()))
-			CommonUtils.buildErrorInfo(errorInfo, "userId", "Please provide a valid userid");
+		if (StringUtils.isBlank(enroll.getUserRecordId()))
+			CommonUtils.buildErrorInfo(errorInfo, "userRecordId", "Please provide a valid user record id");
 		else
 		{
-			User user = this.usersDAO.getUserByUserId(enroll.getUserId());			
+			User user = this.usersDAO.getUserById(Integer.parseInt(enroll.getUserRecordId()));			
 			if (user == null)
-				CommonUtils.buildErrorInfo(errorInfo, "userId", "Student not found user id = "+enroll.getUserId());
+				CommonUtils.buildErrorInfo(errorInfo, "userId", "Student not found user id = "+enroll.getUserRecordId());
 		}
 			
 		
@@ -341,6 +344,39 @@ public class EnrollmentComponent
 	{
 		return 	CommonUtils.getSecureHash("user:"+userid+"-class:"+classroomid);
 
+	}
+
+
+	public Enrollment mapFormFields(MultivaluedMap<String, String> formParams, Enrollment enrollment) 
+	{
+
+		for (String key: formParams.keySet())
+		{
+			if (StringUtils.equals(key, "id"))
+				enrollment.setId(formParams.getFirst("id"));
+			
+			if (StringUtils.equals(key, "userRecordId"))
+				enrollment.setUserRecordId(formParams.getFirst("userRecordId"));
+			
+			if (StringUtils.equals(key, "classroomid"))
+				enrollment.setClassroomid(formParams.getFirst("classroomid"));
+			
+			if (StringUtils.equals(key, "verifiedBy"))						
+				enrollment.setVerifiedBy(formParams.getFirst("verifiedBy"));
+			
+			if (StringUtils.equals(key, "enrolledOn"))						
+				enrollment.setEnrolledOn(CommonUtils.getXMLGregorianCalendarFromString(formParams.getFirst("enrolledOn"), "yyyy-MM-dd"));
+			
+			if (StringUtils.equals(key, "enrollStatus"))	
+			{
+				String val = formParams.getFirst("enrollStatus");
+				enrollment.setEnrollStatus(EnrollmentStatusType.fromValue(val));
+			}
+			
+						
+		}
+								
+		return null;
 	}
 	
 	

@@ -16,6 +16,7 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -53,39 +54,26 @@ public class EnrollmentService
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
     public void post(@Context HttpServletRequest request,@Context HttpServletResponse response,
-    		@FormParam("userId") String userid,
-    		@FormParam("classroomid") String classroomid,     		
-    		@FormParam("enrolledOn") String enrolledOn,
-    		@FormParam("verifiedBy") String verifiedByUserid,
-    		@FormParam("startDate") String startDate,
-    		@FormParam("endDate") String endDate,
-    		@FormParam("enrollStatus") String status,
+    		final MultivaluedMap<String, String> formParams,    		
     		@Context UriInfo uri,	
     		@Suspended final AsyncResponse asyncResp) 
     {    	
-		
-		CreateEnrollmentResponse operResp = new CreateEnrollmentResponse();
 		String tenantId = CommonUtils.getSubDomain(uri);
+		EnrollmentComponent enrollmentComp = new EnrollmentComponent(tenantId);
+		CreateEnrollmentResponse operResp = new CreateEnrollmentResponse();
+		
 		logger.trace("processing enrollment creation..");
 		try 
 		{
 			String principalUserId = SecurityUtils.getLoggedInPrincipalUserid(tenantId, request);
-		
+			
 			Enrollment enrollment = new Enrollment();
-			enrollment.setClassroomid(classroomid);
-			enrollment.setEndDate(CommonUtils.getXMLGregorianCalendarFromString(endDate, "MM/dd/yyyy"));
-			enrollment.setStartDate(CommonUtils.getXMLGregorianCalendarFromString(startDate, "MM/dd/yyyy"));
-			enrollment.setEnrolledOn(CommonUtils.getXMLGregorianCalendarFromString(enrolledOn, "MM/dd/yyyy"));
-			if (StringUtils.isNotBlank(status))
-				enrollment.setEnrollStatus(EnrollmentStatusType.fromValue(status));
+			enrollmentComp.mapFormFields(formParams, enrollment);
 			enrollment.setUpdatedBy(principalUserId);
-			enrollment.setUserId(userid);
-			enrollment.setVerifiedBy(verifiedByUserid);						
 			
 			CreateEnrollmentRequest req = new CreateEnrollmentRequest();
 			req.setEnrollment(enrollment);
-						
-			EnrollmentComponent enrollmentComp = new EnrollmentComponent(tenantId);
+			
 			operResp = enrollmentComp.createNewEnrollment(req); 			
 			operResp.setSuccess(true);
 		} 
@@ -156,19 +144,14 @@ public class EnrollmentService
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
 	@Path("/{enrollmentid}")
-	public void updateEnrollment(@Context HttpServletRequest request, @Context UriInfo uri,	
+	public void put(@Context HttpServletRequest request, @Context UriInfo uri,	
 			@PathParam("enrollmentid") String enrollmentid,
-			@FormParam("userId") String userid,
-    		@FormParam("classroomid") String classroomid,     		
-    		@FormParam("enrolledOn") String enrolledOn,
-    		@FormParam("verifiedBy") String verifiedByUserid,
-    		@FormParam("startDate") String startDate,
-    		@FormParam("endDate") String endDate,
-    		@FormParam("enrollStatus") String status,
+    		final MultivaluedMap<String, String> formParams,    		
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
-		UpdateEnrollmentResponse operResp = new UpdateEnrollmentResponse();
 		String schoolId = CommonUtils.getSubDomain(uri);
+		EnrollmentComponent enrollmentComp = new EnrollmentComponent(schoolId);
+		UpdateEnrollmentResponse operResp = new UpdateEnrollmentResponse();		
 		String principalUserId = SecurityUtils.getLoggedInPrincipalUserid(schoolId, request);
 		try
 		{
@@ -176,20 +159,12 @@ public class EnrollmentService
 			
 			Enrollment enrollment = new Enrollment();
 			enrollment.setId(enrollmentid);
-			enrollment.setClassroomid(classroomid);
-			enrollment.setEndDate(CommonUtils.getXMLGregorianCalendarFromString(endDate, "MM/dd/yyyy"));
-			enrollment.setStartDate(CommonUtils.getXMLGregorianCalendarFromString(startDate, "MM/dd/yyyy"));
-			enrollment.setEnrolledOn(CommonUtils.getXMLGregorianCalendarFromString(enrolledOn, "MM/dd/yyyy"));
-			if (StringUtils.isNotBlank(status))
-				enrollment.setEnrollStatus(EnrollmentStatusType.fromValue(status));
 			enrollment.setUpdatedBy(principalUserId);
-			enrollment.setUserId(userid);
-			enrollment.setVerifiedBy(verifiedByUserid);						
+			enrollmentComp.mapFormFields(formParams, enrollment);
 			
 			UpdateEnrollmentRequest req = new UpdateEnrollmentRequest();
 			req.setEnrollment(enrollment);
-						
-			EnrollmentComponent enrollmentComp = new EnrollmentComponent(schoolId);
+									
 			operResp = enrollmentComp.updateEnrollment(req);
 			operResp.setSuccess(true);
 		}
@@ -216,7 +191,7 @@ public class EnrollmentService
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
 	@Path("/{enrollmentid}")
-	public void updateEnrollment(@Context HttpServletRequest request, @Context UriInfo uri,	@PathParam("enrollmentid") String enrollmentid,			
+	public void deleteEnrollment(@Context HttpServletRequest request, @Context UriInfo uri,	@PathParam("enrollmentid") String enrollmentid,			
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
 		DeleteEnrollmentResponse operResp = new DeleteEnrollmentResponse();

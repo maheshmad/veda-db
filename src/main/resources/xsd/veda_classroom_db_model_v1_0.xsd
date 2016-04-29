@@ -15,11 +15,12 @@
 	<xs:element name="title" type="xs:string" />
 	<xs:element name="subTitle" type="xs:string" />
 	<xs:element name="description" type="xs:string" />
-	<xs:element name="verified_by" type="xs:string" />
+	<xs:element name="verifiedBy" type="xs:string" />
 	<xs:element name="classroomid" type="xs:string" />
-	<xs:element name="enrolled_on" type="xs:date" />
-	<xs:element name="start_date" type="xs:date" />
-	<xs:element name="end_date" type="xs:date" />
+	<xs:element name="userRecordId" type="xs:string" />
+	<xs:element name="enrolledOn" type="xs:date" />	
+	<xs:element name="startDate" type="xs:date" />	
+	<xs:element name="endDate" type="xs:date" />	
 	<xs:element name="enrollStatus" type="EnrollmentStatusType" />
 		
 	<xs:simpleType name="EnrollmentStatusType">
@@ -59,12 +60,12 @@
             <xs:extension base="basedb:BaseTable">  
             	<xs:sequence>
 					<xs:element ref="classroomid"/>
-					<xs:element ref="usrmgmt:userId"/>
-					<xs:element ref="enrolled_on"/>	
-					<xs:element ref="verified_by"/>
-					<xs:element ref="start_date"/>	
-					<xs:element ref="end_date" />
-					<xs:element ref="enrollStatus"  />											
+					<xs:element ref="userRecordId"/>
+					<xs:element ref="enrolledOn"/>	
+					<xs:element ref="verifiedBy"/>					
+					<xs:element ref="enrollStatus"  />
+					<xs:element ref="startDate"  />
+					<xs:element ref="endDate"  />											
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>		
