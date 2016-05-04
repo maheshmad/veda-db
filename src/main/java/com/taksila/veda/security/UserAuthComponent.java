@@ -1,18 +1,22 @@
 package com.taksila.veda.security;
 
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.taksila.veda.config.ConfigComponent;
 import com.taksila.veda.db.dao.UserSessionDAO;
 import com.taksila.veda.db.dao.UsersDAO;
 import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
 import com.taksila.veda.model.api.security.v1_0.ResetPasswordResponse;
 import com.taksila.veda.model.api.security.v1_0.UserLoginResponse;
+import com.taksila.veda.model.db.config.v1_0.ConfigId;
 import com.taksila.veda.model.db.security.v1_0.UserSession;
 import com.taksila.veda.model.db.usermgmt.v1_0.User;
 import com.taksila.veda.utils.CommonUtils;
+import com.taksila.veda.utils.EmailUtils;
 import com.taksila.veda.utils.ValidationUtils;
 
 
@@ -38,9 +42,12 @@ public class UserAuthComponent
 		try 
 		{
 			UserSession userSession = userSessionDAO.getValidSession(sessionid);
-			User userInfo = usersDAO.getUserByUserId(userSession.getUserId());
-			resp.setUserInfo(userInfo);
-			resp.setSessionInfo(userSession);
+			if (userSession != null)
+			{
+				User userInfo = usersDAO.getUserByUserId(userSession.getUserId());
+				resp.setUserInfo(userInfo);
+				resp.setSessionInfo(userSession);
+			}			
 		} 
 		catch (Exception e) 
 		{
@@ -78,7 +85,7 @@ public class UserAuthComponent
 				}
 				else
 				{
-					if (this.usersDAO.updatePassword(userSession.getUserId(), CommonUtils.getSecureHash(newPassword)))
+					if (this.usersDAO.updatePassword(userSession.getUserId(), CommonUtils.getSecureHash(newPassword),false))
 					{
 						this.userSessionDAO.invalidateUserSession(userSession.getId());
 						resetResponse.setStatus(StatusType.SUCCESS);
@@ -154,6 +161,79 @@ public class UserAuthComponent
 		}
 		
 		return loginResp;
+	}
+	
+	/**
+	 * 
+	 * @param emailid
+	 * @return
+	 */
+	public ResetPasswordResponse emailPasswordResetLink(String emailid) 
+	{
+		ResetPasswordResponse resetResponse = new ResetPasswordResponse();
+		try 
+		{
+			User user = this.usersDAO.getUserByEmailId(emailid);
+			if(user == null) 
+			{
+				resetResponse.setStatus(StatusType.FAILED);
+				resetResponse.setMsg("We could not locate your account");								
+												
+			} 
+			else 
+			{
+				
+				String randomString = RandomStringUtils.random(8, true, true);
+				String tempPassword = CommonUtils.getSecureHash(randomString);
+				this.usersDAO.updatePassword(user.getUserId(), tempPassword,true);
+				/*
+				 * send invitation email 
+				 */
+				this.sendPasswordResetEmail(user, randomString);	
+				resetResponse.setMsg("Your temporary password has being emailed");								
+				resetResponse.setStatus(StatusType.SUCCESS);
+						
+			}
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			CommonUtils.handleExceptionForResponse(resetResponse, e);
+		}
+		return resetResponse;
+		
+	}
+	
+	
+	/*
+	 * send invitation
+	 */
+	private void sendPasswordResetEmail(User user,String tempPassword) throws Exception
+	{
+		
+		String invitationUrl = ConfigComponent.getConfig(ConfigId.GENERAL_DOMAIN_ROOT);
+		String msg = "Hello "+user.getFirstName()+", <br /><br /><br />"
+				+ "Your password request has being processed. <br />"
+				+ "Please click below to login with your temporary password.<br /><br />"
+				+ "<span style = \"padding-left:16%\">"
+				+ invitationUrl
+				+ "</span><br/><br/><br/>"
+				+ "Your credentials are below.<br /><br />"
+				+ "<div style = \"padding-left:20%\">"
+				+ "User Id : "
+				+ user.getUserId()
+				+ "<br/>Temporary Password : "
+				+ tempPassword  
+				+ "<br/></div>"
+				+ "You will be required to change your password on your first login.<br/><br/>"
+				+ "If you have any questions about your account, please feel free to reach us at support@xxxxxxxxx.com or call us on +1xxxxxx.<br/><br/>"
+				+ "<address>"
+				+ "<br/>";
+		
+		EmailUtils emailUtil = new EmailUtils();
+		emailUtil.sendMail(user.getEmailId(), "support@localhost.com", "Password Reset", msg, null);
+		
+		
 	}
 	
 }

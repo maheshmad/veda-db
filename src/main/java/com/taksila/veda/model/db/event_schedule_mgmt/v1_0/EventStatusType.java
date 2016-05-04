@@ -6,47 +6,41 @@
 //
 
 
-package com.taksila.veda.model.db.base.v1_0;
+package com.taksila.veda.model.db.event_schedule_mgmt.v1_0;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for UserRole.
+ * <p>Java class for EventStatusType.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="UserRole">
+ * &lt;simpleType name="EventStatusType">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="SYSADMIN"/>
- *     &lt;enumeration value="ADMIN"/>
- *     &lt;enumeration value="STUDENT"/>
- *     &lt;enumeration value="TEACHER"/>
- *     &lt;enumeration value="PRINCIPAL"/>
- *     &lt;enumeration value="PARENT"/>
+ *     &lt;enumeration value="IN_PROGRESS"/>
+ *     &lt;enumeration value="NOT_STARTED"/>
+ *     &lt;enumeration value="LOCKED"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "UserRole")
+@XmlType(name = "EventStatusType")
 @XmlEnum
-public enum UserRole {
+public enum EventStatusType {
 
-    SYSADMIN,
-    ADMIN,
-    STUDENT,
-    TEACHER,
-    PRINCIPAL,
-    PARENT;
+    IN_PROGRESS,
+    NOT_STARTED,
+    LOCKED;
 
     public String value() {
         return name();
     }
 
-    public static UserRole fromValue(String v) {
+    public static EventStatusType fromValue(String v) {
         return valueOf(v);
     }
 

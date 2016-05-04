@@ -182,17 +182,17 @@ public class EnrollmentDAO
 	 * @return
 	 * @throws Exception 
 	 */
-	public List<Enrollment> searchEnrollmentsByUserId(String userid) throws Exception
+	public List<Enrollment> searchEnrollmentsByUserRecordId(String userRecordId) throws Exception
 	{
 		List<Enrollment> enrollmentHits = new ArrayList<Enrollment>();				
 		PreparedStatement stmt = null;		
-		logger.trace("searching enrollments by userid ="+userid+ "sql = "+get_enrolled_classes_sql);
-
+		logger.trace("searching enrollments by user record id ="+userRecordId+ "sql = "+get_enrolled_classes_sql);
+ 
 		try
 		{
 			this.sqlDBManager.connect();			
 			stmt = this.sqlDBManager.getPreparedStatement(get_enrolled_classes_sql);
-			stmt.setString(1, userid);
+			stmt.setString(1, userRecordId);
 			
 			ResultSet resultSet = stmt.executeQuery();	
 			while (resultSet.next()) 

@@ -106,12 +106,12 @@ public class EnrollmentComponent
 	 * @param req
 	 * @return
 	 */
-	public SearchEnrollmentResponse searchEnrollmentByUserid(SearchEnrollmentRequest req)
+	public SearchEnrollmentResponse searchEnrollmentByUserRecordid(SearchEnrollmentRequest req)
 	{
 		SearchEnrollmentResponse resp = new SearchEnrollmentResponse();
 		try 
 		{
-			List<Enrollment> enrollmentSearchHits = enrollmentDAO.searchEnrollmentsByUserId(req.getQuery());
+			List<Enrollment> enrollmentSearchHits = enrollmentDAO.searchEnrollmentsByUserRecordId(req.getQuery());
 			
 			for(Enrollment enrollment: enrollmentSearchHits)
 			{
@@ -347,7 +347,7 @@ public class EnrollmentComponent
 	}
 
 
-	public Enrollment mapFormFields(MultivaluedMap<String, String> formParams, Enrollment enrollment) 
+	public void mapFormFields(MultivaluedMap<String, String> formParams, Enrollment enrollment) 
 	{
 
 		for (String key: formParams.keySet())
@@ -376,7 +376,6 @@ public class EnrollmentComponent
 						
 		}
 								
-		return null;
 	}
 	
 	

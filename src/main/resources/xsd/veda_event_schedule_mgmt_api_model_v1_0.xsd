@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<xs:schema xmlns="http://www.taksila.com/veda/model/api/event_schedule_mgmt/v1_0"
+	targetNamespace="http://www.taksila.com/veda/model/api/event_schedule_mgmt/v1_0"
+	xmlns:base="http://www.taksila.com/veda/model/api/base/v1_0"
+	xmlns:schedb="http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0"		
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+	elementFormDefault="qualified">
+	
+	<xs:import schemaLocation="veda_event_schedule_mgmt_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0"></xs:import>
+	<xs:import schemaLocation="veda_base_model_v1.0.xsd" namespace="http://www.taksila.com/veda/model/api/base/v1_0"></xs:import>
+	
+	<!-- APIs -->
+	
+	
+	<!-- EventSchedules -->	
+	<xs:complexType name="GetEventScheduleRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetUserRequest api request 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+					<xs:element ref="base:id" />							
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="GetEventScheduleResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetUserResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="eventSchedule" type="schedb:EventSchedule" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="SearchEventScheduleRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchEventScheduleRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchRequest">  
+            	<xs:sequence>											
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="SearchEventScheduleResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchEventScheduleResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+           <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="eventSchedule" type="schedb:EventSchedule" minOccurs="0" maxOccurs="unbounded" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CreateEventScheduleRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateNewEventScheduleRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="eventSchedule" type="schedb:EventSchedule" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="CreateEventScheduleResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateNewEventScheduleResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="eventSchedule" type="schedb:EventSchedule" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateEventScheduleRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateEventScheduleRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="eventSchedule" type="schedb:EventSchedule" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateEventScheduleResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateEventScheduleResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="eventSchedule" type="schedb:EventSchedule" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteEventScheduleRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteEventScheduleRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element ref="base:id" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteEventScheduleResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteEventScheduleResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            						
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>	
+	
+	
+		
+</xs:schema>
+

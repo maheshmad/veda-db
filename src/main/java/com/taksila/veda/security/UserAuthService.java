@@ -130,6 +130,47 @@ public class UserAuthService
 		        
     }
 	
+	/*
+	 * Login using local LDAP without oauth
+	 */
+	@POST
+	@Path("/forgotpassword")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@ManagedAsync
+    public void resetPassword(	@FormParam("email") String emailid,    		
+    		@Context HttpServletRequest request,
+    		@Context HttpServletResponse response,
+    		@Context UriInfo uri,    		
+    		@Suspended final AsyncResponse asyncResp) 
+    {    	
+		ResetPasswordResponse resetPswdResp = new ResetPasswordResponse();
+		try 
+		{
+			logger.trace("About to reset the password for user = "+emailid);			
+			String tenantId = CommonUtils.getSubDomain(uri.getBaseUri());				
+			resetPswdResp.setSuccess(true);
+			/*
+			 * get user info
+			 */			
+			UserAuthComponent userAuthComponent = new UserAuthComponent(tenantId);
+			resetPswdResp = userAuthComponent.emailPasswordResetLink(emailid);
+//			logger.trace(CommonUtils.toJson(resetPswdResp));	
+			resetPswdResp.setSuccess(true);			
+			asyncResp.resume(Response.ok(resetPswdResp).build());
+			
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			CommonUtils.handleExceptionForResponse(resetPswdResp, e);		
+		}
+		
+		resetPswdResp.setSuccess(true);
+		asyncResp.resume(Response.ok(resetPswdResp).build());
+		        
+    }
+	
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -148,14 +189,18 @@ public class UserAuthService
 		 * get user info
 		 */
 		UserAuthComponent userAuthComponent = new UserAuthComponent(tenantId);
-		UserLoginResponse userInfoResp = userAuthComponent.getLoggedInUser(authSessionId);
+		UserLoginResponse userInfoResp = userAuthComponent.getLoggedInUser(authSessionId);		
 		
-		if (userInfoResp.getErrorInfo() != null)
+		if (userInfoResp.getErrorInfo() != null || userInfoResp.getSessionInfo() == null)
 		{			
+			userInfoResp.setStatus(StatusType.INVALID);
+			userInfoResp.setSuccess(false);
 			asyncResp.resume(Response.status(403).entity(userInfoResp).build());
 		}
 		else
 		{			
+			userInfoResp.setStatus(StatusType.SUCCESS);
+			userInfoResp.setSuccess(true);
 			asyncResp.resume(Response.ok(userInfoResp).build());
 		}		
 		

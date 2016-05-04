@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<xs:schema xmlns="http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0"
+	targetNamespace="http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:basedb="http://www.taksila.com/veda/model/db/base/v1_0" 
+	attributeFormDefault="unqualified"
+	elementFormDefault="qualified">
+	
+	<xs:import schemaLocation="veda_base_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/base/v1_0"></xs:import>
+	
+	<xs:element name="eventTitle" type="xs:string" />
+	<xs:element name="eventDescription" type="xs:string" />	
+	<xs:element name="eventRecordId" type="xs:string" />
+	<xs:element name="eventStartDate" type="xs:date" />	
+	<xs:element name="eventEndDate" type="xs:date" />	
+	<xs:element name="eventType" type="EventType" />
+	<xs:element name="eventStatus" type="EventStatusType" />
+		
+	<xs:simpleType name="EventType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CLASSROOM" />			
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="EventStatusType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="IN_PROGRESS" />
+			<xs:enumeration value="NOT_STARTED" />
+			<xs:enumeration value="LOCKED" />			
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:complexType name="EventSchedule">
+		<xs:annotation>
+			<xs:documentation>
+				Event schedule						
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+            <xs:extension base="basedb:BaseTable">  
+            	<xs:sequence>
+					<xs:element ref="eventRecordId"/>
+					<xs:element ref="eventStartDate"/>
+					<xs:element ref="eventEndDate"/>
+					<xs:element ref="eventType"/>
+					<xs:element ref="eventStatus"/>
+					<xs:element ref="eventTitle"/>
+					<xs:element ref="eventDescription"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>		
+	</xs:complexType>
+	
+		
+</xs:schema>
+

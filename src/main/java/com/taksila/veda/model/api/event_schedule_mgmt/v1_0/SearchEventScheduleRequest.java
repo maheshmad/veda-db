@@ -6,26 +6,27 @@
 //
 
 
-package com.taksila.veda.model.db.base.v1_0;
+package com.taksila.veda.model.api.event_schedule_mgmt.v1_0;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import com.taksila.veda.model.api.base.v1_0.SearchRequest;
 
 
 /**
  * 
- * 				Records user activities and keep a log of it.							
+ * 				This represents the api structure of the SearchEventScheduleRequest				
  * 			
  * 
- * <p>Java class for Activity complex type.
+ * <p>Java class for SearchEventScheduleRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="Activity">
+ * &lt;complexType name="SearchEventScheduleRequest">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/db/base/v1_0}BaseTable">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}SearchRequest">
  *       &lt;sequence>
  *       &lt;/sequence>
  *     &lt;/extension>
@@ -36,9 +37,9 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Activity")
-public class Activity
-    extends BaseTable
+@XmlType(name = "SearchEventScheduleRequest")
+public class SearchEventScheduleRequest
+    extends SearchRequest
 {
 
 

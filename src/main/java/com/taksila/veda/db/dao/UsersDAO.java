@@ -80,6 +80,7 @@ public class UsersDAO
 	
 	private static String search_users_by_id_sql = "SELECT * FROM USERS WHERE "+USER_TABLE.id.value()+" = ?";
 	private static String search_users_by_userid_sql = "SELECT * FROM USERS WHERE "+USER_TABLE.userid.value()+" = ?";
+	private static String search_users_by_emailid_sql = "SELECT * FROM USERS WHERE "+USER_TABLE.emailid.value()+" = ?";
 	private static String authenticate_user_sql = "SELECT * FROM USERS WHERE ("+
 													USER_TABLE.userid.value()+" = ? OR "+
 													USER_TABLE.emailid.value()+" = ?) AND "+
@@ -225,6 +226,42 @@ public class UsersDAO
 				
 	}
 	
+	
+	
+	/**
+	 * 
+	 * @param id
+	 * @return
+	 * @throws Exception 
+	 */
+	public User getUserByEmailId(String emailid) throws Exception
+	{						
+		PreparedStatement stmt = null;	
+		User user = null;
+		try
+		{
+			this.sqlDBManager.connect();
+			stmt = this.sqlDBManager.getPreparedStatement(search_users_by_emailid_sql);
+			stmt.setString(1, emailid);
+			ResultSet resultSet = stmt.executeQuery();	
+			if (resultSet.next()) 
+			{
+				user = mapRow(resultSet);
+			}
+			
+			return user;
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally
+		{
+			this.sqlDBManager.close(stmt);
+		}
+				
+	}
 	
 	/**
 	 * 
@@ -523,7 +560,7 @@ public class UsersDAO
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean updatePassword(String userId, String passwordHash) throws Exception 
+	public boolean updatePassword(String userId, String passwordHash, Boolean temporary) throws Exception 
 	{
 		logger.debug("Entering into updatePassword():::::");		
 		PreparedStatement stmt = null;
@@ -534,7 +571,7 @@ public class UsersDAO
 			stmt = this.sqlDBManager.getPreparedStatement(update_user_password);
 			
 			stmt.setString(1, passwordHash);
-			stmt.setBoolean(2, false);
+			stmt.setBoolean(2, temporary);
 			stmt.setString(3, userId);
 						
 			int t = stmt.executeUpdate();

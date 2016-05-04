@@ -1,10 +1,9 @@
-package com.taksila.veda.classroom;
+package com.taksila.veda.eventschedulemgmt;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -19,32 +18,30 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ManagedAsync;
 
-import com.taksila.veda.model.api.classroom.v1_0.CreateEnrollmentRequest;
-import com.taksila.veda.model.api.classroom.v1_0.CreateEnrollmentResponse;
-import com.taksila.veda.model.api.classroom.v1_0.DeleteEnrollmentRequest;
-import com.taksila.veda.model.api.classroom.v1_0.DeleteEnrollmentResponse;
-import com.taksila.veda.model.api.classroom.v1_0.Enrollment;
-import com.taksila.veda.model.api.classroom.v1_0.GetEnrollmentRequest;
-import com.taksila.veda.model.api.classroom.v1_0.GetEnrollmentResponse;
-import com.taksila.veda.model.api.classroom.v1_0.SearchEnrollmentRequest;
-import com.taksila.veda.model.api.classroom.v1_0.SearchEnrollmentResponse;
-import com.taksila.veda.model.api.classroom.v1_0.UpdateEnrollmentRequest;
-import com.taksila.veda.model.api.classroom.v1_0.UpdateEnrollmentResponse;
-import com.taksila.veda.model.db.classroom.v1_0.EnrollmentStatusType;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.CreateEventScheduleRequest;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.CreateEventScheduleResponse;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.DeleteEventScheduleRequest;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.DeleteEventScheduleResponse;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.GetEventScheduleRequest;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.GetEventScheduleResponse;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.SearchEventScheduleRequest;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.SearchEventScheduleResponse;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.UpdateEventScheduleRequest;
+import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.UpdateEventScheduleResponse;
+import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventSchedule;
 import com.taksila.veda.security.SecurityUtils;
 import com.taksila.veda.utils.CommonUtils;
 
-@Path("/enrollment")
-public class EnrollmentService 
+@Path("/eventschedule")
+public class EventScheduleMgmtService 
 {
-	static Logger logger = LogManager.getLogger(EnrollmentService.class.getName());	
+	static Logger logger = LogManager.getLogger(EventScheduleMgmtService.class.getName());	
 		
 	/**
 	 * 	 
@@ -59,22 +56,22 @@ public class EnrollmentService
     		@Suspended final AsyncResponse asyncResp) 
     {    	
 		String tenantId = CommonUtils.getSubDomain(uri);
-		EnrollmentComponent enrollmentComp = new EnrollmentComponent(tenantId);
-		CreateEnrollmentResponse operResp = new CreateEnrollmentResponse();
+		EventScheduleMgmtComponent eventScheduleComp = new EventScheduleMgmtComponent(tenantId);
+		CreateEventScheduleResponse operResp = new CreateEventScheduleResponse();
 		
-		logger.trace("processing enrollment creation..");
+		logger.trace("processing eventSchedule creation..");
 		try 
 		{
 			String principalUserId = SecurityUtils.getLoggedInPrincipalUserid(tenantId, request);
 			
-			Enrollment enrollment = new Enrollment();
-			enrollmentComp.mapFormFields(formParams, enrollment);
-			enrollment.setUpdatedBy(principalUserId);
+			EventSchedule eventSchedule = new EventSchedule();
+			eventScheduleComp.mapFormFields(formParams, eventSchedule);
+			eventSchedule.setUpdatedBy(principalUserId);
 			
-			CreateEnrollmentRequest req = new CreateEnrollmentRequest();
-			req.setEnrollment(enrollment);
+			CreateEventScheduleRequest req = new CreateEventScheduleRequest();
+			req.setEventSchedule(eventSchedule);
 			
-			operResp = enrollmentComp.createNewEnrollment(req); 			
+			operResp = eventScheduleComp.createNewEventSchedule(req); 			
 			operResp.setSuccess(true);
 		} 
 		catch (Exception ex) 
@@ -91,28 +88,28 @@ public class EnrollmentService
 	 * 
 	 * @param request
 	 * @param uri
-	 * @param enrollmentid
+	 * @param eventScheduleid
 	 * @param resp
 	 * @param asyncResp
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@ManagedAsync
-	@Path("/{enrollmentid}")
+	@Path("/{id}")
 	public void getLoggedInUserInfo(@Context HttpServletRequest request, @Context UriInfo uri,		
-			@PathParam("enrollmentid") String enrollmentid,
+			@PathParam("id") String eventScheduleid,
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
 		
-		GetEnrollmentResponse operResp = new GetEnrollmentResponse();
+		GetEventScheduleResponse operResp = new GetEventScheduleResponse();
 		try 
 		{
-			GetEnrollmentRequest req = new GetEnrollmentRequest();
-			req.setId(enrollmentid);;
+			GetEventScheduleRequest req = new GetEventScheduleRequest();
+			req.setId(eventScheduleid);;
 			
 			String schoolId = CommonUtils.getSubDomain(uri);
-			EnrollmentComponent enrollmentComp = new EnrollmentComponent(schoolId);
-			operResp = enrollmentComp.getEnrollment(req); 			
+			EventScheduleMgmtComponent eventScheduleComp = new EventScheduleMgmtComponent(schoolId);
+			operResp = eventScheduleComp.getEventSchedule(req); 			
 			operResp.setSuccess(true);
 		} 
 		catch (Exception ex) 
@@ -132,7 +129,7 @@ public class EnrollmentService
 	 * @param request
 	 * @param uri
 	 * @param name
-	 * @param enrollmentid
+	 * @param eventScheduleid
 	 * @param title
 	 * @param subtitle
 	 * @param description
@@ -143,29 +140,29 @@ public class EnrollmentService
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
-	@Path("/{enrollmentid}")
+	@Path("/{id}")
 	public void put(@Context HttpServletRequest request, @Context UriInfo uri,	
-			@PathParam("enrollmentid") String enrollmentid,
+			@PathParam("id") String eventScheduleid,
     		final MultivaluedMap<String, String> formParams,    		
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
 		String schoolId = CommonUtils.getSubDomain(uri);
-		EnrollmentComponent enrollmentComp = new EnrollmentComponent(schoolId);
-		UpdateEnrollmentResponse operResp = new UpdateEnrollmentResponse();		
+		EventScheduleMgmtComponent eventScheduleComp = new EventScheduleMgmtComponent(schoolId);
+		UpdateEventScheduleResponse operResp = new UpdateEventScheduleResponse();		
 		String principalUserId = SecurityUtils.getLoggedInPrincipalUserid(schoolId, request);
 		try
 		{
-			logger.trace("About to update enrollment record = "+enrollmentid);
+			logger.trace("About to update eventSchedule record = "+eventScheduleid);
 			
-			Enrollment enrollment = new Enrollment();
-			enrollment.setId(enrollmentid);
-			enrollment.setUpdatedBy(principalUserId);
-			enrollmentComp.mapFormFields(formParams, enrollment);
+			EventSchedule eventSchedule = new EventSchedule();
+			eventSchedule.setId(eventScheduleid);
+			eventSchedule.setUpdatedBy(principalUserId);
+			eventScheduleComp.mapFormFields(formParams, eventSchedule);
 			
-			UpdateEnrollmentRequest req = new UpdateEnrollmentRequest();
-			req.setEnrollment(enrollment);
+			UpdateEventScheduleRequest req = new UpdateEventScheduleRequest();
+			req.setEventSchedule(eventSchedule);
 									
-			operResp = enrollmentComp.updateEnrollment(req);
+			operResp = eventScheduleComp.updateEventSchedule(req);
 			operResp.setSuccess(true);
 		}
 		catch(Exception ex)
@@ -182,7 +179,7 @@ public class EnrollmentService
 	 * 
 	 * @param request
 	 * @param uri
-	 * @param enrollmentid
+	 * @param eventScheduleid
 	 * @param resp
 	 * @param asyncResp
 	 */
@@ -190,20 +187,20 @@ public class EnrollmentService
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
-	@Path("/{enrollmentid}")
-	public void deleteEnrollment(@Context HttpServletRequest request, @Context UriInfo uri,	@PathParam("enrollmentid") String enrollmentid,			
+	@Path("/{id}")
+	public void deleteEventSchedule(@Context HttpServletRequest request, @Context UriInfo uri,	@PathParam("id") String eventScheduleid,			
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
-		DeleteEnrollmentResponse operResp = new DeleteEnrollmentResponse();
+		DeleteEventScheduleResponse operResp = new DeleteEventScheduleResponse();
 		try
 		{
-			logger.trace("About to delete enrollment record = "+enrollmentid);						
+			logger.trace("About to delete eventSchedule record = "+eventScheduleid);						
 			
 			String schoolId = CommonUtils.getSubDomain(uri);
-			EnrollmentComponent enrollmentComp = new EnrollmentComponent(schoolId);
-			DeleteEnrollmentRequest req = new DeleteEnrollmentRequest();
-			req.setId(enrollmentid);
-			operResp = enrollmentComp.deleteEnrollment(req);
+			EventScheduleMgmtComponent eventScheduleComp = new EventScheduleMgmtComponent(schoolId);
+			DeleteEventScheduleRequest req = new DeleteEventScheduleRequest();
+			req.setId(eventScheduleid);
+			operResp = eventScheduleComp.deleteEventSchedule(req);
 			operResp.setSuccess(true);
 		}
 		catch(Exception ex)
@@ -230,20 +227,19 @@ public class EnrollmentService
 	@Produces(MediaType.APPLICATION_JSON)
 	@ManagedAsync
 	@Path("/search")
-	public void searchEnrollments(@Context HttpServletRequest request, @Context UriInfo uri,@Context HttpServletResponse resp,
-			@QueryParam("urecid") String userRecordId,
-			@QueryParam("classroomid") String classroomid,
+	public void searchEventSchedules(@Context HttpServletRequest request, @Context UriInfo uri,@Context HttpServletResponse resp,
+			@QueryParam("eventRecordid") String eventRecordid,
 			@QueryParam("page") String page,
 			@QueryParam("start") String start, 
 			@Suspended final AsyncResponse asyncResp)
 	{    				
 		
-		logger.trace("inside search enrollment query = "+classroomid);
+		logger.trace("inside event eventSchedule query = "+eventRecordid);
 		
-		SearchEnrollmentResponse searchResp = new SearchEnrollmentResponse();		
-		SearchEnrollmentRequest req = new SearchEnrollmentRequest();
+		SearchEventScheduleResponse searchResp = new SearchEventScheduleResponse();		
+		SearchEventScheduleRequest req = new SearchEventScheduleRequest();
 		String schoolId = CommonUtils.getSubDomain(uri);
-		EnrollmentComponent enrollmentComp = new EnrollmentComponent(schoolId);
+		EventScheduleMgmtComponent eventScheduleComp = new EventScheduleMgmtComponent(schoolId);
 		
 		try 
 		{
@@ -252,18 +248,11 @@ public class EnrollmentService
 			if (StringUtils.isNotBlank(start))		
 				req.setPageOffset(Integer.valueOf(start));
 						
-			req.setRecordType("ENROLLMENT");
+			req.setRecordType("EVENTS-SCHEDULE");
 			
-			if (StringUtils.isBlank(userRecordId))
-			{
-				req.setQuery(classroomid);
-				searchResp = enrollmentComp.searchEnrollmentByClassroom(req);
-			}
-			else
-			{
-				req.setQuery(userRecordId);
-				searchResp = enrollmentComp.searchEnrollmentByUserRecordid(req);
-			}
+			req.setQuery(eventRecordid);
+			searchResp = eventScheduleComp.searchEventSchedule(req);
+			
 						
 		} 
 		catch (Exception e) 

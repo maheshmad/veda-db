@@ -6,29 +6,34 @@
 //
 
 
-package com.taksila.veda.model.api.base.v1_0;
+package com.taksila.veda.model.api.event_schedule_mgmt.v1_0;
 
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import com.taksila.veda.model.api.base.v1_0.BaseResponse;
+import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventSchedule;
 
 
 /**
- * <p>Java class for ErrorInfo complex type.
+ * 
+ * 				This represents the api structure of the SearchEventScheduleResponse response 				
+ * 			
+ * 
+ * <p>Java class for SearchEventScheduleResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="ErrorInfo">
+ * &lt;complexType name="SearchEventScheduleResponse">
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
  *       &lt;sequence>
- *         &lt;element ref="{http://www.taksila.com/veda/model/api/base/v1_0}errors" maxOccurs="unbounded"/>
+ *         &lt;element name="eventSchedule" type="{http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0}EventSchedule" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *     &lt;/restriction>
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -36,41 +41,42 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ErrorInfo", propOrder = {
-    "errors"
+@XmlType(name = "SearchEventScheduleResponse", propOrder = {
+    "eventSchedule"
 })
-public class ErrorInfo {
+public class SearchEventScheduleResponse
+    extends BaseResponse
+{
 
-    @XmlElement(required = true)
-    protected List<Err> errors;
+    protected List<EventSchedule> eventSchedule;
 
     /**
-     * Gets the value of the errors property.
+     * Gets the value of the eventSchedule property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the errors property.
+     * This is why there is not a <CODE>set</CODE> method for the eventSchedule property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getErrors().add(newItem);
+     *    getEventSchedule().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Err }
+     * {@link EventSchedule }
      * 
      * 
      */
-    public List<Err> getErrors() {
-        if (errors == null) {
-            errors = new ArrayList<Err>();
+    public List<EventSchedule> getEventSchedule() {
+        if (eventSchedule == null) {
+            eventSchedule = new ArrayList<EventSchedule>();
         }
-        return this.errors;
+        return this.eventSchedule;
     }
 
 }
