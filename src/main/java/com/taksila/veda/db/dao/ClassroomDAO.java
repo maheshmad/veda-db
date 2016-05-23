@@ -26,12 +26,14 @@ public class ClassroomDAO
 {
 	private String schoolId = null;	
 	private static String insert_classroom_sql = "INSERT INTO CLASSROOM("+CLASSROOM_TABLE.classname.value()+","+
+																			CLASSROOM_TABLE.courseRecordId.value()+","+
 																			CLASSROOM_TABLE.title.value()+","+
 																			CLASSROOM_TABLE.subTitle.value()+","+
 																			CLASSROOM_TABLE.description.value()+") "+
-																	"VALUES (?,?,?,?);";		
+																	"VALUES (?,?,?,?,?);";		
 	
 	private static String update_classroom_sql = "UPDATE CLASSROOM SET "+CLASSROOM_TABLE.classname.value()+" = ? ,"+
+															CLASSROOM_TABLE.courseRecordId.value()+" = ? ,"+
 															CLASSROOM_TABLE.title.value()+" = ? ,"+
 															CLASSROOM_TABLE.subTitle.value()+" = ? ,"+
 															CLASSROOM_TABLE.description.value()+" = ? "+
@@ -63,6 +65,7 @@ public class ClassroomDAO
 	public enum CLASSROOM_TABLE
 	{
 		id("classroomid"),
+		courseRecordId("course_record_id"),
 		classname("name"),
 		title("title"),
 		subTitle("sub_title"),
@@ -86,6 +89,7 @@ public class ClassroomDAO
 		Classroom classroom = new Classroom();		
 		
 		classroom.setId(String.valueOf(resultSet.getInt(CLASSROOM_TABLE.id.value())));
+		classroom.setCourseRecordId(String.valueOf(resultSet.getString(CLASSROOM_TABLE.courseRecordId.value())));
 		classroom.setName(resultSet.getString(CLASSROOM_TABLE.classname.value()));
 		classroom.setTitle(resultSet.getString(CLASSROOM_TABLE.title.value()));
 		classroom.setSubTitle(resultSet.getString(CLASSROOM_TABLE.subTitle.value()));
@@ -190,10 +194,11 @@ public class ClassroomDAO
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(insert_classroom_sql);
 			
-			stmt.setString(1, classroom.getName());
-			stmt.setString(2, classroom.getTitle());
-			stmt.setString(3, classroom.getSubTitle());
-			stmt.setString(4, classroom.getDescription());
+			stmt.setString(1, classroom.getCourseRecordId());
+			stmt.setString(2, classroom.getName());
+			stmt.setString(3, classroom.getTitle());
+			stmt.setString(4, classroom.getSubTitle());
+			stmt.setString(5, classroom.getDescription());
 			
 			stmt.executeUpdate();			
 			ResultSet rs = stmt.getGeneratedKeys();			
@@ -233,11 +238,12 @@ public class ClassroomDAO
 			this.sqlDBManager.connect();	
 			stmt = this.sqlDBManager.getPreparedStatement(update_classroom_sql);
 			
-			stmt.setString(1, classroom.getName());
-			stmt.setString(2, classroom.getTitle());
-			stmt.setString(3, classroom.getSubTitle());
-			stmt.setString(4, classroom.getDescription());
-			stmt.setInt(5, Integer.valueOf(classroom.getId()));
+			stmt.setString(1, classroom.getCourseRecordId());
+			stmt.setString(2, classroom.getName());
+			stmt.setString(3, classroom.getTitle());
+			stmt.setString(4, classroom.getSubTitle());
+			stmt.setString(5, classroom.getDescription());
+			stmt.setInt(6, Integer.valueOf(classroom.getId()));
 			
 			int t = stmt.executeUpdate();
 			if (t > 0)

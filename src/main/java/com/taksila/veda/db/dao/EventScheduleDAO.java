@@ -22,7 +22,7 @@ public class EventScheduleDAO
 {
 	private String schoolId = null;	
 	
-	private static String insert_eventSchedule_sql = "INSERT INTO EVENT_SCHEDULE("+EVENT_SCHEDULE_TABLE.id.value()+","+
+	private static String insert_eventSchedule_sql = "INSERT INTO EVENT_SCHEDULE("+
 																			EVENT_SCHEDULE_TABLE.eventRecordId.value()+","+
 																			EVENT_SCHEDULE_TABLE.startDatetime.value()+","+
 																			EVENT_SCHEDULE_TABLE.endDatetime.value()+","+
@@ -31,7 +31,7 @@ public class EventScheduleDAO
 																			EVENT_SCHEDULE_TABLE.updatedBy.value()+","+
 																			EVENT_SCHEDULE_TABLE.eventType.value()+","+		
 																			EVENT_SCHEDULE_TABLE.eventStatus.value()+") "+
-																	"VALUES (?,?,?,?,?,?,?,?,?);";		
+																	"VALUES (?,?,?,?,?,?,?,?);";		
 	
 	private static String update_eventSchedule_sql = "UPDATE EVENT_SCHEDULE SET "+EVENT_SCHEDULE_TABLE.eventRecordId.value()+" = ? ,"+
 																			EVENT_SCHEDULE_TABLE.startDatetime.value()+" = ? ,"+
@@ -122,11 +122,11 @@ public class EventScheduleDAO
 	{
 		EventSchedule eventSchedule = new EventSchedule();		
 		
-		eventSchedule.setId(resultSet.getString(EVENT_SCHEDULE_TABLE.id.value()));
+		eventSchedule.setId(String.valueOf(resultSet.getInt(EVENT_SCHEDULE_TABLE.id.value())));
 		eventSchedule.setEventRecordId(resultSet.getString(EVENT_SCHEDULE_TABLE.eventRecordId.value()));
-		eventSchedule.setEventStartDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(EVENT_SCHEDULE_TABLE.startDatetime.value())));
-		eventSchedule.setEventEndDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(EVENT_SCHEDULE_TABLE.endDatetime.value())));
-		eventSchedule.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(EVENT_SCHEDULE_TABLE.lastUpdatedOn.value())));
+		eventSchedule.setEventStartDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.startDatetime.value())));
+		eventSchedule.setEventEndDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.endDatetime.value())));
+		eventSchedule.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.lastUpdatedOn.value())));
 		eventSchedule.setUpdatedBy(resultSet.getString(EVENT_SCHEDULE_TABLE.updatedBy.value()));
 		eventSchedule.setEventTitle(resultSet.getString(EVENT_SCHEDULE_TABLE.eventTitle.value()));
 		eventSchedule.setEventDescription(resultSet.getString(EVENT_SCHEDULE_TABLE.eventDescription.value()));
@@ -263,7 +263,7 @@ public class EventScheduleDAO
 	 * @return
 	 * @throws Exception
 	 */	
-	public Boolean insertEventSchedule(EventSchedule eventSchedule) throws Exception 
+	public EventSchedule insertEventSchedule(EventSchedule eventSchedule) throws Exception 
 	{
 		logger.debug("Entering into insertEventSchedule():::::");
 		this.sqlDBManager.connect();	
@@ -272,29 +272,31 @@ public class EventScheduleDAO
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(insert_eventSchedule_sql);
 						
-			stmt.setString(1, eventSchedule.getId());
-			stmt.setString(2, eventSchedule.getEventRecordId());			
-			stmt.setDate(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
-			stmt.setDate(4, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
-			stmt.setString(5, eventSchedule.getEventTitle());
-			stmt.setString(6, eventSchedule.getEventDescription());			
-			stmt.setString(7, eventSchedule.getUpdatedBy());
+			stmt.setString(1, eventSchedule.getEventRecordId());			
+			stmt.setTimestamp(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
+			stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
+			stmt.setString(4, eventSchedule.getEventTitle());
+			stmt.setString(5, eventSchedule.getEventDescription());			
+			stmt.setString(6, eventSchedule.getUpdatedBy());
 			
 			if (eventSchedule.getEventType() != null)
-				stmt.setString(8, eventSchedule.getEventType().value());
+				stmt.setString(7, eventSchedule.getEventType().value());
+			else
+				stmt.setString(7, null);
+			
+			if (eventSchedule.getEventStatus() != null)
+				stmt.setString(8, eventSchedule.getEventStatus().value());
 			else
 				stmt.setString(8, null);
 			
-			if (eventSchedule.getEventStatus() != null)
-				stmt.setString(9, eventSchedule.getEventStatus().value());
-			else
-				stmt.setString(9, null);
-									
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
+			stmt.executeUpdate();	
+			ResultSet rs = stmt.getGeneratedKeys();			
+			if (rs.next())
+			{
+				eventSchedule.setId(String.valueOf(rs.getInt(1)));
+			}
+			
+			return eventSchedule;
 			
 		}
 		catch(Exception ex)
@@ -326,11 +328,11 @@ public class EventScheduleDAO
 			stmt = this.sqlDBManager.getPreparedStatement(update_eventSchedule_sql);			
 			
 			stmt.setString(1, eventSchedule.getEventRecordId());			
-			stmt.setDate(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
-			stmt.setDate(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
+			stmt.setTimestamp(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
+			stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
 			stmt.setString(4, eventSchedule.getEventTitle());
 			stmt.setString(5, eventSchedule.getEventDescription());			
-			stmt.setDate(6, CommonUtils.geSQLDateTimestamp(CommonUtils.getXMLGregorianCalendarNow()));
+			stmt.setTimestamp(6, CommonUtils.geSQLDateTimestamp(CommonUtils.getXMLGregorianCalendarNow()));
 			stmt.setString(7, eventSchedule.getUpdatedBy());
 			if (eventSchedule.getEventType() != null)
 				stmt.setString(8, eventSchedule.getEventType().value());
@@ -342,7 +344,7 @@ public class EventScheduleDAO
 			else
 				stmt.setString(9, null);
 			
-			stmt.setString(10, eventSchedule.getId());
+			stmt.setInt(10, Integer.parseInt(eventSchedule.getId()));
 			
 			int t = stmt.executeUpdate();
 			if (t > 0)
@@ -376,7 +378,7 @@ public class EventScheduleDAO
 		try
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(delete_eventSchedule_sql);
-			stmt.setString(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			int t = stmt.executeUpdate();
 			if (t > 0)
 				return true;

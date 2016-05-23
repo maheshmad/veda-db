@@ -32,7 +32,6 @@ import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.GetEventScheduleReque
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.GetEventScheduleResponse;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.SearchEventScheduleRequest;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.SearchEventScheduleResponse;
-import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.UpdateEventScheduleRequest;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.UpdateEventScheduleResponse;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventSchedule;
 import com.taksila.veda.security.SecurityUtils;
@@ -123,16 +122,12 @@ public class EventScheduleMgmtService
 	}
 		
 	
-	
 	/**
 	 * 
 	 * @param request
 	 * @param uri
-	 * @param name
 	 * @param eventScheduleid
-	 * @param title
-	 * @param subtitle
-	 * @param description
+	 * @param formParams
 	 * @param resp
 	 * @param asyncResp
 	 */
@@ -153,16 +148,8 @@ public class EventScheduleMgmtService
 		try
 		{
 			logger.trace("About to update eventSchedule record = "+eventScheduleid);
-			
-			EventSchedule eventSchedule = new EventSchedule();
-			eventSchedule.setId(eventScheduleid);
-			eventSchedule.setUpdatedBy(principalUserId);
-			eventScheduleComp.mapFormFields(formParams, eventSchedule);
-			
-			UpdateEventScheduleRequest req = new UpdateEventScheduleRequest();
-			req.setEventSchedule(eventSchedule);
-									
-			operResp = eventScheduleComp.updateEventSchedule(req);
+												
+			operResp = eventScheduleComp.updateEventSchedule(formParams,eventScheduleid,principalUserId);
 			operResp.setSuccess(true);
 		}
 		catch(Exception ex)
@@ -188,8 +175,11 @@ public class EventScheduleMgmtService
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@ManagedAsync
 	@Path("/{id}")
-	public void deleteEventSchedule(@Context HttpServletRequest request, @Context UriInfo uri,	@PathParam("id") String eventScheduleid,			
-			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
+	public void deleteEventSchedule(@Context HttpServletRequest request, 
+			@Context UriInfo uri,	
+			@PathParam("id") String eventScheduleid,			
+			@Context HttpServletResponse resp,
+			@Suspended final AsyncResponse asyncResp)
 	{    				
 		DeleteEventScheduleResponse operResp = new DeleteEventScheduleResponse();
 		try

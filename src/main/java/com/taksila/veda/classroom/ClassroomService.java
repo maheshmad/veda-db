@@ -62,6 +62,7 @@ public class ClassroomService
     		@FormParam("title") String title,     		
     		@FormParam("subTitle") String subtitle,
     		@FormParam("description") String description,
+    		@FormParam("courseRecordId") String courseRecordId,
     		@Context UriInfo uri,	
     		@Suspended final AsyncResponse asyncResp) 
     {    	
@@ -74,6 +75,7 @@ public class ClassroomService
 			classroom.setSubTitle(subtitle);
 			classroom.setTitle(title);
 			classroom.setDescription(description);
+			classroom.setCourseRecordId(courseRecordId);
 			
 			CreateClassroomRequest req = new CreateClassroomRequest();
 			req.setClassroom(classroom);
@@ -156,6 +158,7 @@ public class ClassroomService
     		@FormParam("title") String title,     		
     		@FormParam("subTitle") String subtitle,
     		@FormParam("description") String description,
+    		@FormParam("courseRecordId") String courseRecordId,
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
 		UpdateClassroomResponse operResp = null;
@@ -169,6 +172,7 @@ public class ClassroomService
 			classroom.setSubTitle(subtitle);
 			classroom.setTitle(title);
 			classroom.setDescription(description);
+			classroom.setCourseRecordId(courseRecordId);
 			
 			UpdateClassroomRequest req = new UpdateClassroomRequest();
 			req.setClassroom(classroom);

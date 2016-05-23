@@ -116,7 +116,7 @@ public class UserSessionDAO
 			stmt.setString(1, userSession.getUserId());
 			stmt.setString(2, userSession.getId());
 			stmt.setString(3, userSession.getClient());
-			stmt.setDate(4, CommonUtils.geSQLDateTimestamp(userSession.getExpiresOn()));
+			stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(userSession.getExpiresOn()));
 			stmt.setString(5, userSession.getIpAddr());			
 									
 			int updates = stmt.executeUpdate();			

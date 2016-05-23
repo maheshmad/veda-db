@@ -14,6 +14,7 @@ import java.net.URLEncoder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -155,26 +156,33 @@ public class CommonUtils
 	}
 	
 	 public static XMLGregorianCalendar getXMLGregorianCalendarNow() 	            
-	    {
+	 {
 	        XMLGregorianCalendar now = null;
-			try {
+			try 
+			{
 				GregorianCalendar gregorianCalendar = new GregorianCalendar();
 //				DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
 				now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
-			} catch (Exception e) {
+			} 
+			catch (Exception e) 
+			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	        return now;
-	    }
+	}
 	 
 	public static XMLGregorianCalendar getXMLGregorianCalendarFromString(String dateString, String format) 	            
 	{	        
 		if (StringUtils.isBlank(dateString))
 			return null;
 		
-		DateTime date = DateTime.parse(dateString, DateTimeFormat.forPattern(format));
-		XMLGregorianCalendar xmlCal = datatypeFactory.newXMLGregorianCalendar(date.toGregorianCalendar());
+		DateTime date = DateTime.parse(dateString, DateTimeFormat.forPattern(format));	
+		GregorianCalendar c = new GregorianCalendar();
+		c.setTime(date.toDate());
+		XMLGregorianCalendar xmlCal = datatypeFactory.newXMLGregorianCalendar(c);
+//		XMLGregorianCalendar xmlCal = new XMLGregorianCalendar(date);
+		System.out.println("**** parsed date = "+xmlCal.toString());
 		
 		return	xmlCal;
 		
@@ -760,13 +768,32 @@ public class CommonUtils
 		 return gc;
 	 }
 	 
-	 public static java.sql.Date geSQLDateTimestamp(XMLGregorianCalendar xmlDate) throws DatatypeConfigurationException
+	 public static XMLGregorianCalendar getXMLGregorianCalendarDateTimestamp(java.sql.Timestamp sqlTimestamp) throws DatatypeConfigurationException
+	 {		
+		 if (sqlTimestamp == null)
+			 return null;
+		 		 
+		 GregorianCalendar cal = new GregorianCalendar();
+		 cal.setTime(sqlTimestamp);
+//		 System.out.println("*** sql gregorian cal val = "+cal.toString());
+		 XMLGregorianCalendar gc = datatypeFactory.newXMLGregorianCalendar(cal);
+//		 System.out.println("*** sql xml gregorian cal val = "+gc.toString());
+		 
+		 return gc;
+	 }
+	 
+	 public static Timestamp geSQLDateTimestamp(XMLGregorianCalendar xmlDate) throws DatatypeConfigurationException
 	 {		
 		 if (xmlDate == null)
 			 return null;
-		 GregorianCalendar c = xmlDate.toGregorianCalendar();
-		 Date dt = c.getTime();
-		 java.sql.Date sqlDate = new java.sql.Date(dt.getTime());
+		 
+		 java.util.Date dt = xmlDate.toGregorianCalendar().getTime();
+//		 
+//		 
+//		 GregorianCalendar c = xmlDate.toGregorianCalendar();
+//		 Date dt = c.getTime();
+		 java.sql.Timestamp sqlDate = new java.sql.Timestamp(dt.getTime());
+		 System.out.println("**** sql date = "+sqlDate.toString());
 		 
 		 return sqlDate;
 	 }

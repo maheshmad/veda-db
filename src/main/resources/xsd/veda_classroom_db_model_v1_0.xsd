@@ -10,7 +10,7 @@
 	<xs:import schemaLocation="veda_base_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/base/v1_0"></xs:import>
 	<xs:import schemaLocation="veda_user_mgmt_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/usermgmt/v1_0"></xs:import>
 	
-	<xs:element name="courseid" type="xs:string" />	
+	<xs:element name="courseRecordId" type="xs:string" />	
 	<xs:element name="name" type="xs:string" />
 	<xs:element name="title" type="xs:string" />
 	<xs:element name="subTitle" type="xs:string" />
@@ -44,7 +44,7 @@
 					<xs:element ref="title"/>
 					<xs:element ref="subTitle"/>	
 					<xs:element ref="description"/>
-					<xs:element ref="courseid"/>								
+					<xs:element ref="courseRecordId"/>								
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>		

@@ -11,8 +11,8 @@
 	<xs:element name="eventTitle" type="xs:string" />
 	<xs:element name="eventDescription" type="xs:string" />	
 	<xs:element name="eventRecordId" type="xs:string" />
-	<xs:element name="eventStartDate" type="xs:date" />	
-	<xs:element name="eventEndDate" type="xs:date" />	
+	<xs:element name="eventStartDate" type="xs:dateTime" />	
+	<xs:element name="eventEndDate" type="xs:dateTime" />	
 	<xs:element name="eventType" type="EventType" />
 	<xs:element name="eventStatus" type="EventStatusType" />
 		

@@ -113,7 +113,7 @@ public class CourseService
 		try 
 		{
 			GetCourseInfoRequest req = new GetCourseInfoRequest();
-			req.setId(Integer.valueOf(courseid));;
+			req.setId(Integer.valueOf(courseid.trim()));;
 			
 			String schoolId = CommonUtils.getSubDomain(uri);
 			CourseComponent courseComp = new CourseComponent(schoolId);

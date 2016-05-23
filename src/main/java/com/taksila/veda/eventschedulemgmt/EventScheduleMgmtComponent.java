@@ -1,16 +1,20 @@
 package com.taksila.veda.eventschedulemgmt;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.taksila.veda.classroom.ClassroomComponent;
 import com.taksila.veda.db.dao.EventScheduleDAO;
+import com.taksila.veda.model.api.base.v1_0.Err;
+import com.taksila.veda.model.api.base.v1_0.ErrorInfo;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
-import com.taksila.veda.model.api.classroom.v1_0.Enrollment;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.CreateEventScheduleRequest;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.CreateEventScheduleResponse;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.DeleteEventScheduleRequest;
@@ -25,19 +29,21 @@ import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventSchedule;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventStatusType;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventType;
 import com.taksila.veda.utils.CommonUtils;
+import com.taksila.veda.utils.ValidationUtils;
 
 
 public class EventScheduleMgmtComponent 
 {	
 	private String schoolId =null;	
 	private EventScheduleDAO eventScheduleDAO = null;
+	private ClassroomComponent classroomComp = null;
 	static Logger logger = LogManager.getLogger(EventScheduleMgmtComponent.class.getName());
 	
 	public EventScheduleMgmtComponent(String tenantId) 
 	{
 		this.schoolId = tenantId;
 		this.eventScheduleDAO = new EventScheduleDAO(tenantId);
-			
+		this.classroomComp = new ClassroomComponent(tenantId);	
 	}
 			
 	
@@ -102,13 +108,26 @@ public class EventScheduleMgmtComponent
 	public CreateEventScheduleResponse createNewEventSchedule(CreateEventScheduleRequest req)
 	{
 		CreateEventScheduleResponse resp = new CreateEventScheduleResponse();
+		EventSchedule eventScheudle = req.getEventSchedule();
 		try 
 		{							
-			Boolean insertSuccess = eventScheduleDAO.insertEventSchedule(req.getEventSchedule());
-			resp.setSuccess(true);
-			resp.setEventSchedule(req.getEventSchedule());
-			if (insertSuccess)
+			/*
+			 * validate
+			 */
+			ErrorInfo errorInfo = this.validateEventSchedule(eventScheudle);
+//			errs.add(this.isValidId(eventScheudle.getId(), true));
+
+			if (errorInfo.getErrors() != null && !errorInfo.getErrors().isEmpty())
 			{
+				resp.setErrorInfo(errorInfo);
+				return resp;
+			}
+			
+			EventSchedule eventSche = eventScheduleDAO.insertEventSchedule(req.getEventSchedule());
+			resp.setSuccess(true);			
+			if (StringUtils.isNotBlank(eventSche.getId()))
+			{
+				resp.setEventSchedule(eventSche);
 				resp.setStatus(StatusType.SUCCESS);
 				resp.setMsg("Successfully created a new event schedule id = "+resp.getEventSchedule().getId());
 			}
@@ -127,6 +146,8 @@ public class EventScheduleMgmtComponent
 		
 	}
 	
+	
+
 	/**
 	 * 
 	 * @param req
@@ -135,9 +156,20 @@ public class EventScheduleMgmtComponent
 	public UpdateEventScheduleResponse updateEventSchedule(UpdateEventScheduleRequest req)
 	{
 		UpdateEventScheduleResponse resp = new UpdateEventScheduleResponse();
+		EventSchedule eventScheudle = req.getEventSchedule();
 		try 
 		{
-			//TODO validation
+			/*
+			 * validate
+			 */
+			ErrorInfo errorInfo = this.validateEventSchedule(eventScheudle);
+			
+			
+			if (errorInfo.getErrors() != null && !errorInfo.getErrors().isEmpty())
+			{
+				resp.setErrorInfo(errorInfo);
+				return resp;
+			}
 			
 			boolean updateSucceded = eventScheduleDAO.updateEventSchedule(req.getEventSchedule());
 			if (updateSucceded)
@@ -195,27 +227,71 @@ public class EventScheduleMgmtComponent
 		
 	}
 	
+	/**
+	 * 
+	 * @param formParams
+	 * @param id
+	 * @param updatedByUser
+	 * @return
+	 */
+	public UpdateEventScheduleResponse updateEventSchedule(MultivaluedMap<String, String> formParams, String id, String updatedByUser) 
+	{
+		UpdateEventScheduleResponse resp = new UpdateEventScheduleResponse();
+		try 
+		{
+			/*
+			 * validate
+			 */
+			EventSchedule currentEventSchedule = this.eventScheduleDAO.getEventScheduleById(id);
+			if (currentEventSchedule == null)
+			{
+				resp.setErrorInfo(CommonUtils.buildErrorInfo("id", "Event was not found! Please check your input!"));
+			}
+			else
+			{
+				this.mapFormFields(formParams, currentEventSchedule);
+				UpdateEventScheduleRequest req = new UpdateEventScheduleRequest();
+				currentEventSchedule.setUpdatedBy(updatedByUser);
+				currentEventSchedule.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarNow());
+				req.setEventSchedule(currentEventSchedule);
+				resp = this.updateEventSchedule(req);
+			}
+			
+
+		} 
+		catch (Exception e) 
+		{
+			CommonUtils.handleExceptionForResponse(resp, e);
+		}
+		return resp;
+		
+	}
 	
+	/**
+	 * 
+	 * @param formParams
+	 * @param eventSchedule
+	 */
 	public void mapFormFields(MultivaluedMap<String, String> formParams, EventSchedule eventSchedule) 
 	{
-
+		
 		for (String key: formParams.keySet())
 		{
 			if (StringUtils.equals(key, "id"))
 				eventSchedule.setId(formParams.getFirst("id"));
 			
-			if (StringUtils.equals(key, "eventDescription"))
-				eventSchedule.setEventDescription(formParams.getFirst("eventDescription"));
-			
-			if (StringUtils.equals(key, "eventEndDate"))
-				eventSchedule.setEventEndDate(CommonUtils.getXMLGregorianCalendarFromString(formParams.getFirst("eventEndDate"), "yyyy-MM-dd"));
-			
-			if (StringUtils.equals(key, "eventStartDate"))
-				eventSchedule.setEventStartDate(CommonUtils.getXMLGregorianCalendarFromString(formParams.getFirst("eventStartDate"), "yyyy-MM-dd"));
-			
 			if (StringUtils.equals(key, "eventRecordId"))
 				eventSchedule.setEventRecordId(formParams.getFirst("eventRecordId"));
 			
+			if (StringUtils.equals(key, "eventDescription"))
+				eventSchedule.setEventDescription(formParams.getFirst("eventDescription"));
+											
+			if (StringUtils.equals(key, "eventEndDate"))
+				eventSchedule.setEventEndDate(CommonUtils.getXMLGregorianCalendarFromString(formParams.getFirst("eventEndDate"), "yyyy-MM-dd HH:mm"));
+			
+			if (StringUtils.equals(key, "eventStartDate"))
+				eventSchedule.setEventStartDate(CommonUtils.getXMLGregorianCalendarFromString(formParams.getFirst("eventStartDate"), "yyyy-MM-dd HH:mm"));
+					
 			if (StringUtils.equals(key, "eventTitle"))
 				eventSchedule.setEventTitle(formParams.getFirst("eventTitle"));
 						
@@ -229,6 +305,148 @@ public class EventScheduleMgmtComponent
 		}
 								
 	}
+	
+	
+	private ErrorInfo validateEventSchedule(EventSchedule eventScheudle) 
+	{
+		ErrorInfo errorInfo = new ErrorInfo();
+		List<Err> errs = new ArrayList<Err>();
+		
+		if (eventScheudle == null)
+			errs.add(CommonUtils.buildErr("INVALID", "No event schedule found in the request!"));
+		
+		errs.add(this.isValidEventDesc(eventScheudle.getEventDescription(), false));
+		errs.add(this.isValidEventEndDate(eventScheudle.getEventEndDate(), true));
+		errs.add(this.isValidEventStartDate(eventScheudle.getEventStartDate(), true));
+		errs.add(this.isValidEventRecordId(eventScheudle.getEventRecordId(), true));
+		errs.add(this.isValidEventStatus(eventScheudle.getEventStatus(), false));
+		errs.add(this.isValidEventTitle(eventScheudle.getEventTitle(), true));
+		errs.add(this.isValidEventType(eventScheudle.getEventType(), true));
+		
+		for (Err er: errs)
+		{
+			if (er != null)
+				errorInfo.getErrors().add(er);
+		}
+		
+		return errorInfo;
+	}
+
+	
+	
+	/**
+	 * 
+	 * @param eventType
+	 * @param checkMandatory
+	 * @return
+	 */
+	public Err isValidEventType(EventType eventType, boolean checkMandatory)
+	{
+		if (checkMandatory && eventType == null) return CommonUtils.buildErr("eventType", "is missing, Please provide a valid value");
+		
+		return null;
+//		try
+//		{
+//			EventType.fromValue(eventType);
+//			return null;
+//		}
+//		catch(Exception ex)
+//		{
+//			return CommonUtils.buildErr("eventType", eventType+" is not a valid input. Please provide a valid value");
+//		}
+						
+	}
+	
+	
+	public Err isValidEventStatus(EventStatusType eventStatusType, boolean checkMandatory)
+	{
+		if (checkMandatory && eventStatusType == null) 
+			return CommonUtils.buildErr("eventStatus", "is missing, Please provide a valid value");
+		else
+			return null;
+		
+//		
+//		try
+//		{
+//			EventStatusType.fromValue(eventStatusType);
+//			return null;
+//		}
+//		catch(Exception ex)
+//		{
+//			return CommonUtils.buildErr("eventStatus", eventStatusType+" is not a valid input. Please provide a valid value");
+//		}
+		
+	}
+	
+	
+	public Err isValidEventTitle(String val, boolean checkMandatory)
+	{
+		if (checkMandatory && StringUtils.isBlank(val)) return CommonUtils.buildErr("eventTitle", "is missing, Please provide a valid value");
+		
+				
+		return null;
+		
+	}
+	
+	/**
+	 * 
+	 * @param val
+	 * @param checkMandatory
+	 * @return
+	 */
+	public Err isValidEventStartDate(XMLGregorianCalendar val, boolean checkMandatory)
+	{
+		return ValidationUtils.isValidDate("eventStartDate", val, "yyyy-MM-dd", checkMandatory);
+				
+	}
+	
+	public Err isValidEventEndDate(XMLGregorianCalendar val, boolean checkMandatory)
+	{
+		return ValidationUtils.isValidDate("eventEndDate", val,"yyyy-MM-dd", checkMandatory);	
+	}
+	
+	public Err isValidEventDesc(String val, boolean checkMandatory)
+	{
+		if (checkMandatory && StringUtils.isBlank(val)) return CommonUtils.buildErr("eventTitle", "is missing, Please provide a valid value");
+		
+		return null;
+		
+				
+		
+	}
+	
+	public Err isValidEventRecordId(String val, boolean checkMandatory)
+	{
+		
+		if (checkMandatory && StringUtils.isBlank(val)) return CommonUtils.buildErr("eventTitle", "is missing, Please provide a valid value");
+		
+		return this.classroomComp.checkClassroomidExists(val);
+		
+		
+	}
+	
+	public Err isValidId(String val, boolean checkMandatory)
+	{
+		if (checkMandatory && StringUtils.isBlank(val)) return CommonUtils.buildErr("id", "is missing, Please provide a valid value");
+		
+		try 
+		{
+			if (this.eventScheduleDAO.getEventScheduleById(val) == null)
+			{
+				return CommonUtils.buildErr("id", "Did not find any schedule with id = "+val);				
+			}
+			else;
+		} 
+		catch (Exception e) 
+		{		
+			e.printStackTrace();
+			return CommonUtils.buildErr("classroomid", "Could not locate classroom = "+val+" due to db exception, reason :"+e.getMessage());
+		}		
+	
+		return null;
+		
+	}
+	
 	
 	
 }

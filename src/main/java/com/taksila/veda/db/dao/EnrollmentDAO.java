@@ -319,10 +319,10 @@ public class EnrollmentDAO
 			stmt.setString(1, enrollment.getId());
 			stmt.setString(2, enrollment.getClassroomid());
 			stmt.setString(3, enrollment.getUserRecordId());
-			stmt.setDate(4, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
+			stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
 			stmt.setString(5, enrollment.getVerifiedBy());
-			stmt.setDate(6, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
-			stmt.setDate(7, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
+			stmt.setTimestamp(6, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
+			stmt.setTimestamp(7, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
 			stmt.setString(8, enrollment.getUpdatedBy());
 			if (enrollment.getEnrollStatus() != null)
 				stmt.setString(9, enrollment.getEnrollStatus().value());
@@ -364,10 +364,10 @@ public class EnrollmentDAO
 			this.sqlDBManager.connect();	
 			stmt = this.sqlDBManager.getPreparedStatement(update_enrollment_sql);			
 			
-			stmt.setDate(1, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
+			stmt.setTimestamp(1, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
 			stmt.setString(2, enrollment.getVerifiedBy());
-			stmt.setDate(3, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
-			stmt.setDate(4, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
+			stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
+			stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
 			stmt.setString(5, enrollment.getUpdatedBy());
 			if (enrollment.getEnrollStatus() != null)
 				stmt.setString(6, enrollment.getEnrollStatus().value());

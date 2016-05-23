@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.taksila.veda.db.dao.ClassroomDAO;
 import com.taksila.veda.db.dao.EnrollmentDAO;
+import com.taksila.veda.model.api.base.v1_0.Err;
 import com.taksila.veda.model.api.base.v1_0.SearchHitRecord;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
 import com.taksila.veda.model.api.classroom.v1_0.Classroom;
@@ -194,5 +195,38 @@ public class ClassroomComponent
 		return resp;
 		
 	}
+	
+	/*
+	 * validations 
+	 */
+	
+	/**
+	 * 
+	 * @param classroomid
+	 * @return
+	 */
+	public Err checkClassroomidExists(String classroomid)
+	{		
+		Classroom classroom;
+		try 
+		{
+			classroom = classroomDAO.getClassroomById(classroomid);				
+			if (classroom == null)
+			{	
+				return CommonUtils.buildErr("classroomid", "Did not find any records with id = "+classroomid);				
+			}
+			else;
+		} 
+		catch (Exception e) 
+		{		
+			e.printStackTrace();
+			return CommonUtils.buildErr("classroomid", "Could not locate classroom = "+classroomid+" due to db exception, reason :"+e.getMessage());
+		}		
+		
+		return null;
+		
+	}
+	
+	
 	
 }

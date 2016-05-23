@@ -1,5 +1,8 @@
 package com.taksila.veda.utils;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.owasp.esapi.ESAPI;
@@ -8,6 +11,7 @@ import org.owasp.esapi.errors.ValidationException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.taksila.veda.model.api.base.v1_0.Err;
 
 public class ValidationUtils
 {
@@ -15,6 +19,7 @@ public class ValidationUtils
 	static Logger logger = LogManager.getLogger(ValidationUtils.class.getName());
 	static Validator validator = ESAPI.validator();
 		
+	
 	
 	public static String getValidEmail(String input) 
 	{			    
@@ -58,6 +63,26 @@ public class ValidationUtils
 		} 	    
 	}
 	
+	
+	public static Err isValidDate(String fieldId, XMLGregorianCalendar val, String dateFormat, boolean checkMandatory)
+	{
+		if (checkMandatory && val==null) 
+			return CommonUtils.buildErr(fieldId, "is missing/invalid, Please provide a valid value in format "+dateFormat);
+		
+		return null;
+//		try
+//		{
+//			if (CommonUtils.g))val, dateFormat) == null)
+//				return CommonUtils.buildErr(fieldId, "is invalid, Please provide a valid value");
+//			
+//			return null;
+//		}
+//		catch(Exception ex)
+//		{
+//			return CommonUtils.buildErr(fieldId, val+" is not a valid input. Please provide a valid value");
+//		}
+				
+	}
 	
 	public static String doPasswordValidation(String password) 
 	{
