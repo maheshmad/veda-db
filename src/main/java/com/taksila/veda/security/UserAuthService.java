@@ -70,6 +70,7 @@ public class UserAuthService
 			}
 			else
 			{
+				
 				NewCookie cookie = new NewCookie(USER_AUTH_SESSION_COOKIE_NAME, userSession.getId());
 				asyncResp.resume(Response.ok(loginResp).cookie(cookie).build());
 			}
@@ -199,6 +200,7 @@ public class UserAuthService
 		}
 		else
 		{			
+			request.getSession(true);
 			userInfoResp.setStatus(StatusType.SUCCESS);
 			userInfoResp.setSuccess(true);
 			asyncResp.resume(Response.ok(userInfoResp).build());
