@@ -22,6 +22,8 @@ public class SocketEvent
 	public enum SocketEventType 
 	{
 		CONNECT_SUCCESS,
+		ACTION,
+		DATA,
 	    DISCONNECTED,
 	    ERROR;
 
