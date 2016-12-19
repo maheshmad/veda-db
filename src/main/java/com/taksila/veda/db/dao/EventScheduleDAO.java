@@ -22,8 +22,8 @@ public class EventScheduleDAO
 {
 	private String schoolId = null;	
 	
-	private static String insert_eventSchedule_sql = "INSERT INTO EVENT_SCHEDULE("+
-																			EVENT_SCHEDULE_TABLE.eventRecordId.value()+","+
+	private static String insert_eventSchedule_sql = "INSERT INTO EVENT_SCHEDULE("+																		
+																			EVENT_SCHEDULE_TABLE.classroomId.value()+","+
 																			EVENT_SCHEDULE_TABLE.startDatetime.value()+","+
 																			EVENT_SCHEDULE_TABLE.endDatetime.value()+","+
 																			EVENT_SCHEDULE_TABLE.eventTitle.value()+","+
@@ -33,7 +33,8 @@ public class EventScheduleDAO
 																			EVENT_SCHEDULE_TABLE.eventStatus.value()+") "+
 																	"VALUES (?,?,?,?,?,?,?,?);";		
 	
-	private static String update_eventSchedule_sql = "UPDATE EVENT_SCHEDULE SET "+EVENT_SCHEDULE_TABLE.eventRecordId.value()+" = ? ,"+
+	private static String update_eventSchedule_sql = "UPDATE EVENT_SCHEDULE SET "+
+																			EVENT_SCHEDULE_TABLE.classroomId.value()+" = ? ,"+
 																			EVENT_SCHEDULE_TABLE.startDatetime.value()+" = ? ,"+
 																			EVENT_SCHEDULE_TABLE.endDatetime.value()+" = ? ,"+
 																			EVENT_SCHEDULE_TABLE.eventTitle.value()+" = ? ,"+
@@ -45,7 +46,7 @@ public class EventScheduleDAO
 													" WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
 	
 	private static String delete_eventSchedule_sql = "DELETE FROM EVENT_SCHEDULE WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
-	private static String search_event_schedule_by_eventrecordid_sql = "SELECT * FROM EVENT_SCHEDULE  WHERE "+EVENT_SCHEDULE_TABLE.eventRecordId.value()+" = ?";
+	private static String search_event_schedule_by_classroomid_sql = "SELECT * FROM EVENT_SCHEDULE  WHERE "+EVENT_SCHEDULE_TABLE.classroomId.value()+" = ?";
 	private static String search_event_schedule_by_id_sql = "SELECT * FROM EVENT_SCHEDULE  WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
 
 //	private static String search_eventSchedule_by_eventrecordid_sql = "SELECT * FROM EVENT_SCHEDULE WHERE "+EVENT_SCHEDULE_TABLE.eventrecordid.value()+" = ? ";
@@ -88,7 +89,7 @@ public class EventScheduleDAO
 	private enum EVENT_SCHEDULE_TABLE
 	{		
 		id("event_schedule_id"),
-		eventRecordId("event_record_id"),
+		classroomId("classroomid"),
 		startDatetime("start_datetime"),
 		endDatetime("end_datetime"),
 		eventTitle("event_title"),
@@ -123,7 +124,8 @@ public class EventScheduleDAO
 		EventSchedule eventSchedule = new EventSchedule();		
 		
 		eventSchedule.setId(String.valueOf(resultSet.getInt(EVENT_SCHEDULE_TABLE.id.value())));
-		eventSchedule.setEventRecordId(resultSet.getString(EVENT_SCHEDULE_TABLE.eventRecordId.value()));
+//		eventSchedule.setEventRecordId(resultSet.getString(EVENT_SCHEDULE_TABLE.eventRecordId.value()));
+		eventSchedule.setClassroomid(String.valueOf(resultSet.getInt(EVENT_SCHEDULE_TABLE.classroomId.value())));
 		eventSchedule.setEventStartDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.startDatetime.value())));
 		eventSchedule.setEventEndDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.endDatetime.value())));
 		eventSchedule.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.lastUpdatedOn.value())));
@@ -185,17 +187,17 @@ public class EventScheduleDAO
 	 * @return
 	 * @throws Exception 
 	 */
-	public List<EventSchedule> searchEventScheduleByEventRecordId(String eventRecordId) throws Exception
+	public List<EventSchedule> searchEventScheduleByClassroomId(String classroomid) throws Exception
 	{
 		List<EventSchedule> eventScheduleHits = new ArrayList<EventSchedule>();				
 		PreparedStatement stmt = null;		
-		logger.trace("searching eventSchedules by event record id ="+eventRecordId+ "sql = "+search_event_schedule_by_eventrecordid_sql);
+		logger.trace("searching eventSchedules by event record id ="+classroomid+ "sql = "+search_event_schedule_by_classroomid_sql);
  
 		try
 		{
 			this.sqlDBManager.connect();			
-			stmt = this.sqlDBManager.getPreparedStatement(search_event_schedule_by_eventrecordid_sql);
-			stmt.setString(1, eventRecordId);
+			stmt = this.sqlDBManager.getPreparedStatement(search_event_schedule_by_classroomid_sql);
+			stmt.setString(1, classroomid);
 			
 			ResultSet resultSet = stmt.executeQuery();	
 			while (resultSet.next()) 
@@ -219,6 +221,8 @@ public class EventScheduleDAO
 	}
 	
 	
+
+	
 	
 	/**
 	 * 
@@ -226,16 +230,16 @@ public class EventScheduleDAO
 	 * @return
 	 * @throws Exception 
 	 */
-	public EventSchedule getEventScheduleById(String enrollid) throws Exception
+	public EventSchedule getEventScheduleById(String eventid) throws Exception
 	{						
 		PreparedStatement stmt = null;	
 		EventSchedule eventSchedule = null;
-		logger.trace("searching eventSchedules by id ="+enrollid+" sql = "+search_event_schedule_by_id_sql);
+		logger.trace("searching eventSchedules by id ="+eventid+" sql = "+search_event_schedule_by_id_sql);
 		try
 		{
 			this.sqlDBManager.connect();			
 			stmt = this.sqlDBManager.getPreparedStatement(search_event_schedule_by_id_sql);
-			stmt.setString(1, enrollid);
+			stmt.setString(1, eventid);
 			ResultSet resultSet = stmt.executeQuery();	
 			if (resultSet.next()) 
 			{
@@ -272,7 +276,7 @@ public class EventScheduleDAO
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(insert_eventSchedule_sql);
 						
-			stmt.setString(1, eventSchedule.getEventRecordId());			
+			stmt.setInt(1, Integer.valueOf(eventSchedule.getClassroomid()));
 			stmt.setTimestamp(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
 			stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
 			stmt.setString(4, eventSchedule.getEventTitle());
@@ -325,9 +329,9 @@ public class EventScheduleDAO
 		try
 		{
 			this.sqlDBManager.connect();	
-			stmt = this.sqlDBManager.getPreparedStatement(update_eventSchedule_sql);			
-			
-			stmt.setString(1, eventSchedule.getEventRecordId());			
+			stmt = this.sqlDBManager.getPreparedStatement(update_eventSchedule_sql);	
+									
+			stmt.setInt(1, Integer.valueOf(eventSchedule.getClassroomid()));
 			stmt.setTimestamp(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
 			stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
 			stmt.setString(4, eventSchedule.getEventTitle());

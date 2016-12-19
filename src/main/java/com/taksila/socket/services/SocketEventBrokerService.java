@@ -16,7 +16,6 @@
  */
 package com.taksila.socket.services;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -135,7 +134,7 @@ public class SocketEventBrokerService implements Serializable
     {                      
         try 
         {
-        	System.out.println("Socket Error: Removing client session id  = "+this.sessionId+", because "+t.getMessage());     
+        	System.out.println("Socket OnError: Removing client session id  = "+this.sessionId+", because "+t.getMessage());     
         	connections.remove(this.sessionId);
 		} 
         catch (Exception e) 
@@ -151,10 +150,8 @@ public class SocketEventBrokerService implements Serializable
     {
     	try 
     	{
-    		System.out.println("connection closing for client = "+ this.sessionId);
-    		connections.remove(this.sessionId);
-//    		dataServicesConnections.remove(this.sessionId);
-    		
+    		System.out.println("Socket OnClose: Removing client session id  = "+this.sessionId);     
+    		connections.remove(this.sessionId);    		
 		} 
     	catch (Exception e) 
     	{

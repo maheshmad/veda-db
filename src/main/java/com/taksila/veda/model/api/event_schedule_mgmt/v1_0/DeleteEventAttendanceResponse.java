@@ -11,22 +11,22 @@ package com.taksila.veda.model.api.event_schedule_mgmt.v1_0;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import com.taksila.veda.model.api.base.v1_0.SearchResponse;
+import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 
 
 /**
  * 
- * 				This represents the api structure of the SearchEventScheduleResponse response 				
+ * 				This represents the api structure of the DeleteEventAttendanceResponse 				
  * 			
  * 
- * <p>Java class for SearchEventScheduleResponse complex type.
+ * <p>Java class for DeleteEventAttendanceResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="SearchEventScheduleResponse">
+ * &lt;complexType name="DeleteEventAttendanceResponse">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}SearchResponse">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
  *       &lt;sequence>
  *       &lt;/sequence>
  *     &lt;/extension>
@@ -37,9 +37,9 @@ import com.taksila.veda.model.api.base.v1_0.SearchResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SearchEventScheduleResponse")
-public class SearchEventScheduleResponse
-    extends SearchResponse
+@XmlType(name = "DeleteEventAttendanceResponse")
+public class DeleteEventAttendanceResponse
+    extends BaseResponse
 {
 
 

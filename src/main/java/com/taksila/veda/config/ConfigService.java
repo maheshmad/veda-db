@@ -1,7 +1,9 @@
 package com.taksila.veda.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -20,6 +22,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ManagedAsync;
@@ -30,7 +33,9 @@ import com.taksila.veda.model.api.config.v1_0.GetConfigurationResponse;
 import com.taksila.veda.model.api.config.v1_0.UpdateConfigRequest;
 import com.taksila.veda.model.api.config.v1_0.UpdateConfigResponse;
 import com.taksila.veda.model.db.config.v1_0.Config;
+import com.taksila.veda.model.db.config.v1_0.ConfigGroup;
 import com.taksila.veda.model.db.config.v1_0.ConfigId;
+import com.taksila.veda.model.db.config.v1_0.ConfigSection;
 import com.taksila.veda.utils.CommonUtils;
 
 @Path("/config")
@@ -134,7 +139,7 @@ public class ConfigService
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@ManagedAsync	
-	public void getLoggedInUserInfo(@Context HttpServletRequest request, @Context final UriInfo uri,					
+	public void getConfigInfo(@Context HttpServletRequest request, @Context final UriInfo uri,					
 			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
 	{    				
 		executor.execute( new Runnable() 
@@ -158,6 +163,64 @@ public class ConfigService
 				}
 				
 				asyncResp.resume(Response.ok(configResp).build());
+			}
+		});
+		
+	}
+	
+	
+	/**
+	 * 
+	 * @param request
+	 * @param uri
+	 * @param resp
+	 * @param asyncResp
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@ManagedAsync
+	@Path("/keyval")
+	public void getConfigKeyValue(@Context HttpServletRequest request, @Context final UriInfo uri,					
+			@Context HttpServletResponse resp,@Suspended final AsyncResponse asyncResp)
+	{    				
+		executor.execute( new Runnable() 
+		{
+			public void run() 
+			{			
+				Map<String,String> configVals = new HashMap<String,String>();
+				String tenantId = CommonUtils.getSubDomain(uri);
+				ConfigComponent configComp = new ConfigComponent(tenantId);
+				GetConfigurationResponse configResp = null;
+				String keyvaljson = "{";
+				try 
+				{
+					
+					GetConfigurationRequest req = new GetConfigurationRequest();
+					req.setForRole(null);
+					configResp = configComp.getConfigSection(req);
+					
+					for (ConfigSection sections: configResp.getSections())
+					{
+						for (ConfigGroup group: sections.getConfigGroups())
+						{
+							for (Config config: group.getConfigs())
+							{
+								configVals.put(config.getId(),config.getConfigValue());
+								keyvaljson += config.getId()+":'"+config.getConfigValue()+"',";
+							}
+						}
+					}
+					
+					keyvaljson = StringUtils.removeEnd(keyvaljson, ",")+"}";
+					
+				} 
+				catch (Exception ex) 
+				{		
+					ex.printStackTrace();
+					CommonUtils.handleExceptionForResponse(configResp, ex);
+				}
+				
+				asyncResp.resume(Response.ok(keyvaljson).build());
 			}
 		});
 		

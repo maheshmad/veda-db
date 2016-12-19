@@ -21,7 +21,13 @@
 	<xs:element name="recordType" type="xs:string" />
 	<xs:element name="recordId" type="xs:string" />
 	<xs:element name="recordTitle" type="xs:string" />
-	<xs:element name="recordSubtitle" type="xs:string" />		
+	<xs:element name="recordSubtitle" type="xs:string" />
+	<xs:element name="userRecordId" type="xs:string" />		
+	
+	<xs:simpleType name="id">
+		<xs:restriction base="xs:string">		
+		</xs:restriction>
+	</xs:simpleType>
 	
 	<xs:simpleType name="StatusType">
 		<xs:restriction base="xs:string">
@@ -37,7 +43,8 @@
 	<!-- definition of BaseResponse common for all responses -->
 	<xs:complexType name="BaseRequest">
 		<xs:sequence>
-			<xs:element ref="txnId" />			
+			<xs:element ref="txnId" />
+			<xs:element ref="userRecordId" />			
 		</xs:sequence>
 	</xs:complexType>
 	

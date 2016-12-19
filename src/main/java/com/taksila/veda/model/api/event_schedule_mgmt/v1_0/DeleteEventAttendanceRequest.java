@@ -17,19 +17,19 @@ import com.taksila.veda.model.api.base.v1_0.BaseRequest;
 
 /**
  * 
- * 				This represents the api structure of the DeleteEventScheduleRequest				
+ * 				This represents the api structure of the DeleteEventAttendanceRequest				
  * 			
  * 
- * <p>Java class for DeleteEventScheduleRequest complex type.
+ * <p>Java class for DeleteEventAttendanceRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="DeleteEventScheduleRequest">
+ * &lt;complexType name="DeleteEventAttendanceRequest">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseRequest">
  *       &lt;sequence>
- *         &lt;element ref="{http://www.taksila.com/veda/model/api/base/v1_0}id"/>
+ *         &lt;element ref="{http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0}eventAttendanceId"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,38 +39,38 @@ import com.taksila.veda.model.api.base.v1_0.BaseRequest;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DeleteEventScheduleRequest", propOrder = {
-    "id"
+@XmlType(name = "DeleteEventAttendanceRequest", propOrder = {
+    "eventAttendanceId"
 })
-public class DeleteEventScheduleRequest
+public class DeleteEventAttendanceRequest
     extends BaseRequest
 {
 
-    @XmlElement(namespace = "http://www.taksila.com/veda/model/api/base/v1_0", required = true)
-    protected String id;
+    @XmlElement(namespace = "http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0", required = true)
+    protected String eventAttendanceId;
 
     /**
-     * Gets the value of the id property.
+     * Gets the value of the eventAttendanceId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getId() {
-        return id;
+    public String getEventAttendanceId() {
+        return eventAttendanceId;
     }
 
     /**
-     * Sets the value of the id property.
+     * Sets the value of the eventAttendanceId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setId(String value) {
-        this.id = value;
+    public void setEventAttendanceId(String value) {
+        this.eventAttendanceId = value;
     }
 
 }

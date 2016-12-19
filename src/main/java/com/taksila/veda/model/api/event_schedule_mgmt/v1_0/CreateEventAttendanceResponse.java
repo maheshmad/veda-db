@@ -12,24 +12,25 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import com.taksila.veda.model.api.base.v1_0.BaseRequest;
+import com.taksila.veda.model.api.base.v1_0.BaseResponse;
+import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventAttendance;
 
 
 /**
  * 
- * 				This represents the api structure of the DeleteEventScheduleRequest				
+ * 				This represents the api structure of the CreateEventAttendanceResponse response 				
  * 			
  * 
- * <p>Java class for DeleteEventScheduleRequest complex type.
+ * <p>Java class for CreateEventAttendanceResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="DeleteEventScheduleRequest">
+ * &lt;complexType name="CreateEventAttendanceResponse">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseRequest">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseResponse">
  *       &lt;sequence>
- *         &lt;element ref="{http://www.taksila.com/veda/model/api/base/v1_0}id"/>
+ *         &lt;element name="attendance" type="{http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0}EventAttendance"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,38 +40,38 @@ import com.taksila.veda.model.api.base.v1_0.BaseRequest;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DeleteEventScheduleRequest", propOrder = {
-    "id"
+@XmlType(name = "CreateEventAttendanceResponse", propOrder = {
+    "attendance"
 })
-public class DeleteEventScheduleRequest
-    extends BaseRequest
+public class CreateEventAttendanceResponse
+    extends BaseResponse
 {
 
-    @XmlElement(namespace = "http://www.taksila.com/veda/model/api/base/v1_0", required = true)
-    protected String id;
+    @XmlElement(required = true)
+    protected EventAttendance attendance;
 
     /**
-     * Gets the value of the id property.
+     * Gets the value of the attendance property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link EventAttendance }
      *     
      */
-    public String getId() {
-        return id;
+    public EventAttendance getAttendance() {
+        return attendance;
     }
 
     /**
-     * Sets the value of the id property.
+     * Sets the value of the attendance property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link EventAttendance }
      *     
      */
-    public void setId(String value) {
-        this.id = value;
+    public void setAttendance(EventAttendance value) {
+        this.attendance = value;
     }
 
 }

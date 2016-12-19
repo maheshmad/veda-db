@@ -14,7 +14,9 @@ import com.taksila.veda.classroom.ClassroomComponent;
 import com.taksila.veda.db.dao.EventScheduleDAO;
 import com.taksila.veda.model.api.base.v1_0.Err;
 import com.taksila.veda.model.api.base.v1_0.ErrorInfo;
+import com.taksila.veda.model.api.base.v1_0.SearchHitRecord;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
+import com.taksila.veda.model.api.classroom.v1_0.Classroom;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.CreateEventScheduleRequest;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.CreateEventScheduleResponse;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.DeleteEventScheduleRequest;
@@ -52,15 +54,31 @@ public class EventScheduleMgmtComponent
 	 * @param req
 	 * @return
 	 */
-	public SearchEventScheduleResponse searchEventSchedule(SearchEventScheduleRequest req)
+	public SearchEventScheduleResponse searchEventScheduleByClassroom(SearchEventScheduleRequest req)
 	{
 		SearchEventScheduleResponse resp = new SearchEventScheduleResponse();
+		
 		try 
 		{
-			List<EventSchedule> eventScheduleSearchHits = eventScheduleDAO.searchEventScheduleByEventRecordId(req.getQuery());
-			resp.getEventSchedule().addAll(eventScheduleSearchHits);
-			resp.setStatus(StatusType.SUCCESS);
-			resp.setSuccess(true);
+			List<EventSchedule> eventScheduleSearchHits = eventScheduleDAO.searchEventScheduleByClassroomId(req.getClassroomid());
+			
+			for(EventSchedule event: eventScheduleSearchHits)
+			{
+				SearchHitRecord rec = new SearchHitRecord();
+				/*
+				 * map search hits
+				 */
+				rec.setRecordId(String.valueOf(event.getId()));
+				rec.setRecordTitle(event.getEventTitle());
+				rec.setRecordSubtitle(event.getEventDescription()+" Starts at :"+event.getEventStartDate()+" Ends at: "+event.getEventEndDate());					
+				
+				resp.getHits().add(rec);
+			}
+			
+			resp.setRecordType("EVENTS_SCHEDULE");
+			resp.setPage(req.getPage());
+			resp.setPageOffset(req.getPageOffset());
+			resp.setTotalHits(eventScheduleSearchHits.size());
 		} 
 		catch (Exception e) 
 		{			
@@ -68,6 +86,28 @@ public class EventScheduleMgmtComponent
 		}
 		return resp;
 	}
+	
+//	/**
+//	 * 
+//	 * @param req
+//	 * @return
+//	 */
+//	public SearchEventScheduleResponse searchEventScheduleByUser(SearchEventScheduleRequest req)
+//	{
+//		SearchEventScheduleResponse resp = new SearchEventScheduleResponse();
+//		try 
+//		{
+//			List<EventSchedule> eventScheduleSearchHits = eventScheduleDAO.searchEventScheduleByClassroomId(req.getUserRecordId());
+//			resp.getEventSchedule().addAll(eventScheduleSearchHits);
+//			resp.setStatus(StatusType.SUCCESS);
+//			resp.setSuccess(true);
+//		} 
+//		catch (Exception e) 
+//		{			
+//			CommonUtils.handleExceptionForResponse(resp, e);
+//		}
+//		return resp;
+//	}
 	
 	/**
 	 * 
@@ -279,9 +319,9 @@ public class EventScheduleMgmtComponent
 		{
 			if (StringUtils.equals(key, "id"))
 				eventSchedule.setId(formParams.getFirst("id"));
-			
-			if (StringUtils.equals(key, "eventRecordId"))
-				eventSchedule.setEventRecordId(formParams.getFirst("eventRecordId"));
+					
+			if (StringUtils.equals(key, "classroomid"))
+				eventSchedule.setClassroomid(formParams.getFirst("classroomid"));
 			
 			if (StringUtils.equals(key, "eventDescription"))
 				eventSchedule.setEventDescription(formParams.getFirst("eventDescription"));
@@ -318,7 +358,6 @@ public class EventScheduleMgmtComponent
 		errs.add(this.isValidEventDesc(eventScheudle.getEventDescription(), false));
 		errs.add(this.isValidEventEndDate(eventScheudle.getEventEndDate(), true));
 		errs.add(this.isValidEventStartDate(eventScheudle.getEventStartDate(), true));
-		errs.add(this.isValidEventRecordId(eventScheudle.getEventRecordId(), true));
 		errs.add(this.isValidEventStatus(eventScheudle.getEventStatus(), false));
 		errs.add(this.isValidEventTitle(eventScheudle.getEventTitle(), true));
 		errs.add(this.isValidEventType(eventScheudle.getEventType(), true));

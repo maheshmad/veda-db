@@ -16,15 +16,15 @@ import com.taksila.veda.model.api.base.v1_0.SearchResponse;
 
 /**
  * 
- * 				This represents the api structure of the SearchEventScheduleResponse response 				
+ * 				This represents the api structure of the SearchEventAttendanceResponse response 				
  * 			
  * 
- * <p>Java class for SearchEventScheduleResponse complex type.
+ * <p>Java class for SearchEventAttendanceResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="SearchEventScheduleResponse">
+ * &lt;complexType name="SearchEventAttendanceResponse">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}SearchResponse">
  *       &lt;sequence>
@@ -37,8 +37,8 @@ import com.taksila.veda.model.api.base.v1_0.SearchResponse;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SearchEventScheduleResponse")
-public class SearchEventScheduleResponse
+@XmlType(name = "SearchEventAttendanceResponse")
+public class SearchEventAttendanceResponse
     extends SearchResponse
 {
 

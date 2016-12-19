@@ -2,12 +2,15 @@
 <xs:schema xmlns="http://www.taksila.com/veda/model/api/event_schedule_mgmt/v1_0"
 	targetNamespace="http://www.taksila.com/veda/model/api/event_schedule_mgmt/v1_0"
 	xmlns:base="http://www.taksila.com/veda/model/api/base/v1_0"
-	xmlns:schedb="http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0"		
+	xmlns:schedb="http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0"
+	xmlns:cdb="http://www.taksila.com/veda/model/db/classroom/v1_0"		
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
 	elementFormDefault="qualified">
 	
 	<xs:import schemaLocation="veda_event_schedule_mgmt_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0"></xs:import>
 	<xs:import schemaLocation="veda_base_model_v1.0.xsd" namespace="http://www.taksila.com/veda/model/api/base/v1_0"></xs:import>
+	<xs:import schemaLocation="veda_classroom_db_model_v1_0.xsd" namespace="http://www.taksila.com/veda/model/db/classroom/v1_0"></xs:import>
+	
 	
 	<!-- APIs -->
 	
@@ -51,7 +54,8 @@
 		</xs:annotation>
         <xs:complexContent>
             <xs:extension base="base:SearchRequest">  
-            	<xs:sequence>											
+            	<xs:sequence>						
+            		<xs:element ref="cdb:classroomid" />						
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>	
@@ -64,9 +68,8 @@
 			</xs:documentation>
 		</xs:annotation>
         <xs:complexContent>
-           <xs:extension base="base:BaseResponse">  
-            	<xs:sequence>
-            		<xs:element name="eventSchedule" type="schedb:EventSchedule" minOccurs="0" maxOccurs="unbounded" ></xs:element>					
+           <xs:extension base="base:SearchResponse">  
+            	<xs:sequence>            							
 				</xs:sequence>
 			</xs:extension>	
 		</xs:complexContent>
@@ -162,6 +165,160 @@
 		</xs:complexContent>
 	</xs:complexType>	
 	
+	<!-- ************************************************************************* -->
+	<!-- event session attendance api -->
+	<!-- ************************************************************************* -->
+	
+	<xs:complexType name="GetEventAttendanceRequest">
+		<xs:annotation>
+			<xs:documentation>
+				For a given event session id, get all the attendance records.				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>										
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="GetEventAttendanceResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the GetEventAttendanceResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+					<xs:element name="attendance" type="schedb:EventAttendance" maxOccurs="unbounded" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="SearchEventAttendanceRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchEventAttendanceRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchRequest">  
+            	<xs:sequence>	
+            		<xs:element ref="schedb:eventAttendanceId" />
+            		<xs:element ref="cdb:classroomid" />	
+					<xs:element ref="base:userRecordId" />												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="SearchEventAttendanceResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the SearchEventAttendanceResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:SearchResponse">  
+            	<xs:sequence>
+            						
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CreateEventAttendanceRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateEventAttendanceRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="attendance" type="schedb:EventAttendance" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="CreateEventAttendanceResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the CreateEventAttendanceResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="attendance" type="schedb:EventAttendance" ></xs:element>					
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateEventAttendanceRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateEventAttendanceRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element name="attendance" type="schedb:EventAttendance" ></xs:element>													
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="UpdateEventAttendanceResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the UpdateEventAttendanceResponse response 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            		<xs:element name="attendance" type="schedb:EventAttendance" ></xs:element>						
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteEventAttendanceRequest">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteEventAttendanceRequest				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseRequest">  
+            	<xs:sequence>
+            		<xs:element ref="schedb:eventAttendanceId" ></xs:element>												
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>	
+	</xs:complexType>
+	
+	<xs:complexType name="DeleteEventAttendanceResponse">
+		<xs:annotation>
+			<xs:documentation>
+				This represents the api structure of the DeleteEventAttendanceResponse 				
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base:BaseResponse">  
+            	<xs:sequence>
+            						
+				</xs:sequence>
+			</xs:extension>	
+		</xs:complexContent>
+	</xs:complexType>	
 	
 		
 </xs:schema>

@@ -219,6 +219,7 @@ public class EventScheduleMgmtService
 	@Path("/search")
 	public void searchEventSchedules(@Context HttpServletRequest request, @Context UriInfo uri,@Context HttpServletResponse resp,
 			@QueryParam("eventRecordid") String eventRecordid,
+			@QueryParam("classroomid") String classroomid,
 			@QueryParam("page") String page,
 			@QueryParam("start") String start, 
 			@Suspended final AsyncResponse asyncResp)
@@ -240,8 +241,8 @@ public class EventScheduleMgmtService
 						
 			req.setRecordType("EVENTS-SCHEDULE");
 			
-			req.setQuery(eventRecordid);
-			searchResp = eventScheduleComp.searchEventSchedule(req);
+			req.setClassroomid(classroomid);
+			searchResp = eventScheduleComp.searchEventScheduleByClassroom(req);
 			
 						
 		} 

@@ -10,26 +10,24 @@ package com.taksila.veda.model.api.event_schedule_mgmt.v1_0;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import com.taksila.veda.model.api.base.v1_0.BaseRequest;
 
 
 /**
  * 
- * 				This represents the api structure of the DeleteEventScheduleRequest				
+ * 				For a given event session id, get all the attendance records.				
  * 			
  * 
- * <p>Java class for DeleteEventScheduleRequest complex type.
+ * <p>Java class for GetEventAttendanceRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="DeleteEventScheduleRequest">
+ * &lt;complexType name="GetEventAttendanceRequest">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseRequest">
  *       &lt;sequence>
- *         &lt;element ref="{http://www.taksila.com/veda/model/api/base/v1_0}id"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -39,38 +37,10 @@ import com.taksila.veda.model.api.base.v1_0.BaseRequest;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DeleteEventScheduleRequest", propOrder = {
-    "id"
-})
-public class DeleteEventScheduleRequest
+@XmlType(name = "GetEventAttendanceRequest")
+public class GetEventAttendanceRequest
     extends BaseRequest
 {
 
-    @XmlElement(namespace = "http://www.taksila.com/veda/model/api/base/v1_0", required = true)
-    protected String id;
-
-    /**
-     * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setId(String value) {
-        this.id = value;
-    }
 
 }

@@ -6,7 +6,7 @@
 //
 
 
-package com.taksila.veda.model.db.classroom.v1_0;
+package com.taksila.veda.model.db.event_schedule_mgmt.v1_0;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -19,25 +19,22 @@ import com.taksila.veda.model.db.base.v1_0.BaseTable;
 
 /**
  * 
- * 				Classroom table has list of classrooms and its contents								
+ * 				EventAttendance table has list of students who attended the session							
  * 			
  * 
- * <p>Java class for Enrollment complex type.
+ * <p>Java class for EventAttendance complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="Enrollment">
+ * &lt;complexType name="EventAttendance">
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.taksila.com/veda/model/db/base/v1_0}BaseTable">
  *       &lt;sequence>
- *         &lt;element ref="{http://www.taksila.com/veda/model/db/classroom/v1_0}classroomid"/>
- *         &lt;element ref="{http://www.taksila.com/veda/model/db/classroom/v1_0}userRecordId"/>
- *         &lt;element ref="{http://www.taksila.com/veda/model/db/classroom/v1_0}enrolledOn"/>
- *         &lt;element ref="{http://www.taksila.com/veda/model/db/classroom/v1_0}verifiedBy"/>
- *         &lt;element ref="{http://www.taksila.com/veda/model/db/classroom/v1_0}enrollStatus"/>
- *         &lt;element ref="{http://www.taksila.com/veda/model/db/classroom/v1_0}startDate"/>
- *         &lt;element ref="{http://www.taksila.com/veda/model/db/classroom/v1_0}endDate"/>
+ *         &lt;element ref="{http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0}eventScheduleId"/>
+ *         &lt;element ref="{http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0}userRecordId"/>
+ *         &lt;element ref="{http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0}startDate"/>
+ *         &lt;element ref="{http://www.taksila.com/veda/model/db/event_schedule_mgmt/v1_0}endDate"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -47,60 +44,49 @@ import com.taksila.veda.model.db.base.v1_0.BaseTable;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Enrollment", propOrder = {
-    "classroomid",
+@XmlType(name = "EventAttendance", propOrder = {
+    "eventScheduleId",
     "userRecordId",
-    "enrolledOn",
-    "verifiedBy",
-    "enrollStatus",
     "startDate",
     "endDate"
 })
-public class Enrollment
+public class EventAttendance
     extends BaseTable
 {
 
     @XmlElement(required = true)
-    protected String classroomid;
+    protected String eventScheduleId;
     @XmlElement(required = true)
     protected String userRecordId;
     @XmlElement(required = true)
-    @XmlSchemaType(name = "date")
-    protected XMLGregorianCalendar enrolledOn;
-    @XmlElement(required = true)
-    protected String verifiedBy;
-    @XmlElement(required = true)
-    @XmlSchemaType(name = "string")
-    protected EnrollmentStatusType enrollStatus;
-    @XmlElement(required = true)
-    @XmlSchemaType(name = "date")
+    @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar startDate;
     @XmlElement(required = true)
-    @XmlSchemaType(name = "date")
+    @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar endDate;
 
     /**
-     * Gets the value of the classroomid property.
+     * Gets the value of the eventScheduleId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getClassroomid() {
-        return classroomid;
+    public String getEventScheduleId() {
+        return eventScheduleId;
     }
 
     /**
-     * Sets the value of the classroomid property.
+     * Sets the value of the eventScheduleId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setClassroomid(String value) {
-        this.classroomid = value;
+    public void setEventScheduleId(String value) {
+        this.eventScheduleId = value;
     }
 
     /**
@@ -125,78 +111,6 @@ public class Enrollment
      */
     public void setUserRecordId(String value) {
         this.userRecordId = value;
-    }
-
-    /**
-     * Gets the value of the enrolledOn property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getEnrolledOn() {
-        return enrolledOn;
-    }
-
-    /**
-     * Sets the value of the enrolledOn property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setEnrolledOn(XMLGregorianCalendar value) {
-        this.enrolledOn = value;
-    }
-
-    /**
-     * Gets the value of the verifiedBy property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getVerifiedBy() {
-        return verifiedBy;
-    }
-
-    /**
-     * Sets the value of the verifiedBy property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setVerifiedBy(String value) {
-        this.verifiedBy = value;
-    }
-
-    /**
-     * Gets the value of the enrollStatus property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EnrollmentStatusType }
-     *     
-     */
-    public EnrollmentStatusType getEnrollStatus() {
-        return enrollStatus;
-    }
-
-    /**
-     * Sets the value of the enrollStatus property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EnrollmentStatusType }
-     *     
-     */
-    public void setEnrollStatus(EnrollmentStatusType value) {
-        this.enrollStatus = value;
     }
 
     /**

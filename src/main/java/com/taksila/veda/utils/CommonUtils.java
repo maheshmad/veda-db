@@ -888,5 +888,11 @@ public class CommonUtils
 		return dirPath;  
 			
 	}
+
+	public static java.sql.Date getSqlDateFromXMLGregorianCalendarDateTimestamp(XMLGregorianCalendar startDate) 
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
 
