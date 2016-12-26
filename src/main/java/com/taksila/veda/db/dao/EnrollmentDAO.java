@@ -82,7 +82,7 @@ public class EnrollmentDAO
 		
 	}
 	
-	private enum ENROLLMENT_TABLE
+	public enum ENROLLMENT_TABLE
 	{		
 		id("id"),
 		userRecordId("user_record_id"),

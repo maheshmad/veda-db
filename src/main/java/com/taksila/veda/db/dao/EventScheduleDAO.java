@@ -46,9 +46,17 @@ public class EventScheduleDAO
 													" WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
 	
 	private static String delete_eventSchedule_sql = "DELETE FROM EVENT_SCHEDULE WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
-	private static String search_event_schedule_by_classroomid_sql = "SELECT * FROM EVENT_SCHEDULE  WHERE "+EVENT_SCHEDULE_TABLE.classroomId.value()+" = ?";
+	private static String search_event_schedule_by_classroomid_sql = "SELECT * FROM EVENT_SCHEDULE  WHERE "+EVENT_SCHEDULE_TABLE.classroomId.value()+" = ?";	
 	private static String search_event_schedule_by_id_sql = "SELECT * FROM EVENT_SCHEDULE  WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
 
+	private static String get_event_schedule_by_user_enrollment = "SELECT * FROM event_schedule as ev " +
+																	"where "+EVENT_SCHEDULE_TABLE.classroomId.value()+" in "+
+																	"(select "+EnrollmentDAO.ENROLLMENT_TABLE.classroomid.value()+" from enrollments as enroll " +
+																	"where "+EnrollmentDAO.ENROLLMENT_TABLE.userRecordId.value()+" = ?) " +
+																	"order by ev.start_datetime";
+
+	
+	
 //	private static String search_eventSchedule_by_eventrecordid_sql = "SELECT * FROM EVENT_SCHEDULE WHERE "+EVENT_SCHEDULE_TABLE.eventrecordid.value()+" = ? ";
 //	private static String search_eventSchedule_by_id_sql = "SELECT * FROM EVENT_SCHEDULE WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ? ";
 //	private static String get_enrolled_students_sql =  	"	select * "+                
@@ -86,7 +94,7 @@ public class EventScheduleDAO
 		
 	}
 	
-	private enum EVENT_SCHEDULE_TABLE
+	public enum EVENT_SCHEDULE_TABLE
 	{		
 		id("event_schedule_id"),
 		classroomId("classroomid"),
@@ -221,6 +229,44 @@ public class EventScheduleDAO
 	}
 	
 	
+	/**
+	 * 
+	 * @param q
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<EventSchedule> searchEventScheduleByUserid(String userid) throws Exception
+	{
+		List<EventSchedule> eventScheduleHits = new ArrayList<EventSchedule>();				
+		PreparedStatement stmt = null;		
+		logger.trace("searching eventSchedules by user id ="+userid+ "sql = "+get_event_schedule_by_user_enrollment);
+ 
+		try
+		{
+			this.sqlDBManager.connect();			
+			stmt = this.sqlDBManager.getPreparedStatement(get_event_schedule_by_user_enrollment);
+			stmt.setString(1, userid);
+			
+			ResultSet resultSet = stmt.executeQuery();	
+			while (resultSet.next()) 
+			{
+				EventSchedule enroll = mapRow(resultSet);
+				eventScheduleHits.add(enroll);
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally
+		{
+			this.sqlDBManager.close(stmt);
+		}
+		
+		return eventScheduleHits;
+		
+	}
 
 	
 	

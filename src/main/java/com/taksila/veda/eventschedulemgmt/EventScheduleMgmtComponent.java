@@ -54,13 +54,16 @@ public class EventScheduleMgmtComponent
 	 * @param req
 	 * @return
 	 */
-	public SearchEventScheduleResponse searchEventScheduleByClassroom(SearchEventScheduleRequest req)
+	public SearchEventScheduleResponse searchEventSchedule(SearchEventScheduleRequest req)
 	{
 		SearchEventScheduleResponse resp = new SearchEventScheduleResponse();
-		
+		List<EventSchedule> eventScheduleSearchHits = new ArrayList<EventSchedule>();
 		try 
 		{
-			List<EventSchedule> eventScheduleSearchHits = eventScheduleDAO.searchEventScheduleByClassroomId(req.getClassroomid());
+			if (StringUtils.isNotBlank(req.getUserRecordId()))
+				eventScheduleSearchHits = eventScheduleDAO.searchEventScheduleByUserid(req.getUserRecordId());
+			else
+				eventScheduleSearchHits = eventScheduleDAO.searchEventScheduleByClassroomId(req.getClassroomid());
 			
 			for(EventSchedule event: eventScheduleSearchHits)
 			{
@@ -68,7 +71,7 @@ public class EventScheduleMgmtComponent
 				/*
 				 * map search hits
 				 */
-				rec.setRecordId(String.valueOf(event.getId()));
+				rec.setRecordId(String.valueOf(event.getId()));				
 				rec.setRecordTitle(event.getEventTitle());
 				rec.setRecordSubtitle(event.getEventDescription()+" Starts at :"+event.getEventStartDate()+" Ends at: "+event.getEventEndDate());					
 				

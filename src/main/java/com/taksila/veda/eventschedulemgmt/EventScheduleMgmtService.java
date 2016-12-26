@@ -220,12 +220,13 @@ public class EventScheduleMgmtService
 	public void searchEventSchedules(@Context HttpServletRequest request, @Context UriInfo uri,@Context HttpServletResponse resp,
 			@QueryParam("eventRecordid") String eventRecordid,
 			@QueryParam("classroomid") String classroomid,
+			@QueryParam("urecid") String urecid,
 			@QueryParam("page") String page,
 			@QueryParam("start") String start, 
 			@Suspended final AsyncResponse asyncResp)
 	{    				
 		
-		logger.trace("inside event eventSchedule query = "+eventRecordid);
+		logger.trace("inside event eventSchedule query = "+eventRecordid+" for user id = "+urecid);
 		
 		SearchEventScheduleResponse searchResp = new SearchEventScheduleResponse();		
 		SearchEventScheduleRequest req = new SearchEventScheduleRequest();
@@ -242,7 +243,8 @@ public class EventScheduleMgmtService
 			req.setRecordType("EVENTS-SCHEDULE");
 			
 			req.setClassroomid(classroomid);
-			searchResp = eventScheduleComp.searchEventScheduleByClassroom(req);
+			req.setUserRecordId(urecid);
+			searchResp = eventScheduleComp.searchEventSchedule(req);
 			
 						
 		} 
@@ -256,6 +258,7 @@ public class EventScheduleMgmtService
 		
 		
 	}
+	
 	
 	
 	
