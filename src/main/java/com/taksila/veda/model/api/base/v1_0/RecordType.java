@@ -13,36 +13,42 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for StatusType.
+ * <p>Java class for RecordType.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="StatusType">
+ * &lt;simpleType name="RecordType">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="INVALID"/>
- *     &lt;enumeration value="SUCCESS"/>
- *     &lt;enumeration value="FAILED"/>
- *     &lt;enumeration value="EXCEPTION"/>
+ *     &lt;enumeration value="USER"/>
+ *     &lt;enumeration value="CLASSROOM"/>
+ *     &lt;enumeration value="SLIDES"/>
+ *     &lt;enumeration value="EVENTSCHEDULE"/>
+ *     &lt;enumeration value="CONFIG"/>
+ *     &lt;enumeration value="COURSE"/>
+ *     &lt;enumeration value="ENROLLMENT"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "StatusType")
+@XmlType(name = "RecordType")
 @XmlEnum
-public enum StatusType {
+public enum RecordType {
 
-    INVALID,
-    SUCCESS,
-    FAILED,
-    EXCEPTION;
+    USER,
+    CLASSROOM,
+    SLIDES,
+    EVENTSCHEDULE,
+    CONFIG,
+    COURSE,
+    ENROLLMENT;
 
     public String value() {
         return name();
     }
 
-    public static StatusType fromValue(String v) {
+    public static RecordType fromValue(String v) {
         return valueOf(v);
     }
 

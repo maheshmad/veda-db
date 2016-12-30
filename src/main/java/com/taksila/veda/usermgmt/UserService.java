@@ -29,6 +29,10 @@ import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ManagedAsync;
 
 import com.taksila.veda.db.dao.UsersDAO.USER_TABLE;
+import com.taksila.veda.eventschedulemgmt.EventScheduleMgmtComponent;
+import com.taksila.veda.model.api.base.v1_0.AllowedActionsRequest;
+import com.taksila.veda.model.api.base.v1_0.AllowedActionsResponse;
+import com.taksila.veda.model.api.base.v1_0.RecordType;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
 import com.taksila.veda.model.api.usermgmt.v1_0.CreateNewUserRequest;
 import com.taksila.veda.model.api.usermgmt.v1_0.CreateNewUserResponse;
@@ -366,7 +370,41 @@ public class UserService
 	}
 	
 	
-	
+	/**
+	 * 	
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@ManagedAsync
+	@Path("/allowedactions/{eventRecordType}/{eventRecordid}")
+	public void getActions(@Context HttpServletRequest request, 
+			@PathParam("eventRecordid") String eventRecordid,
+			@PathParam("eventRecordType") String eventRecordType,
+			@Context UriInfo uri,@Context HttpServletResponse resp,			 
+			@Suspended final AsyncResponse asyncResp)
+	{    						
+		logger.trace("inside user allowed actions service");		
+		String schoolId = CommonUtils.getSubDomain(uri);
+		EventScheduleMgmtComponent eventScheduleComp = new EventScheduleMgmtComponent(schoolId);
+		AllowedActionsResponse allowedActionsResp = new AllowedActionsResponse();
+		
+		try 
+		{			
+			AllowedActionsRequest req = new AllowedActionsRequest();
+			req.setRecordId(eventRecordid);
+			req.setRecordType(RecordType.fromValue(eventRecordType.toUpperCase()));
+			allowedActionsResp = eventScheduleComp.getAllowedActions(req);		
+			allowedActionsResp.setSuccess(true);						
+		} 
+		catch (Exception e) 
+		{			
+			e.printStackTrace();
+			CommonUtils.handleExceptionForResponse(allowedActionsResp, e);
+		}
+				
+		asyncResp.resume(Response.ok(allowedActionsResp).build());
+		
+	}
 	
 	
 	

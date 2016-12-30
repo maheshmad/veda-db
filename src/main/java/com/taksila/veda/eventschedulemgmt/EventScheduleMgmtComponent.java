@@ -12,10 +12,13 @@ import org.apache.logging.log4j.Logger;
 
 import com.taksila.veda.classroom.ClassroomComponent;
 import com.taksila.veda.db.dao.EventScheduleDAO;
+import com.taksila.veda.model.api.base.v1_0.AllowedActionsRequest;
+import com.taksila.veda.model.api.base.v1_0.AllowedActionsResponse;
 import com.taksila.veda.model.api.base.v1_0.Err;
 import com.taksila.veda.model.api.base.v1_0.ErrorInfo;
 import com.taksila.veda.model.api.base.v1_0.SearchHitRecord;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
+import com.taksila.veda.model.api.base.v1_0.UserAllowedAction;
 import com.taksila.veda.model.api.classroom.v1_0.Classroom;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.CreateEventScheduleRequest;
 import com.taksila.veda.model.api.event_schedule_mgmt.v1_0.CreateEventScheduleResponse;
@@ -488,7 +491,60 @@ public class EventScheduleMgmtComponent
 		return null;
 		
 	}
+
+	/**
+	 * 
+	 * @param req
+	 * @return
+	 */
+	public AllowedActionsResponse getAllowedActions(AllowedActionsRequest req) 
+	{
+		AllowedActionsResponse allowedActions = new AllowedActionsResponse();
+		
+		allowedActions.getActions().add(checkAllowedAction("EDIT",req.getRecordId()));
+		allowedActions.getActions().add(checkAllowedAction("DELETE",req.getRecordId()));
+		allowedActions.getActions().add(checkAllowedAction("JOIN",req.getRecordId()));
+		
+		
+		return allowedActions;
+	}
 	
+	/**
+	 * 
+	 * @param actionType
+	 * @param recordId
+	 * @return
+	 */
+	private UserAllowedAction checkAllowedAction(String actionType,String recordId)
+	{
+		boolean allowed = false;
+		
+		if ("EDIT".equals(actionType))
+		{
+			allowed = true;
+		}
+		else if ("DELETE".equals(actionType))
+		{
+			allowed = true;
+		}		
+		else if ("JOIN".equals(actionType))
+		{
+			allowed = true;
+		}
+		
+		
+		if (allowed)
+		{
+			UserAllowedAction userActionAllowed = new UserAllowedAction();
+			userActionAllowed.setType(actionType);
+			userActionAllowed.setLink("/eventschedule/"+actionType.toLowerCase()+"/"+recordId);
+			return userActionAllowed;
+
+		}			
+		
+		return null;
+		
+	}
 	
 	
 }

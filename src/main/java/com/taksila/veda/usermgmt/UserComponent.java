@@ -17,9 +17,14 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.sun.javafx.event.EventHandlerManager;
 import com.taksila.veda.config.ConfigComponent;
 import com.taksila.veda.db.dao.UserImagesDAO;
 import com.taksila.veda.db.dao.UsersDAO;
+import com.taksila.veda.eventschedulemgmt.EventScheduleMgmtComponent;
+import com.taksila.veda.model.api.base.v1_0.AllowedActionsRequest;
+import com.taksila.veda.model.api.base.v1_0.AllowedActionsResponse;
+import com.taksila.veda.model.api.base.v1_0.RecordType;
 import com.taksila.veda.model.api.base.v1_0.SearchHitRecord;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
 import com.taksila.veda.model.api.usermgmt.v1_0.CreateNewUserRequest;
@@ -637,4 +642,28 @@ public class UserComponent
 		boolean dirExits = new File(dirPath).mkdirs();
 		return dirPath;  
 	}
+	
+	/**
+	 * 
+	 * @param req
+	 * @return
+	 */
+	public AllowedActionsResponse getAllowedActions(AllowedActionsRequest req) 
+	{
+		AllowedActionsResponse allowedActionsResp = new AllowedActionsResponse();
+		
+		switch (req.getRecordType())
+		{
+			case EVENTSCHEDULE:
+				EventScheduleMgmtComponent evenScheMgmtComp = new EventScheduleMgmtComponent(this.schoolId);
+				allowedActionsResp = evenScheMgmtComp.getAllowedActions(req);
+			default:				
+				allowedActionsResp.setErrorInfo(CommonUtils.buildErrorInfo("RECORD TYPE", "Unsupported Record Type"));
+		}
+		
+		
+		return allowedActionsResp;
+	}
+	
+	
 }

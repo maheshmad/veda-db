@@ -28,13 +28,25 @@
 		<xs:restriction base="xs:string">		
 		</xs:restriction>
 	</xs:simpleType>
-	
+		
 	<xs:simpleType name="StatusType">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="INVALID" />
 			<xs:enumeration value="SUCCESS" />
 			<xs:enumeration value="FAILED" />
 			<xs:enumeration value="EXCEPTION" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="RecordType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="USER" />
+			<xs:enumeration value="CLASSROOM" />
+			<xs:enumeration value="SLIDES" />
+			<xs:enumeration value="EVENTSCHEDULE" />
+			<xs:enumeration value="CONFIG" />
+			<xs:enumeration value="COURSE" />			
+			<xs:enumeration value="ENROLLMENT" />
 		</xs:restriction>
 	</xs:simpleType>
 
@@ -45,6 +57,14 @@
 		<xs:sequence>
 			<xs:element ref="txnId" />
 			<xs:element ref="userRecordId" />			
+		</xs:sequence>
+	</xs:complexType>
+	
+	<!-- definition of BaseResponse common for all responses -->
+	<xs:complexType name="UserAllowedAction">
+		<xs:sequence>
+			<xs:element name="link" type="xs:string" />	
+			<xs:element name="type" type="xs:string" />				
 		</xs:sequence>
 	</xs:complexType>
 	
@@ -117,6 +137,39 @@
             	</xs:sequence>
             </xs:extension>
         </xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="AllowedActionsRequest">
+		<xs:annotation>
+			<xs:documentation>
+				Allowed actions on a particular resource			
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="BaseRequest">      
+            	<xs:sequence>
+            		<xs:element name="recordType" type="RecordType" />
+            		<xs:element ref="recordId" />            							
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
 	</xs:complexType>   
+	
+	<xs:complexType name="AllowedActionsResponse">
+		<xs:annotation>
+			<xs:documentation>
+				Allowed actions response will provide a list of actions that are allowed.			
+			</xs:documentation>
+		</xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="BaseResponse">      
+            	<xs:sequence>
+					<xs:element name="recordType" type="RecordType" />
+					<xs:element ref="recordId" />            		
+					<xs:element name="actions" type="UserAllowedAction" maxOccurs="unbounded" minOccurs="0" />	      	
+            	</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType>      
 	
 </xs:schema>

@@ -11,24 +11,28 @@ package com.taksila.veda.model.api.base.v1_0;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for BaseRequest complex type.
+ * 
+ * 				Allowed actions on a particular resource			
+ * 			
+ * 
+ * <p>Java class for AllowedActionsRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="BaseRequest">
+ * &lt;complexType name="AllowedActionsRequest">
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *     &lt;extension base="{http://www.taksila.com/veda/model/api/base/v1_0}BaseRequest">
  *       &lt;sequence>
- *         &lt;element ref="{http://www.taksila.com/veda/model/api/base/v1_0}txnId"/>
- *         &lt;element ref="{http://www.taksila.com/veda/model/api/base/v1_0}userRecordId"/>
+ *         &lt;element name="recordType" type="{http://www.taksila.com/veda/model/api/base/v1_0}RecordType"/>
+ *         &lt;element ref="{http://www.taksila.com/veda/model/api/base/v1_0}recordId"/>
  *       &lt;/sequence>
- *     &lt;/restriction>
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -36,67 +40,66 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "BaseRequest", propOrder = {
-    "txnId",
-    "userRecordId"
+@XmlType(name = "AllowedActionsRequest", propOrder = {
+    "recordType",
+    "recordId"
 })
-@XmlSeeAlso({
-    SearchRequest.class,
-    AllowedActionsRequest.class
-})
-public class BaseRequest {
+public class AllowedActionsRequest
+    extends BaseRequest
+{
 
     @XmlElement(required = true)
-    protected String txnId;
+    @XmlSchemaType(name = "string")
+    protected RecordType recordType;
     @XmlElement(required = true)
-    protected String userRecordId;
+    protected String recordId;
 
     /**
-     * Gets the value of the txnId property.
+     * Gets the value of the recordType property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link RecordType }
+     *     
+     */
+    public RecordType getRecordType() {
+        return recordType;
+    }
+
+    /**
+     * Sets the value of the recordType property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link RecordType }
+     *     
+     */
+    public void setRecordType(RecordType value) {
+        this.recordType = value;
+    }
+
+    /**
+     * Gets the value of the recordId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getTxnId() {
-        return txnId;
+    public String getRecordId() {
+        return recordId;
     }
 
     /**
-     * Sets the value of the txnId property.
+     * Sets the value of the recordId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setTxnId(String value) {
-        this.txnId = value;
-    }
-
-    /**
-     * Gets the value of the userRecordId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getUserRecordId() {
-        return userRecordId;
-    }
-
-    /**
-     * Sets the value of the userRecordId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setUserRecordId(String value) {
-        this.userRecordId = value;
+    public void setRecordId(String value) {
+        this.recordId = value;
     }
 
 }
