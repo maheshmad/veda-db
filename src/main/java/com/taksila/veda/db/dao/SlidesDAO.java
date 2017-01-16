@@ -15,8 +15,14 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Slide;
 import com.taksila.veda.utils.CommonUtils;
 
@@ -24,9 +30,25 @@ import com.taksila.veda.utils.CommonUtils;
  * @author mahesh
  *
  */
-public class SlidesDAO 
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class SlidesDAO implements SlidesRepositoryInterface 
 {
-	private String schoolId = null;	
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public SlidesDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
+	
 	private static String insert_slide_sql = "INSERT INTO SLIDES("+SLIDE_TABLE.slidename.value()+","+
 																			SLIDE_TABLE.topicid.value()+","+
 																			SLIDE_TABLE.title.value()+","+
@@ -89,15 +111,6 @@ public class SlidesDAO
 	static Logger logger = LogManager.getLogger(SlidesDAO.class.getName());
 	SQLDataBaseManager sqlDBManager= null;
 	
-	public SlidesDAO(String tenantId) 
-	{
-		logger.trace(" Initializing SlidesDAO............ ");
-		this.schoolId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing SlidesDAO............ ");
-		
-	}
 	
 	public enum SLIDE_TABLE
 	{
@@ -143,12 +156,10 @@ public class SlidesDAO
 		return slide;
 	}
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.SlidesRepositoryInterface#searchSlidesByTitle(java.lang.String)
 	 */
+	@Override
 	public List<Slide> searchSlidesByTitle(String q) throws Exception
 	{
 		List<Slide> slideHits = new ArrayList<Slide>();				
@@ -188,13 +199,11 @@ public class SlidesDAO
 		
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.SlidesRepositoryInterface#getSlideById(java.lang.String)
 	 */
-	public Slide getSlideById(int id) throws Exception
+	@Override
+	public Slide getSlideById(String id) throws Exception
 	{						
 		PreparedStatement stmt = null;	
 		Slide slide = null;
@@ -202,7 +211,7 @@ public class SlidesDAO
 		{
 			this.sqlDBManager.connect();
 			stmt = this.sqlDBManager.getPreparedStatement(search_slide_by_id_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			ResultSet resultSet = stmt.executeQuery();	
 			if (resultSet.next()) 
 			{
@@ -223,12 +232,10 @@ public class SlidesDAO
 				
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.SlidesRepositoryInterface#searchSlidesByTopicId(java.lang.String)
 	 */
+	@Override
 	public List<Slide> searchSlidesByTopicId(String topicid) throws Exception
 	{
 		List<Slide> slideHits = new ArrayList<Slide>();				
@@ -261,12 +268,10 @@ public class SlidesDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.SlidesRepositoryInterface#getSlideByName(java.lang.String)
 	 */
+	@Override
 	public Slide getSlideByName(String name) throws Exception
 	{						
 		PreparedStatement stmt = null;	
@@ -297,12 +302,10 @@ public class SlidesDAO
 	}
 	
 		
-	/**
-	 * 
-	 * @param slide
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.SlidesRepositoryInterface#insertSlide(com.taksila.veda.model.api.course.v1_0.Slide)
 	 */	
+	@Override
 	public Slide insertSlide(Slide slide) throws Exception 
 	{
 		logger.debug("Entering into insertSlide():::::");
@@ -342,12 +345,10 @@ public class SlidesDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param slide
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.SlidesRepositoryInterface#updateSlide(com.taksila.veda.model.api.course.v1_0.Slide)
 	 */	
+	@Override
 	public boolean updateSlide(Slide slide) throws Exception 
 	{
 		logger.debug("Entering into updateSlide():::::");		
@@ -382,12 +383,10 @@ public class SlidesDAO
 								
 	}
 		
-	/**
-	 * 
-	 * @param slide
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.SlidesRepositoryInterface#updateSlideImage(java.lang.String, java.io.InputStream, java.lang.String, double)
 	 */	
+	@Override
 	public boolean updateSlideImage(String slideId,InputStream slideContentImageIs, String imageType, double scale) throws Exception 
 	{
 		logger.debug("Entering into updateSlideLargeImage():::::");		
@@ -425,12 +424,10 @@ public class SlidesDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param slide
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.SlidesRepositoryInterface#readSlideImage(int, double)
 	 */	
+	@Override
 	public ByteArrayOutputStream readSlideImage(int slideId, double scale) throws Exception 
 	{
 		logger.trace("Entering into readSlideImage():::::");		
@@ -480,13 +477,11 @@ public class SlidesDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.SlidesRepositoryInterface#deleteSlide(java.lang.String)
 	 */
-	public boolean deleteSlide(int id) throws Exception 
+	@Override
+	public boolean deleteSlide(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteSlide():::::");
 		this.sqlDBManager.connect();	
@@ -494,7 +489,7 @@ public class SlidesDAO
 		try
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(delete_slide_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			int t = stmt.executeUpdate();
 			if (t > 0)
 				return true;

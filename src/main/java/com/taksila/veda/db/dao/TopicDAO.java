@@ -14,16 +14,41 @@ import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Topic;
 
 /**
  * @author mahesh
  *
  */
-public class TopicDAO 
+ 
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class TopicDAO implements TopicRepositoryInterface
 {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public TopicDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
+
 	private String schoolId = null;	
 	private static String insert_topic_sql = "INSERT INTO TOPICS("+TOPIC_TABLE.chapterid.value()+","+
 																			TOPIC_TABLE.topicname.value()+","+
@@ -49,15 +74,7 @@ public class TopicDAO
 	static Logger logger = LogManager.getLogger(TopicDAO.class.getName());
 	SQLDataBaseManager sqlDBManager= null;
 	
-	public TopicDAO(String tenantId) 
-	{
-		logger.trace(" Initializing TopicsDAO............ ");
-		this.schoolId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing TopicsDAO............ ");
-		
-	}
+
 	
 	public enum TOPIC_TABLE
 	{
@@ -94,14 +111,11 @@ public class TopicDAO
 		return topic;
 	}
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.TopicRepositoryInterface#searchTopicsByTitle(java.lang.String)
 	 */
-	public List<Topic> searchTopicsByTitle(String q) throws SQLException, NamingException
+	@Override
+	public List<Topic> searchTopicsByTitle(String q) throws Exception
 	{
 		List<Topic> topicHits = new ArrayList<Topic>();				
 		PreparedStatement stmt = null;		
@@ -139,14 +153,11 @@ public class TopicDAO
 		
 	}
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.TopicRepositoryInterface#searchTopicsByChapterid(java.lang.String)
 	 */
-	public List<Topic> searchTopicsByChapterid(int chapterid) throws SQLException, NamingException
+	@Override
+	public List<Topic> searchTopicsByChapterid(String chapterid) throws Exception
 	{
 		List<Topic> topicHits = new ArrayList<Topic>();				
 		PreparedStatement stmt = null;		
@@ -156,7 +167,7 @@ public class TopicDAO
 		{
 			this.sqlDBManager.connect();						
 			stmt = this.sqlDBManager.getPreparedStatement(search_topic_by_chapter_id_sql);
-			stmt.setInt(1, chapterid);
+			stmt.setInt(1, Integer.parseInt(chapterid));
 			
 			ResultSet resultSet = stmt.executeQuery();	
 			while (resultSet.next()) 
@@ -179,14 +190,11 @@ public class TopicDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.TopicRepositoryInterface#getTopicById(java.lang.String)
 	 */
-	public Topic getTopicById(int id) throws SQLException, NamingException
+	@Override
+	public Topic getTopicById(String id) throws Exception
 	{						
 		PreparedStatement stmt = null;	
 		Topic topic = null;
@@ -194,7 +202,7 @@ public class TopicDAO
 		{
 			this.sqlDBManager.connect();
 			stmt = this.sqlDBManager.getPreparedStatement(search_topic_by_id_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			ResultSet resultSet = stmt.executeQuery();	
 			if (resultSet.next()) 
 			{
@@ -216,12 +224,10 @@ public class TopicDAO
 	}
 	
 		
-	/**
-	 * 
-	 * @param topic
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.TopicRepositoryInterface#insertTopic(com.taksila.veda.model.api.course.v1_0.Topic)
 	 */	
+	@Override
 	public Topic insertTopic(Topic topic) throws Exception 
 	{
 		logger.debug("Entering into insertTopic():::::");
@@ -260,12 +266,10 @@ public class TopicDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param topic
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.TopicRepositoryInterface#updateTopic(com.taksila.veda.model.api.course.v1_0.Topic)
 	 */	
+	@Override
 	public boolean updateTopic(Topic topic) throws Exception 
 	{
 		logger.debug("Entering into updateTopic():::::");		
@@ -300,13 +304,11 @@ public class TopicDAO
 								
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.TopicRepositoryInterface#deleteTopic(java.lang.String)
 	 */
-	public boolean deleteTopic(int id) throws Exception 
+	@Override
+	public boolean deleteTopic(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteTopic():::::");
 		this.sqlDBManager.connect();	
@@ -314,7 +316,7 @@ public class TopicDAO
 		try
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(delete_topic_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			int t = stmt.executeUpdate();
 			if (t > 0)
 				return true;

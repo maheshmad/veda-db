@@ -16,8 +16,15 @@ import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.base.v1_0.UserRole;
 import com.taksila.veda.model.db.usermgmt.v1_0.User;
 import com.taksila.veda.utils.CommonUtils;
@@ -26,8 +33,26 @@ import com.taksila.veda.utils.CommonUtils;
  * @author mahesh
  *
  */
-public class UsersDAO 
+
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class UsersDAO implements UsersRepositoryInterface 
 {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public UsersDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
+
 	private String schoolId = null;	
 	private static String insert_user_sql = "INSERT INTO USERS("+	USER_TABLE.userid.value()+","+
 																		USER_TABLE.emailid.value()+","+
@@ -96,17 +121,7 @@ public class UsersDAO
 //																	USER_TABLE.title.value()+" = ? OR ";
 		
 	static Logger logger = LogManager.getLogger(UsersDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;
-	
-	public UsersDAO(String tenantId) 
-	{
-		logger.trace(" Initializing usersDAO............ ");
-		this.schoolId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing usersDAO............ ");
-		
-	}
+	SQLDataBaseManager sqlDBManager= null;	
 	
 	public enum USER_TABLE
 	{
@@ -191,12 +206,10 @@ public class UsersDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#getUserById(int)
 	 */
+	@Override
 	public User getUserById(int id) throws Exception
 	{						
 		PreparedStatement stmt = null;	
@@ -228,12 +241,10 @@ public class UsersDAO
 	
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#getUserByEmailId(java.lang.String)
 	 */
+	@Override
 	public User getUserByEmailId(String emailid) throws Exception
 	{						
 		PreparedStatement stmt = null;	
@@ -263,12 +274,10 @@ public class UsersDAO
 				
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#searchUsers(java.lang.String)
 	 */
+	@Override
 	public List<User> searchUsers(String name) throws Exception
 	{						
 		PreparedStatement stmt = null;	
@@ -299,12 +308,10 @@ public class UsersDAO
 	}
 	
 		
-	/**
-	 * 
-	 * @param user
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#insertUser(com.taksila.veda.model.db.usermgmt.v1_0.User)
 	 */	
+	@Override
 	public User insertUser(User user) throws Exception 
 	{
 		logger.debug("Entering into insertUser():::::");
@@ -374,12 +381,10 @@ public class UsersDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param user
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#updateUser(com.taksila.veda.model.db.usermgmt.v1_0.User)
 	 */	
+	@Override
 	public boolean updateUser(User user) throws Exception 
 	{
 		logger.debug("Entering into updateUser():::::");		
@@ -439,13 +444,11 @@ public class UsersDAO
 								
 	}
 		
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#deleteUser(java.lang.String)
 	 */
-	public boolean deleteUser(int id) throws Exception 
+	@Override
+	public boolean deleteUser(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteUser():::::");
 		this.sqlDBManager.connect();	
@@ -453,7 +456,7 @@ public class UsersDAO
 		try
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(delete_user_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			int t = stmt.executeUpdate();
 			if (t > 0)
 				return true;
@@ -473,24 +476,30 @@ public class UsersDAO
 	}
 
 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#updateUserImage(java.lang.String, java.io.InputStream, java.lang.String, double)
+	 */
+	@Override
 	public boolean updateUserImage(String userId, InputStream userContentImageIs, String imageType, double scale) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#readUserImage(int, double)
+	 */
+	@Override
 	public ByteArrayOutputStream readUserImage(int userId, double scale) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#getUserByUserId(java.lang.String)
 	 */
+	@Override
 	public User getUserByUserId(String userid) throws Exception
 	{						
 		PreparedStatement stmt = null;	
@@ -523,6 +532,10 @@ public class UsersDAO
 	/*
 	 * 
 	 */
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#authenticate(java.lang.String, java.lang.String)
+	 */
+	@Override
 	public User authenticate(String userid, String pswd) throws Exception
 	{
 		PreparedStatement stmt = null;	
@@ -553,13 +566,10 @@ public class UsersDAO
 		}
 	}
 
-	/**
-	 * 
-	 * @param userId
-	 * @param passwordHash
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#updatePassword(java.lang.String, java.lang.String, java.lang.Boolean)
 	 */
+	@Override
 	public boolean updatePassword(String userId, String passwordHash, Boolean temporary) throws Exception 
 	{
 		logger.debug("Entering into updatePassword():::::");		

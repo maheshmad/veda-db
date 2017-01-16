@@ -12,8 +12,16 @@ import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.utils.DaoUtils;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.base.v1_0.UserRole;
 import com.taksila.veda.model.db.config.v1_0.Config;
 import com.taksila.veda.model.db.config.v1_0.ConfigGroup;
@@ -21,18 +29,25 @@ import com.taksila.veda.model.db.config.v1_0.ConfigId;
 import com.taksila.veda.model.db.config.v1_0.ConfigSection;
 import com.taksila.veda.utils.CommonUtils;
 
-public class ConfigDAO 
+
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class ConfigDAO implements ConfigRepositoryInterface 
 {
-	SQLDataBaseManager sqlDBManager= null;
-	static Logger logger = LogManager.getLogger(ConfigDAO.class.getName());
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
 	
-	public ConfigDAO() 
-	{
-		logger.trace(" Initializing ConfigDAO............ ");		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing ConfigDAO............ ");
-		
-	}
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public ConfigDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
 	
 	public enum CONFIG_TABLE
 	{
@@ -136,13 +151,10 @@ public class ConfigDAO
 		return config;
 	}
 	
-	/**
-	 * 
-	 * @param sysadmin
-	 * @return
-	 * @throws SQLException
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ConfigRepositoryInterface#getConfigSectionsByRole(com.taksila.veda.model.db.base.v1_0.UserRole)
 	 */
+	@Override
 	public List<ConfigSection> getConfigSectionsByRole(UserRole userrole) throws SQLException,Exception
 	{		
 		Map<String, ConfigSection> configSectionsMap = new HashMap<String, ConfigSection>();
@@ -235,13 +247,10 @@ public class ConfigDAO
 	}
 	
 	 
-	/**
-	 * 
-	 * @param sysadmin
-	 * @return
-	 * @throws SQLException
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ConfigRepositoryInterface#getConfigsByRole(com.taksila.veda.model.db.base.v1_0.UserRole)
 	 */
+	@Override
 	public Map<ConfigId, String> getConfigsByRole(UserRole userrole) throws SQLException,Exception
 	{		
 		Map<ConfigId, String> configsMap = new HashMap<ConfigId, String>();
@@ -284,12 +293,10 @@ public class ConfigDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param course
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ConfigRepositoryInterface#updateConfigs(java.util.List)
 	 */	
+	@Override
 	public boolean updateConfigs(List<Config> configs) throws Exception 
 	{		
 		logger.trace("Entering into updateConfigs():::::");		

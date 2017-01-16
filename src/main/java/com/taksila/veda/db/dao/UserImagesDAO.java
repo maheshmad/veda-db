@@ -17,9 +17,15 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
-import com.taksila.veda.db.dao.SlidesDAO.SLIDE_TABLE;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.usermgmt.v1_0.UserImageInfo;
 import com.taksila.veda.model.db.usermgmt.v1_0.UserImageType;
 import com.taksila.veda.utils.CommonUtils;
@@ -28,8 +34,25 @@ import com.taksila.veda.utils.CommonUtils;
  * @author mahesh
  *
  */
-public class UserImagesDAO 
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class UserImagesDAO implements UserImagesRepositoryInterface 
 {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public UserImagesDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
+	
 	private String schoolId = null;	
 	private static String insert_user_image_sql = "REPLACE INTO USER_IMAGES("+USER_IMAGES_TABLE.userid.value()+","+
 																	USER_IMAGES_TABLE.imageid.value()+","+
@@ -71,16 +94,7 @@ public class UserImagesDAO
 		
 	static Logger logger = LogManager.getLogger(UserImagesDAO.class.getName());
 	SQLDataBaseManager sqlDBManager= null;
-	
-	public UserImagesDAO(String tenantId) 
-	{
-		logger.trace(" Initializing UserImageInfosDAO............ ");
-		this.schoolId = tenantId;		
 		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing UserImageInfosDAO............ ");
-		
-	}
 	
 	private enum USER_IMAGES_TABLE
 	{
@@ -118,12 +132,10 @@ public class UserImagesDAO
 		return UserImageInfo;
 	}
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UserImagesRepositoryInterface#search(com.taksila.veda.model.db.usermgmt.v1_0.UserImageInfo)
 	 */
+	@Override
 	public List<UserImageInfo> search(UserImageInfo searchUserImage) throws Exception
 	{
 		List<UserImageInfo> UserImageInfoHits = new ArrayList<UserImageInfo>();				
@@ -176,12 +188,10 @@ public class UserImagesDAO
 		
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UserImagesRepositoryInterface#getUserImageInfoById(java.lang.String)
 	 */
+	@Override
 	public UserImageInfo getUserImageInfoById(String imageid) throws Exception
 	{						
 		PreparedStatement stmt = null;	
@@ -211,12 +221,10 @@ public class UserImagesDAO
 				
 	}
 	
-	/**
-	 * 
-	 * @param UserImageInfo
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UserImagesRepositoryInterface#insertUserImageInfo(com.taksila.veda.model.db.usermgmt.v1_0.UserImageInfo, java.io.InputStream, java.io.InputStream)
 	 */	
+	@Override
 	public UserImageInfo insertUserImageInfo(UserImageInfo UserImageInfo,InputStream imageLarge, InputStream imageThumb) throws Exception 
 	{
 		logger.debug("Entering into insertUserImageInfo():::::");
@@ -260,12 +268,10 @@ public class UserImagesDAO
 	
 					
 	
-	/**
-	 * 
-	 * @param UserImageInfo
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UserImagesRepositoryInterface#readUserImageContent(java.lang.String, double)
 	 */	
+	@Override
 	public ByteArrayOutputStream readUserImageContent(String imageId, double scale) throws Exception 
 	{
 		logger.trace("Entering into readUserImageInfoImage():::::");		
@@ -316,12 +322,10 @@ public class UserImagesDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UserImagesRepositoryInterface#deleteUserImageInfo(java.lang.String)
 	 */
+	@Override
 	public boolean deleteUserImageInfo(String imageId) throws Exception 
 	{
 		logger.debug("Entering into deleteUserImageInfo():::::");

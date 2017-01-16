@@ -14,11 +14,17 @@ import java.util.List;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.UploadedFile;
 import com.taksila.veda.utils.CommonUtils;
 
@@ -26,8 +32,24 @@ import com.taksila.veda.utils.CommonUtils;
  * @author mahesh
  *
  */
-public class UploadedFileDAO 
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class UploadedFileDAO implements UploadedFileRepositoryInterface 
 {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public UploadedFileDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
 	private String schoolId = null;	
 	
 	private static String generic_select_fields_no_blob = "SELECT "+UPLOADED_FILES_TABLE.id.value()+","+
@@ -78,16 +100,7 @@ public class UploadedFileDAO
 		
 	static Logger logger = LogManager.getLogger(UploadedFileDAO.class.getName());
 	SQLDataBaseManager sqlDBManager= null;
-	
-	public UploadedFileDAO(String tenantId) 
-	{
-		logger.trace(" Initializing UploadedFileDAO............ ");
-		this.schoolId = tenantId;		
 		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing UploadedFileDAO............ ");
-		
-	}
 	
 	public enum UPLOADED_FILES_TABLE
 	{
@@ -130,12 +143,10 @@ public class UploadedFileDAO
 	
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UploadedFileRepositoryInterface#getUploadedFileById(int)
 	 */
+	@Override
 	public UploadedFile getUploadedFileById(int id) throws Exception
 	{						
 		PreparedStatement stmt = null;	
@@ -165,12 +176,10 @@ public class UploadedFileDAO
 				
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UploadedFileRepositoryInterface#searchUploadedFileByTopicId(int)
 	 */
+	@Override
 	public List<UploadedFile> searchUploadedFileByTopicId(int topicid) throws Exception
 	{
 		List<UploadedFile> uploadedfileHits = new ArrayList<UploadedFile>();				
@@ -203,12 +212,10 @@ public class UploadedFileDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UploadedFileRepositoryInterface#getUploadedFileByName(java.lang.String)
 	 */
+	@Override
 	public UploadedFile getUploadedFileByName(String filename) throws Exception
 	{						
 		PreparedStatement stmt = null;	
@@ -239,12 +246,10 @@ public class UploadedFileDAO
 	}
 	
 		
-	/**
-	 * 
-	 * @param uploadedfile
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UploadedFileRepositoryInterface#insertUploadedFile(com.taksila.veda.model.api.course.v1_0.UploadedFile, java.io.InputStream)
 	 */	
+	@Override
 	public UploadedFile insertUploadedFile(UploadedFile uploadedfile,InputStream uploadedfileContentImageIs) throws Exception 
 	{
 		logger.debug("Entering into insertUploadedFile():::::");
@@ -285,12 +290,10 @@ public class UploadedFileDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param uploadedfile
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UploadedFileRepositoryInterface#updateUploadedFile(com.taksila.veda.model.api.course.v1_0.UploadedFile)
 	 */	
+	@Override
 	public boolean updateUploadedFile(UploadedFile uploadedfile) throws Exception 
 	{
 		logger.debug("Entering into updateUploadedFile():::::");		
@@ -332,12 +335,10 @@ public class UploadedFileDAO
 								
 	}
 		
-	/**
-	 * 
-	 * @param uploadedfile
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UploadedFileRepositoryInterface#updateUploadedFileContent(int, java.lang.String, java.io.InputStream)
 	 */	
+	@Override
 	public boolean updateUploadedFileContent(int uploadedfileId,String fileType,InputStream uploadedfileContentIs) throws Exception 
 	{
 		logger.debug("Entering into updateUploadedFileLargeImage():::::");		
@@ -372,12 +373,10 @@ public class UploadedFileDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param uploadedfile
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UploadedFileRepositoryInterface#readUploadedFileImage(int)
 	 */	
+	@Override
 	public ByteArrayOutputStream readUploadedFileImage(int uploadedfileId) throws Exception 
 	{
 		logger.trace("Entering into readUploadedFileImage():::::");		
@@ -424,12 +423,10 @@ public class UploadedFileDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UploadedFileRepositoryInterface#deleteUploadedFile(int)
 	 */
+	@Override
 	public boolean deleteUploadedFile(int id) throws Exception 
 	{
 		logger.debug("Entering into deleteUploadedFile():::::");

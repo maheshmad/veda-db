@@ -14,8 +14,15 @@ import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventAttendance;
 import com.taksila.veda.utils.CommonUtils;
 
@@ -23,9 +30,25 @@ import com.taksila.veda.utils.CommonUtils;
  * @author mahesh
  *
  */	
-
-public class EventAttendanceDAO 
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class EventAttendanceDAO implements EventAttendanceRepositoryInterface 
 {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public EventAttendanceDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
+	
 	private String schoolId = null;	
 	private static String insert_class_session_attendance_sql = "INSERT INTO EVENT_ATTENDANCE("+CLASS_SESSION_ATTENDANCE_TABLE.eventScheduleId.value()+","+
 																			CLASS_SESSION_ATTENDANCE_TABLE.startDatetime.value()+","+
@@ -49,15 +72,6 @@ public class EventAttendanceDAO
 	static Logger logger = LogManager.getLogger(EventAttendanceDAO.class.getName());
 	SQLDataBaseManager sqlDBManager= null;
 	
-	public EventAttendanceDAO(String tenantId) 
-	{
-		logger.trace(" Initializing EventAttendanceDAO............ ");
-		this.schoolId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing EventAttendanceDAO............ ");
-		
-	}
 	
 	public enum CLASS_SESSION_ATTENDANCE_TABLE
 	{
@@ -106,14 +120,11 @@ public class EventAttendanceDAO
 		return classSessionAttendance;
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventAttendanceRepositoryInterface#searchEventAttendanceBySessionScheduleId(java.lang.String)
 	 */
-	public List<EventAttendance> searchEventAttendanceBySessionScheduleId(String classroomid) throws SQLException, NamingException
+	@Override
+	public List<EventAttendance> searchEventAttendanceBySessionScheduleId(String classroomid) throws Exception
 	{						
 		List<EventAttendance> attendanceHits = new ArrayList<EventAttendance>();	
 		PreparedStatement stmt = null;	
@@ -142,14 +153,11 @@ public class EventAttendanceDAO
 				
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventAttendanceRepositoryInterface#getEventAttendanceById(java.lang.String)
 	 */
-	public EventAttendance getEventAttendanceById(String id) throws SQLException, NamingException
+	@Override
+	public EventAttendance getEventAttendanceById(String id) throws Exception
 	{						
 		
 		PreparedStatement stmt = null;	
@@ -180,12 +188,10 @@ public class EventAttendanceDAO
 	}
 	
 		
-	/**
-	 * 
-	 * @param classroom
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventAttendanceRepositoryInterface#insertEventAttendance(com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventAttendance)
 	 */	
+	@Override
 	public EventAttendance insertEventAttendance(EventAttendance classSessionAttendance) throws Exception 
 	{
 		logger.debug("Entering into insertEventAttendance():::::");
@@ -224,12 +230,10 @@ public class EventAttendanceDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param classroom
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventAttendanceRepositoryInterface#updateEventAttendance(com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventAttendance)
 	 */	
+	@Override
 	public boolean updateEventAttendance(EventAttendance classSessionAttendance) throws Exception 
 	{
 		logger.debug("Entering into updateEventAttendance():::::");		
@@ -262,12 +266,10 @@ public class EventAttendanceDAO
 								
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventAttendanceRepositoryInterface#deleteEventAttendance(java.lang.String)
 	 */
+	@Override
 	public boolean deleteEventAttendance(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteEventAttendance():::::");

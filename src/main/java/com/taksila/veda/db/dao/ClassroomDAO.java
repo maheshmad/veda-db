@@ -14,16 +14,42 @@ import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.eventsessions.EventSessionsRepository;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.classroom.v1_0.Classroom;
 
 /**
  * @author mahesh
  *
  */
-public class ClassroomDAO 
-{
+
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class ClassroomDAO implements ClassroomRepositoryInterface {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public ClassroomDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building EventSessionsRepository for tenant id = "+tenantId);
+//    	this.dbManager = applicationContext.getBean(TenantDBManager.class,tenantId);
+		this.tenantId = tenantId;
+    }
+	
 	private String schoolId = null;	
 	private static String insert_classroom_sql = "INSERT INTO CLASSROOM("+CLASSROOM_TABLE.classname.value()+","+
 																			CLASSROOM_TABLE.courseRecordId.value()+","+
@@ -52,15 +78,7 @@ public class ClassroomDAO
 	static Logger logger = LogManager.getLogger(ClassroomDAO.class.getName());
 	SQLDataBaseManager sqlDBManager= null;
 	
-	public ClassroomDAO(String tenantId) 
-	{
-		logger.trace(" Initializing ClassroomsDAO............ ");
-		this.schoolId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing ClassroomsDAO............ ");
-		
-	}
+
 	
 	public enum CLASSROOM_TABLE
 	{
@@ -98,14 +116,11 @@ public class ClassroomDAO
 		return classroom;
 	}
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ClassroomRepositoryInterface#searchClassroomsByTitle(java.lang.String)
 	 */
-	public List<Classroom> searchClassroomsByTitle(String q) throws SQLException, NamingException
+	@Override
+	public List<Classroom> searchClassroomsByTitle(String q) throws Exception
 	{
 		List<Classroom> classroomHits = new ArrayList<Classroom>();				
 		PreparedStatement stmt = null;		
@@ -142,14 +157,11 @@ public class ClassroomDAO
 		
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ClassroomRepositoryInterface#getClassroomById(java.lang.String)
 	 */
-	public Classroom getClassroomById(String id) throws SQLException, NamingException
+	@Override
+	public Classroom getClassroomById(String id) throws Exception
 	{						
 		PreparedStatement stmt = null;	
 		Classroom classroom = null;
@@ -179,12 +191,10 @@ public class ClassroomDAO
 	}
 	
 		
-	/**
-	 * 
-	 * @param classroom
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ClassroomRepositoryInterface#insertClassroom(com.taksila.veda.model.api.classroom.v1_0.Classroom)
 	 */	
+	@Override
 	public Classroom insertClassroom(Classroom classroom) throws Exception 
 	{
 		logger.debug("Entering into insertClassroom():::::");
@@ -223,12 +233,10 @@ public class ClassroomDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param classroom
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ClassroomRepositoryInterface#updateClassroom(com.taksila.veda.model.api.classroom.v1_0.Classroom)
 	 */	
+	@Override
 	public boolean updateClassroom(Classroom classroom) throws Exception 
 	{
 		logger.debug("Entering into updateClassroom():::::");		
@@ -263,12 +271,10 @@ public class ClassroomDAO
 								
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ClassroomRepositoryInterface#deleteClassroom(java.lang.String)
 	 */
+	@Override
 	public boolean deleteClassroom(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteClassroom():::::");

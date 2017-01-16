@@ -14,16 +14,46 @@ import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.eventsessions.EventSessionsRepository;
+import com.taksila.veda.db.eventsessions.EventSessionsRepositoryInterface;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Chapter;
 
 /**
  * @author mahesh
  *
  */
-public class ChapterDAO 
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class ChapterDAO implements ChapterRepositoryInterface 
 {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	static Logger logger = LogManager.getLogger(EventSessionsRepository.class.getName());
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public ChapterDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building EventSessionsRepository for tenant id = "+tenantId);
+//    	this.dbManager = applicationContext.getBean(TenantDBManager.class,tenantId);
+		this.tenantId = tenantId;
+    }
+
 	private String schoolId = null;	
 	private static String insert_chapter_sql = "INSERT INTO CHAPTERS("+CHAPTER_TABLE.courseid.value()+","+
 																			CHAPTER_TABLE.chaptername.value()+","+
@@ -44,20 +74,6 @@ public class ChapterDAO
 	private static String search_chapter_by_id_sql = "SELECT * FROM CHAPTERS WHERE "+CHAPTER_TABLE.id.value()+" = ? ";
 	private static String search_chapter_by_courseid_sql = "SELECT * FROM CHAPTERS WHERE "+CHAPTER_TABLE.courseid.value()+" = ? ";
 	private static String search_all_chapters_sql = "SELECT * FROM CHAPTERS";
-	
-	
-	static Logger logger = LogManager.getLogger(ChapterDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;
-	
-	public ChapterDAO(String tenantId) 
-	{
-		logger.trace(" Initializing ChaptersDAO............ ");
-		this.schoolId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing ChaptersDAO............ ");
-		
-	}
 	
 	public enum CHAPTER_TABLE
 	{
@@ -93,134 +109,125 @@ public class ChapterDAO
 		return chapter;
 	}
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ChapterRepositoryInterface#searchChaptersByCourseId(java.lang.String)
 	 */
-	public List<Chapter> searchChaptersByCourseId(int courseid) throws SQLException, NamingException
-	{
-		List<Chapter> chapterHits = new ArrayList<Chapter>();				
-		PreparedStatement stmt = null;		
+	@Override
+	public List<Chapter> searchChaptersByCourseId(String courseid) throws Exception
+	{			
 		logger.trace("searching chapters by courseid ="+courseid);
-
-		try
-		{
-			this.sqlDBManager.connect();			
-			stmt = this.sqlDBManager.getPreparedStatement(search_chapter_by_courseid_sql);
-			stmt.setInt(1, courseid);
-			
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				chapterHits.add(mapRow(resultSet));
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 		
-		return chapterHits;
+		return jdbcTemplate.execute(search_chapter_by_courseid_sql,new PreparedStatementCallback<List<Chapter>>()
+		{  
+			    @Override  
+			    public List<Chapter> doInPreparedStatement(PreparedStatement ps)  			            
+			    {  			              
+			    	List<Chapter> hits = new ArrayList<Chapter>();
+			    	try 
+			        {
+			        	ps.setInt(1, Integer.parseInt(courseid)); 						
+						ResultSet resultSet = ps.executeQuery();
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		}); 
+				
 		
 	}
 	
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ChapterRepositoryInterface#searchChaptersByTitle(java.lang.String)
 	 */
-	public List<Chapter> searchChaptersByTitle(String q) throws SQLException, NamingException
+	@Override
+	public List<Chapter> searchChaptersByTitle(String q) throws Exception
 	{
-		List<Chapter> chapterHits = new ArrayList<Chapter>();				
-		PreparedStatement stmt = null;		
-		logger.trace("searching chapters query ="+q);
-
-		try
-		{
-			this.sqlDBManager.connect();
-			
-			if (StringUtils.isNotBlank(q))
-			{
-				stmt = this.sqlDBManager.getPreparedStatement(search_chapter_by_title_sql);
-				stmt.setString(1, q+"%");
-			}
-			else
-				stmt = this.sqlDBManager.getPreparedStatement(search_all_chapters_sql);
-			
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				chapterHits.add(mapRow(resultSet));
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		logger.trace("searching chapters by query ="+q);
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 		
-		return chapterHits;
+		String sql = ""; 
+				
+		if (StringUtils.isNotBlank(q))		
+			sql = search_chapter_by_title_sql;					
+		else
+			sql = search_all_chapters_sql;
+		
+		
+		return jdbcTemplate.execute(sql,new PreparedStatementCallback<List<Chapter>>()
+		{  
+			    @Override  
+			    public List<Chapter> doInPreparedStatement(PreparedStatement ps)  			            
+			    {  			              
+			    	List<Chapter> hits = new ArrayList<Chapter>();
+			    	try 
+			        {
+			    		if (StringUtils.isNotBlank(q))
+						{
+							ps.setString(1, q+"%");
+						}
+						else;
+										    					    		
+						ResultSet resultSet = ps.executeQuery();
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		});
+		
+		
+	
 		
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ChapterRepositoryInterface#getChapterById(java.lang.String)
 	 */
-	public Chapter getChapterById(int id) throws SQLException, NamingException
-	{						
-		PreparedStatement stmt = null;	
-		Chapter chapter = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_chapter_by_id_sql);
-			stmt.setInt(1, id);
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				chapter = mapRow(resultSet);
-			}
-			
-			return chapter;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+	@Override
+	public Chapter getChapterById(String id) throws Exception
+	{								
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+				
+		return jdbcTemplate.execute(search_chapter_by_id_sql,new PreparedStatementCallback<Chapter>()
+		{  
+			    @Override  
+			    public Chapter doInPreparedStatement(PreparedStatement ps)  			            
+			    {  			              			    	
+					ps.setInt(1, Integer.parseInt(id));
+					ResultSet resultSet = ps.executeQuery();	
+					if (resultSet.next()) 
+					{
+						return mapRow(resultSet);
+					}
+					
+					return null;
+			    }  
+		});
 				
 	}
 	
 		
-	/**
-	 * 
-	 * @param chapter
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ChapterRepositoryInterface#insertChapter(com.taksila.veda.model.api.course.v1_0.Chapter)
 	 */	
+	@Override
 	public Chapter insertChapter(Chapter chapter) throws Exception 
 	{
 		logger.debug("Entering into insertChapter():::::");
@@ -259,12 +266,10 @@ public class ChapterDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param chapter
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ChapterRepositoryInterface#updateChapter(com.taksila.veda.model.api.course.v1_0.Chapter)
 	 */	
+	@Override
 	public boolean updateChapter(Chapter chapter) throws Exception 
 	{
 		logger.debug("Entering into updateChapter():::::");		
@@ -299,13 +304,11 @@ public class ChapterDAO
 								
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.ChapterRepositoryInterface#deleteChapter(java.lang.String)
 	 */
-	public boolean deleteChapter(int id) throws Exception 
+	@Override
+	public boolean deleteChapter(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteChapter():::::");
 		this.sqlDBManager.connect();	
@@ -313,7 +316,7 @@ public class ChapterDAO
 		try
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(delete_chapter_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			int t = stmt.executeUpdate();
 			if (t > 0)
 				return true;

@@ -7,6 +7,9 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/config"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/templates"/>
+        <dependent-module archiveName="veda-model-0.0.1-VM-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/veda-model/veda-model">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="veda"/>
         <property name="java-output-path" value="/veda/target/classes"/>
     </wb-module>

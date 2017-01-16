@@ -1,11 +1,13 @@
 package com.taksila.veda.utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,7 +16,6 @@ import java.net.URLEncoder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -28,23 +29,13 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.NamingException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.persistence.Column;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -55,9 +46,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -66,12 +57,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import com.taksila.veda.config.ConfigComponent;
 import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 import com.taksila.veda.model.api.base.v1_0.Err;
 import com.taksila.veda.model.api.base.v1_0.ErrorInfo;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
-import com.taksila.veda.model.db.config.v1_0.ConfigId;
+
 
 
 public class CommonUtils 
@@ -144,16 +134,7 @@ public class CommonUtils
 	 
 	}
 	
-	public static String getFormParamString(String parmname, MultivaluedMap<String, String> formParams) 
-	{
-		if (formParams == null || formParams.isEmpty() || !formParams.containsKey(parmname))
-			return "";
-		
-		if (formParams.get(parmname) == null || formParams.get(parmname).isEmpty())
-			return "";
-		else			
-			return formParams.get(parmname).get(0);
-	}
+	
 	
 	 public static XMLGregorianCalendar getXMLGregorianCalendarNow() 	            
 	 {
@@ -257,68 +238,6 @@ public class CommonUtils
 //	}
 	
 	
-	
-	public static String getSubDomain(UriInfo uriInfo)
-	 {	      
-		 return getSubDomain(uriInfo.getRequestUri());
-	      
-	 }
-	
-	 public static String getSubDomain(URI url)
-	 {	      
-		 return getSubDomain(url.toString());
-	      
-	 }
-	 
-	 
-	 
-	 
-	 public static String getSubDomain(String url)
-	 {	      
-		 logger.trace(" getSubDomain = "+url);  
-        String host = StringUtils.removeStartIgnoreCase( url,"https://");
-        host = StringUtils.removeStartIgnoreCase(host,"http://");
-                        
-        logger.trace(" request host for split = "+host);
-        if (host == null)
-        	return null;            
-        String[] p = host.split("\\.");       
-        logger.trace(" host variable split by period len = "+p.length);       
-        String tenantDomain = null;
-        for(int i=0;i<p.length;i++)
-        {
-	        if ("www".equals(p[i]) ||  /* ignore www */
-	        	"dev".equals(p[i]) ||   /* ignore dev / stag / test region domain route */
-	        	"test".equals(p[i]) ||	        	
-	        	"stag".equals(p[i]))
-	        	continue;
-	        else if ("127".equals(p[i]) && StringUtils.contains(host,"127.0.0.1"))
-	        {
-	        	tenantDomain = "cloud"; /* to facilitate development on localhost */
-	        	break;
-	        }	
-	        else
-	        {
-	        	tenantDomain = p[i];
-	        	break;
-	        }
-        }
-        
-        logger.trace(" Domain = "+tenantDomain);  
-        
-        return tenantDomain;
-	      
-	 }
-	 
-	 
-	 public static String getDomainUrl(String url)
-	 {	      
-		 if(isNotEmpty(url)) {
-			 return url.substring(0, url.indexOf("/", url.indexOf("//") + 3));
-		 }
-	      
-		 return "";
-	 }
 	 public static Err buildErr(String field, String msg)
 	 {
 		Err err = new Err();	
@@ -329,8 +248,7 @@ public class CommonUtils
 	 }
 	 
 	 public static ErrorInfo buildErrorInfo(Exception e) 
-	 {
-		 
+	 {		 
 		return buildErrorInfo("Exception", e.getMessage()+","+e.getLocalizedMessage());
 	 }
 	 
@@ -431,43 +349,7 @@ public class CommonUtils
 		return !isEmpty(objectArr);
 	}
 	
-	public static <T extends Object> T performWebServiceCall(String restUrl, Map<String,String> urlParams, String basicAuthId, String basicAuthPwd, Class<T> returnEntityClass) 
-	{
-		long startTime = System.currentTimeMillis();
-		
-		 StringBuilder sb = new StringBuilder();
-	     for (Entry<String, String> entry : urlParams.entrySet()) 
-	     {
-	    	 if (sb.length() > 0) 
-	    	 {
-	    		 sb.append("&");
-	    	 }
-	         
-	    	 String pathParamKey = "{"+entry.getKey().toString().trim()+"}";
-	    	 
-	    	 if (StringUtils.contains(restUrl, pathParamKey))
-	    		 restUrl = restUrl.replace(pathParamKey, entry.getValue().toString());
-	    	 else
-	    		 sb.append(String.format("%s=%s",  urlEncodeUTF8(entry.getKey().toString()), urlEncodeUTF8(entry.getValue().toString())));
-	     }	            
-		
-	    if (StringUtils.isNotBlank(sb.toString()))
-	    	restUrl = restUrl+"?"+sb.toString();
-		logger.trace("----------------------------------------ABOUT TO PERFORM WEB SERVICE CALL ------------------------------------------------------------------------------------");
-		logger.trace("URL = "+restUrl);
-		
-		final Client client = ClientBuilder.newClient();
-		HttpAuthenticationFeature httpFeature = HttpAuthenticationFeature.basic(basicAuthId,basicAuthPwd);	
-		client.register(httpFeature);				
-		WebTarget target = client.target(restUrl);	
-		Response webServiceRsponse = target.request().accept(MediaType.APPLICATION_JSON).get();
-		T responseEntity = webServiceRsponse.readEntity(returnEntityClass);
-		long endTime = (System.currentTimeMillis() - startTime)/1000;
-		logger.trace("response = "+String.valueOf(responseEntity));
-		logger.trace("---------------------------------------- WEBSERVICE CALL COMPLETE IN "+endTime+" secs----------------------------------------------------------");
-		
-		return responseEntity;
-	}
+	
 	
 	public static String urlEncodeUTF8(String s) 
 	{
@@ -725,22 +607,6 @@ public class CommonUtils
 	
 	
 
-	 public static Map<String,String> jsonToMap(Object obj)
-	 {
-		 String json = toJson(obj);
-		 Type t = new TypeToken<Map<String, String>>(){}.getType();
-		 Gson gson = new GsonBuilder().registerTypeAdapter(t, new FlattenDeserializer()).create();
-		 Map<String, String> map = gson.fromJson(json, t);
-	     
-		 System.out.print(" About to deserialize = "+json);
-		 
-		 System.out.println(CommonUtils.toJson(map));
-		 System.out.println("-------------------");
-		 
-		 return map;
-	 	
-	 }
-
 	 public static String readSQLTextColumn(ResultSet rs, String columnName) throws SQLException, IOException
 	 {
 		 StringBuilder sb = new StringBuilder();
@@ -813,86 +679,89 @@ public class CommonUtils
 	 }
 		
 	 
-	 public static String getClientIpAddr(HttpServletRequest request) 
-	 {  
-	        String ip = request.getHeader("X-Forwarded-For");  
-	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-	            ip = request.getHeader("Proxy-Client-IP");  
-	        }  
-	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-	            ip = request.getHeader("WL-Proxy-Client-IP");  
-	        }  
-	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-	            ip = request.getHeader("HTTP_CLIENT_IP");  
-	        }  
-	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-	            ip = request.getHeader("HTTP_X_FORWARDED_FOR");  
-	        }  
-	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-	            ip = request.getRemoteAddr();  
-	        }  
-	        return ip;  
-	 }
+//	 public static String getClientIpAddr(HttpServletRequest request) 
+//	 {  
+//	        String ip = request.getHeader("X-Forwarded-For");  
+//	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+//	            ip = request.getHeader("Proxy-Client-IP");  
+//	        }  
+//	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+//	            ip = request.getHeader("WL-Proxy-Client-IP");  
+//	        }  
+//	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+//	            ip = request.getHeader("HTTP_CLIENT_IP");  
+//	        }  
+//	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+//	            ip = request.getHeader("HTTP_X_FORWARDED_FOR");  
+//	        }  
+//	        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+//	            ip = request.getRemoteAddr();  
+//	        }  
+//	        return ip;  
+//	 }
+//	 
+//	 /**
+//	  * gets cookie from servlet request
+//	  * 
+//	  * @param cookiename
+//	  * @param request
+//	  * @return
+//	  */
+//	 public static String getCookie(String cookiename, HttpServletRequest request)
+//	 {		 		 
+//		 if (request.getCookies() == null)
+//			 return "";
+//		 
+//		 for (Cookie cookie: request.getCookies())
+//		 {
+//			if (StringUtils.equals(cookie.getName(),cookiename))
+//			{
+//				return cookie.getValue();
+//			}
+//		 }
+//		 		 		 
+//		 return "";
+//	 }
+//	 
+//	 /*
+//	  * get file name from http
+//	  */
+//	 public static String getFileName(final Part part) 
+//	 {
+//	        final String partHeader = part.getHeader("content-disposition");
+//	        logger.trace( "Part Header = {0}", partHeader);
+//	        for (String content : part.getHeader("content-disposition").split(";")) 
+//	        {
+//	            if (content.trim().startsWith("filename")) 
+//	            {
+//	                String name = content.substring(content.indexOf('=') + 1).trim().replace("\"", "");
+//	                name = name.replaceAll(" ", "_"); 
+//	                return name;
+//	            }
+//	        }
+//	        return null;
+//	 }
 	 
-	 /**
-	  * gets cookie from servlet request
-	  * 
-	  * @param cookiename
-	  * @param request
-	  * @return
-	  */
-	 public static String getCookie(String cookiename, HttpServletRequest request)
-	 {		 		 
-		 if (request.getCookies() == null)
-			 return "";
-		 
-		 for (Cookie cookie: request.getCookies())
-		 {
-			if (StringUtils.equals(cookie.getName(),cookiename))
-			{
-				return cookie.getValue();
-			}
-		 }
-		 		 		 
-		 return "";
-	 }
-	 
-	 /*
-	  * get file name from http
-	  */
-	 public static String getFileName(final Part part) 
-	 {
-	        final String partHeader = part.getHeader("content-disposition");
-	        logger.trace( "Part Header = {0}", partHeader);
-	        for (String content : part.getHeader("content-disposition").split(";")) 
-	        {
-	            if (content.trim().startsWith("filename")) 
-	            {
-	                String name = content.substring(content.indexOf('=') + 1).trim().replace("\"", "");
-	                name = name.replaceAll(" ", "_"); 
-	                return name;
-	            }
-	        }
-	        return null;
-	 }
-	 
-	 
-	public static String getUserTempFilePath(String type, String additionalFolderId) 
-	{
-		String basePath = ConfigComponent.getConfig(ConfigId.TEMP_FILE_PATH);
-		basePath = StringUtils.removeEnd(basePath, "\\");
-		String dirPath = ConfigComponent.getConfig(ConfigId.TEMP_FILE_PATH)+"\\"+type+"\\";
-		if (StringUtils.isNotBlank(additionalFolderId))
-			dirPath = dirPath + additionalFolderId+"\\";
-		boolean dirExits = new File(dirPath).mkdirs();
-		return dirPath;  
-			
-	}
+	
+	
 
 	public static java.sql.Date getSqlDateFromXMLGregorianCalendarDateTimestamp(XMLGregorianCalendar startDate) 
 	{
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public static DateTime getJodaDateTimeFromTimestamp(Timestamp timestamp) 
+	{			     
+		if (timestamp == null)
+			return null;
+		String dateformat = "MM/dd/yyyy HH:mm:ss:S";
+		DateTimeFormatter jodaFormatter = DateTimeFormat.forPattern(dateformat);
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateformat);		
+		String ftDtStr = simpleDateFormat.format(new Date(timestamp.getTime()));
+		
+	    return jodaFormatter.parseDateTime(ftDtStr);
+	    
 	}
 }
 

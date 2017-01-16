@@ -13,19 +13,41 @@ import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.security.v1_0.UserSession;
 import com.taksila.veda.utils.CommonUtils;
 
 /**
- * @author Uma
+ * @author Mahesh 
  *
  */
-public class UserSessionDAO 
-{	
-	static Logger logger = LogManager.getLogger(UserSessionDAO.class.getName());	
-	private String tenantId = null;
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class UserSessionDAO implements UserSessionRepositoryInterface 
+{
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public UserSessionDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
+	
 	SQLDataBaseManager sqlDBManager= null;
 	
 	public enum USER_SESSIONS_TABLE
@@ -74,15 +96,7 @@ public class UserSessionDAO
 	private static String search_users_session_sql = "SELECT * FROM USER_SESSIONS WHERE "+USER_SESSIONS_TABLE.sessionid.value()+" = ? AND "
 																		+ USER_SESSIONS_TABLE.userid.value()+" = ?";
 	
-																	
-	public UserSessionDAO(String tenantId) 
-	{
-		logger.trace(" Initializing UserSessionDAO............ ");
-		this.tenantId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing UserSessionDAO............ ");
-	}
+	
 	
 	private UserSession mapRow(ResultSet resultSet) throws SQLException, IOException, DatatypeConfigurationException 
 	{
@@ -98,12 +112,10 @@ public class UserSessionDAO
 		return userSession;
 	}
 	
-	/**
-	 * 
-	 * @param userSession
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UserSessionRepositoryInterface#addSession(com.taksila.veda.model.db.security.v1_0.UserSession)
 	 */
+	@Override
 	public boolean addSession(UserSession userSession) throws Exception
 	{		
 		logger.debug("Entering into authorizeSession():::::");
@@ -144,6 +156,10 @@ public class UserSessionDAO
 	}
 		
 	
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UserSessionRepositoryInterface#getValidSession(java.lang.String)
+	 */
+	@Override
 	public UserSession getValidSession(String sessionid) throws Exception
 	{
 		logger.debug("Entering into getValidSession():::::");
@@ -180,13 +196,18 @@ public class UserSessionDAO
 	}
 	
 	
-	public boolean invalidateUserSession(String sessionid) throws SQLException, NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.UserSessionRepositoryInterface#invalidateUserSession(java.lang.String)
+	 */
+	@Override
+	public boolean invalidateUserSession(String sessionid) throws Exception 
 	{
 		logger.debug("Entering into invalidateUserSession():::::");
-		this.sqlDBManager.connect();	
+		
 		PreparedStatement stmt = null;
 		try
 		{
+			this.sqlDBManager.connect();
 			stmt = this.sqlDBManager.getPreparedStatement(delete_user_session_sql);
 			stmt.setString(1, sessionid);			
 			int t = stmt.executeUpdate();

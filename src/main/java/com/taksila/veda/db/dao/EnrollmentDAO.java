@@ -11,19 +11,41 @@ import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
 import com.taksila.veda.db.dao.ClassroomDAO.CLASSROOM_TABLE;
-import com.taksila.veda.db.dao.ConfigDAO.CONFIG_GROUP_TABLE;
-import com.taksila.veda.db.dao.ConfigDAO.CONFIG_SECTION_TABLE;
-import com.taksila.veda.db.dao.ConfigDAO.CONFIG_TABLE;
 import com.taksila.veda.db.dao.UsersDAO.USER_TABLE;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.classroom.v1_0.Enrollment;
 import com.taksila.veda.model.db.classroom.v1_0.EnrollmentStatusType;
 import com.taksila.veda.utils.CommonUtils;
 
-public class EnrollmentDAO 
+
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class EnrollmentDAO implements EnrollmentRepositoryInterface 
 {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public EnrollmentDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
+	
 	private String schoolId = null;	
 	private static String insert_enrollment_sql = "INSERT INTO ENROLLMENTS("+ENROLLMENT_TABLE.id.value()+","+
 																			ENROLLMENT_TABLE.classroomid.value()+","+
@@ -71,16 +93,6 @@ public class EnrollmentDAO
 	
 	static Logger logger = LogManager.getLogger(EnrollmentDAO.class.getName());
 	SQLDataBaseManager sqlDBManager= null;
-	
-	public EnrollmentDAO(String tenantId) 
-	{
-		logger.trace(" Initializing EnrollmentsDAO............ ");
-		this.schoolId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing EnrollmentsDAO............ ");
-		
-	}
 	
 	public enum ENROLLMENT_TABLE
 	{		
@@ -135,12 +147,10 @@ public class EnrollmentDAO
 		return enrollment;
 	}
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EnrollmentRepositoryInterface#searchEnrollmentsByClassroomId(java.lang.String)
 	 */
+	@Override
 	public List<Enrollment> searchEnrollmentsByClassroomId(String classroomid) throws Exception
 	{
 		List<Enrollment> enrollmentHits = new ArrayList<Enrollment>();				
@@ -176,12 +186,10 @@ public class EnrollmentDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EnrollmentRepositoryInterface#searchEnrollmentsByUserRecordId(java.lang.String)
 	 */
+	@Override
 	public List<Enrollment> searchEnrollmentsByUserRecordId(String userRecordId) throws Exception
 	{
 		List<Enrollment> enrollmentHits = new ArrayList<Enrollment>();				
@@ -262,12 +270,10 @@ public class EnrollmentDAO
 //		
 //	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EnrollmentRepositoryInterface#getEnrollmentById(java.lang.String)
 	 */
+	@Override
 	public Enrollment getEnrollmentById(String enrollid) throws Exception
 	{						
 		PreparedStatement stmt = null;	
@@ -301,12 +307,10 @@ public class EnrollmentDAO
 	}
 	
 		
-	/**
-	 * 
-	 * @param enrollment
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EnrollmentRepositoryInterface#insertEnrollment(com.taksila.veda.model.api.classroom.v1_0.Enrollment)
 	 */	
+	@Override
 	public Boolean insertEnrollment(Enrollment enrollment) throws Exception 
 	{
 		logger.debug("Entering into insertEnrollment():::::");
@@ -349,12 +353,10 @@ public class EnrollmentDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param enrollment
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EnrollmentRepositoryInterface#updateEnrollment(com.taksila.veda.model.api.classroom.v1_0.Enrollment)
 	 */	
+	@Override
 	public boolean updateEnrollment(Enrollment enrollment) throws Exception 
 	{
 		logger.debug("Entering into updateEnrollment():::::");		
@@ -393,12 +395,10 @@ public class EnrollmentDAO
 								
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EnrollmentRepositoryInterface#deleteEnrollment(java.lang.String)
 	 */
+	@Override
 	public boolean deleteEnrollment(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteEnrollment():::::");

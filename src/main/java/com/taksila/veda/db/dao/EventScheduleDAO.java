@@ -11,15 +11,39 @@ import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventSchedule;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventStatusType;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventType;
 import com.taksila.veda.utils.CommonUtils;
 
-public class EventScheduleDAO 
+
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class EventScheduleDAO implements EventScheduleRepositoryInterface 
 {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public EventScheduleDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
 	private String schoolId = null;	
 	
 	private static String insert_eventSchedule_sql = "INSERT INTO EVENT_SCHEDULE("+																		
@@ -29,8 +53,9 @@ public class EventScheduleDAO
 																			EVENT_SCHEDULE_TABLE.eventTitle.value()+","+
 																			EVENT_SCHEDULE_TABLE.eventDescription.value()+","+
 																			EVENT_SCHEDULE_TABLE.updatedBy.value()+","+
-																			EVENT_SCHEDULE_TABLE.eventType.value()+","+		
-																			EVENT_SCHEDULE_TABLE.eventStatus.value()+") "+
+																			EVENT_SCHEDULE_TABLE.eventType.value()+","+	
+																			EVENT_SCHEDULE_TABLE.eventStatus.value()+","+	
+																			EVENT_SCHEDULE_TABLE.eventSessionId.value()+") "+
 																	"VALUES (?,?,?,?,?,?,?,?);";		
 	
 	private static String update_eventSchedule_sql = "UPDATE EVENT_SCHEDULE SET "+
@@ -43,7 +68,14 @@ public class EventScheduleDAO
 																			EVENT_SCHEDULE_TABLE.updatedBy.value()+" = ? ,"+
 																			EVENT_SCHEDULE_TABLE.eventType.value()+" = ? ,"+	
 																			EVENT_SCHEDULE_TABLE.eventStatus.value()+" = ? "+
+																			EVENT_SCHEDULE_TABLE.eventSessionId.value()+" = ? "+
 													" WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
+	
+	private static String update_event_schedule_session_sql = "UPDATE EVENT_SCHEDULE SET "+																
+																EVENT_SCHEDULE_TABLE.eventSessionId.value()+" = ? "+
+																EVENT_SCHEDULE_TABLE.updatedBy.value()+" = ? "+
+																EVENT_SCHEDULE_TABLE.lastUpdatedOn.value()+" = "+EVENT_SCHEDULE_TABLE.lastUpdatedOn.value()+", "+
+																" WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
 	
 	private static String delete_eventSchedule_sql = "DELETE FROM EVENT_SCHEDULE WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
 	private static String search_event_schedule_by_classroomid_sql = "SELECT * FROM EVENT_SCHEDULE  WHERE "+EVENT_SCHEDULE_TABLE.classroomId.value()+" = ?";	
@@ -51,8 +83,8 @@ public class EventScheduleDAO
 
 	private static String get_event_schedule_by_user_enrollment = "SELECT * FROM event_schedule as ev " +
 																	"where "+EVENT_SCHEDULE_TABLE.classroomId.value()+" in "+
-																	"(select "+EnrollmentDAO.ENROLLMENT_TABLE.classroomid.value()+" from enrollments as enroll " +
-																	"where "+EnrollmentDAO.ENROLLMENT_TABLE.userRecordId.value()+" = ?) " +
+																	"(select "+EnrollmentRepositoryInterface.ENROLLMENT_TABLE.classroomid.value()+" from enrollments as enroll " +
+																	"where "+EnrollmentRepositoryInterface.ENROLLMENT_TABLE.userRecordId.value()+" = ?) " +
 																	"order by ev.start_datetime";
 
 	
@@ -84,15 +116,6 @@ public class EventScheduleDAO
 	static Logger logger = LogManager.getLogger(EventScheduleDAO.class.getName());
 	SQLDataBaseManager sqlDBManager= null;
 	
-	public EventScheduleDAO(String tenantId) 
-	{
-		logger.trace(" Initializing EventScheduleDAO............ ");
-		this.schoolId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing EventScheduleDAO............ ");
-		
-	}
 	
 	public enum EVENT_SCHEDULE_TABLE
 	{		
@@ -105,7 +128,8 @@ public class EventScheduleDAO
 		updatedBy("updated_by"),
 		lastUpdatedOn("last_updated_on"),
 		eventType("event_type"),
-		eventStatus("event_status");
+		eventStatus("event_status"),
+		eventSessionId("event_session_id");
 		private String name;       
 	    private EVENT_SCHEDULE_TABLE(String s) 
 	    {
@@ -144,17 +168,16 @@ public class EventScheduleDAO
 			eventSchedule.setEventStatus(EventStatusType.fromValue(resultSet.getString(EVENT_SCHEDULE_TABLE.eventStatus.value())));
 		if (resultSet.getString(EVENT_SCHEDULE_TABLE.eventType.value()) != null)
 			eventSchedule.setEventType(EventType.fromValue(resultSet.getString(EVENT_SCHEDULE_TABLE.eventType.value())));
-				
+		
+		eventSchedule.setEventSessionId(resultSet.getString(EVENT_SCHEDULE_TABLE.eventSessionId.value()));
 		
 		return eventSchedule;
 	}
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#searchEventScheduleById(java.lang.String)
 	 */
+	@Override
 	public List<EventSchedule> searchEventScheduleById(String eventScheduleid) throws Exception
 	{
 		List<EventSchedule> eventScheduleHits = new ArrayList<EventSchedule>();				
@@ -189,12 +212,10 @@ public class EventScheduleDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#searchEventScheduleByClassroomId(java.lang.String)
 	 */
+	@Override
 	public List<EventSchedule> searchEventScheduleByClassroomId(String classroomid) throws Exception
 	{
 		List<EventSchedule> eventScheduleHits = new ArrayList<EventSchedule>();				
@@ -229,12 +250,10 @@ public class EventScheduleDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#searchEventScheduleByUserid(java.lang.String)
 	 */
+	@Override
 	public List<EventSchedule> searchEventScheduleByUserid(String userid) throws Exception
 	{
 		List<EventSchedule> eventScheduleHits = new ArrayList<EventSchedule>();				
@@ -270,22 +289,20 @@ public class EventScheduleDAO
 
 	
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#getEventScheduleById(java.lang.String)
 	 */
-	public EventSchedule getEventScheduleById(String eventid) throws Exception
+	@Override
+	public EventSchedule getEventScheduleById(String scheduleId) throws Exception
 	{						
 		PreparedStatement stmt = null;	
 		EventSchedule eventSchedule = null;
-		logger.trace("searching eventSchedules by id ="+eventid+" sql = "+search_event_schedule_by_id_sql);
+		logger.trace("searching eventSchedules by id ="+scheduleId+" sql = "+search_event_schedule_by_id_sql);
 		try
 		{
 			this.sqlDBManager.connect();			
 			stmt = this.sqlDBManager.getPreparedStatement(search_event_schedule_by_id_sql);
-			stmt.setString(1, eventid);
+			stmt.setString(1, scheduleId);
 			ResultSet resultSet = stmt.executeQuery();	
 			if (resultSet.next()) 
 			{
@@ -307,12 +324,10 @@ public class EventScheduleDAO
 	}
 	
 		
-	/**
-	 * 
-	 * @param eventSchedule
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#insertEventSchedule(com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventSchedule)
 	 */	
+	@Override
 	public EventSchedule insertEventSchedule(EventSchedule eventSchedule) throws Exception 
 	{
 		logger.debug("Entering into insertEventSchedule():::::");
@@ -362,12 +377,10 @@ public class EventScheduleDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param eventSchedule
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#updateEventSchedule(com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventSchedule)
 	 */	
+	@Override
 	public boolean updateEventSchedule(EventSchedule eventSchedule) throws Exception 
 	{
 		logger.debug("Entering into updateEventSchedule():::::");		
@@ -414,12 +427,46 @@ public class EventScheduleDAO
 								
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#updateEventScheduleSession(java.lang.String, java.lang.String, java.lang.String)
+	 */	
+	@Override
+	public boolean updateEventScheduleSession(String scheduleId, String sessionid, String byUser) throws Exception 
+	{
+		logger.debug("Entering into updateEventScheduleSession():::::");		
+		PreparedStatement stmt = null;
+		try
+		{
+			this.sqlDBManager.connect();	
+			stmt = this.sqlDBManager.getPreparedStatement(update_event_schedule_session_sql);	
+												
+			stmt.setString(1, sessionid);			
+			stmt.setString(2, byUser);
+			stmt.setInt(3, Integer.parseInt(scheduleId));			
+			
+			int t = stmt.executeUpdate();
+			if (t > 0)
+				return true;
+			else
+				return false;
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();			
+			throw ex;
+		}
+		finally
+		{
+			this.sqlDBManager.close(stmt);
+		}
+								
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#deleteEventSchedule(java.lang.String)
 	 */
+	@Override
 	public boolean deleteEventSchedule(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteEventSchedule():::::");

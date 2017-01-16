@@ -14,16 +14,41 @@ import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.SQLDataBaseManager;
+import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Course;
 
 /**
  * @author mahesh
  *
  */
-public class CoursesDAO 
+
+@Repository
+@Scope(value="prototype")
+@Lazy(value = true)
+public class CoursesDAO implements CoursesRepositoryInterface 
 {
+	@Autowired
+	private TenantDBManager tenantDBManager;
+	private String tenantId;
+	
+	@Autowired
+	ApplicationContext applicationContext;
+	
+	@Autowired
+    public CoursesDAO(@Value("tenantId") String tenantId)
+    {
+		logger.trace(" building for tenant id = "+tenantId);
+		this.tenantId = tenantId;
+    }
+	
 	private String schoolId = null;	
 	private static String insert_course_sql = "INSERT INTO COURSES("+COURSE_TABLE.coursename.value()+","+
 																			COURSE_TABLE.title.value()+","+
@@ -50,15 +75,7 @@ public class CoursesDAO
 	static Logger logger = LogManager.getLogger(CoursesDAO.class.getName());
 	SQLDataBaseManager sqlDBManager= null;
 	
-	public CoursesDAO(String tenantId) 
-	{
-		logger.trace(" Initializing CoursesDAO............ ");
-		this.schoolId = tenantId;		
-		
-		this.sqlDBManager = new SQLDataBaseManager();
-		logger.trace(" Completed initializing CoursesDAO............ ");
-		
-	}
+	
 	
 	public enum COURSE_TABLE
 	{
@@ -96,14 +113,11 @@ public class CoursesDAO
 		return course;
 	}
 	
-	/**
-	 * 
-	 * @param q
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.CoursesRepositoryInterface#searchCoursesByTitle(java.lang.String)
 	 */
-	public List<Course> searchCoursesByTitle(String q) throws SQLException, NamingException
+	@Override
+	public List<Course> searchCoursesByTitle(String q) throws Exception
 	{
 		List<Course> courseHits = new ArrayList<Course>();				
 		PreparedStatement stmt = null;		
@@ -140,14 +154,11 @@ public class CoursesDAO
 		
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws SQLException
-	 * @throws NamingException 
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.CoursesRepositoryInterface#getCoursesById(java.lang.String)
 	 */
-	public Course getCoursesById(int id) throws SQLException, NamingException
+	@Override
+	public Course getCoursesById(String id) throws Exception
 	{						
 		PreparedStatement stmt = null;	
 		Course course = null;
@@ -155,7 +166,7 @@ public class CoursesDAO
 		{
 			this.sqlDBManager.connect();
 			stmt = this.sqlDBManager.getPreparedStatement(search_course_by_id_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			ResultSet resultSet = stmt.executeQuery();	
 			if (resultSet.next()) 
 			{
@@ -177,12 +188,10 @@ public class CoursesDAO
 	}
 	
 		
-	/**
-	 * 
-	 * @param course
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.CoursesRepositoryInterface#insertCourse(com.taksila.veda.model.api.course.v1_0.Course)
 	 */	
+	@Override
 	public Course insertCourse(Course course) throws Exception 
 	{
 		logger.debug("Entering into insertCourse():::::");
@@ -220,12 +229,10 @@ public class CoursesDAO
 	}
 	
 	
-	/**
-	 * 
-	 * @param course
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.CoursesRepositoryInterface#updateCourse(com.taksila.veda.model.api.course.v1_0.Course)
 	 */	
+	@Override
 	public boolean updateCourse(Course course) throws Exception 
 	{
 		logger.debug("Entering into updateCourse():::::");		
@@ -259,13 +266,11 @@ public class CoursesDAO
 								
 	}
 	
-	/**
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.CoursesRepositoryInterface#deleteCourse(java.lang.String)
 	 */
-	public boolean deleteCourse(int id) throws Exception 
+	@Override
+	public boolean deleteCourse(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteCourse():::::");
 		this.sqlDBManager.connect();	
@@ -273,7 +278,7 @@ public class CoursesDAO
 		try
 		{
 			stmt = this.sqlDBManager.getPreparedStatement(delete_course_sql);
-			stmt.setInt(1, id);
+			stmt.setInt(1, Integer.parseInt(id));
 			int t = stmt.executeUpdate();
 			if (t > 0)
 				return true;
