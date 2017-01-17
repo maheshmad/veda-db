@@ -9,8 +9,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.NamingException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,9 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Course;
 
@@ -49,7 +48,6 @@ public class CoursesDAO implements CoursesRepositoryInterface
 		this.tenantId = tenantId;
     }
 	
-	private String schoolId = null;	
 	private static String insert_course_sql = "INSERT INTO COURSES("+COURSE_TABLE.coursename.value()+","+
 																			COURSE_TABLE.title.value()+","+
 																			COURSE_TABLE.subTitle.value()+","+
@@ -72,9 +70,7 @@ public class CoursesDAO implements CoursesRepositoryInterface
 	private static String search_course_by_id_sql = "SELECT * FROM COURSES WHERE "+COURSE_TABLE.id.value()+" = ? ";	
 	
 	
-	static Logger logger = LogManager.getLogger(CoursesDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;
-	
+	static Logger logger = LogManager.getLogger(CoursesDAO.class.getName());	
 	
 	
 	public enum COURSE_TABLE
@@ -99,8 +95,8 @@ public class CoursesDAO implements CoursesRepositoryInterface
 	
 	
 	
-	
-	private Course mapRow(ResultSet resultSet) throws SQLException 
+	@Override
+	public Course mapRow(ResultSet resultSet) throws SQLException 
 	{
 		Course course = new Course();		
 		
@@ -119,38 +115,49 @@ public class CoursesDAO implements CoursesRepositoryInterface
 	@Override
 	public List<Course> searchCoursesByTitle(String q) throws Exception
 	{
-		List<Course> courseHits = new ArrayList<Course>();				
-		PreparedStatement stmt = null;		
-		try
-		{
-			this.sqlDBManager.connect();
-			if (StringUtils.isNotBlank(q))
-			{
-				stmt = this.sqlDBManager.getPreparedStatement(search_course_by_title_sql);
-				stmt.setString(1, q+"%");
-				stmt.setString(2, q+"%");
-				stmt.setString(3, q+"%");
-			}
-			else
-				stmt = this.sqlDBManager.getPreparedStatement(search_all_courses_sql);
-			
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				courseHits.add(mapRow(resultSet));
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
 		
-		return courseHits;
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		String sql = ""; 
+				
+		if (StringUtils.isNotBlank(q))		
+			sql = search_course_by_title_sql;					
+		else
+			sql = search_all_courses_sql;
+		
+		
+		return jdbcTemplate.execute(sql,new PreparedStatementCallback<List<Course>>()
+		{  
+			    @Override  
+			    public List<Course> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<Course> hits = new ArrayList<Course>();
+			    	try 
+			        {
+			    		if (StringUtils.isNotBlank(q))
+						{
+							stmt.setString(1, q+"%");
+							stmt.setString(2, q+"%");
+							stmt.setString(3, q+"%");
+						}
+						else;
+										    					    		
+						ResultSet resultSet = stmt.executeQuery();
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		});
+		
+		
 		
 	}
 	
@@ -160,30 +167,24 @@ public class CoursesDAO implements CoursesRepositoryInterface
 	@Override
 	public Course getCoursesById(String id) throws Exception
 	{						
-		PreparedStatement stmt = null;	
-		Course course = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_course_by_id_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				course = mapRow(resultSet);
-			}
-			
-			return course;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(search_course_by_id_sql,new PreparedStatementCallback<Course>()
+		{  
+			    @Override  
+			    public Course doInPreparedStatement(PreparedStatement ps) throws SQLException  			            
+			    {  			              			    	
+					ps.setInt(1, Integer.parseInt(id));
+					ResultSet resultSet = ps.executeQuery();	
+					if (resultSet.next()) 
+					{
+						return mapRow(resultSet);
+					}
+					
+					return null;
+			    }  
+		});
+		
 				
 	}
 	
@@ -195,36 +196,32 @@ public class CoursesDAO implements CoursesRepositoryInterface
 	public Course insertCourse(Course course) throws Exception 
 	{
 		logger.debug("Entering into insertCourse():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(insert_course_sql);
-			
-			stmt.setString(1, course.getName());
-			stmt.setString(2, course.getTitle());
-			stmt.setString(3, course.getSubTitle());
-			stmt.setString(4, course.getDescription());
-			
-			stmt.executeUpdate();			
-			ResultSet rs = stmt.getGeneratedKeys();			
-			if (rs.next())
-			{
-				course.setId(String.valueOf(rs.getInt(1)));
-			}
-			
-			return course;
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}				 
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(insert_course_sql,new PreparedStatementCallback<Course>()
+		{  
+			    @Override  
+			    public Course doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	stmt.setString(1, course.getName());
+					stmt.setString(2, course.getTitle());
+					stmt.setString(3, course.getSubTitle());
+					stmt.setString(4, course.getDescription());
+					
+					stmt.executeUpdate();			
+					ResultSet rs = stmt.getGeneratedKeys();			
+					if (rs.next())
+					{
+						course.setId(String.valueOf(rs.getInt(1)));
+					}
+					
+					return course;				
+					
+			    }  
+		});
+		
+		 
 								
 	}
 	
@@ -235,34 +232,44 @@ public class CoursesDAO implements CoursesRepositoryInterface
 	@Override
 	public boolean updateCourse(Course course) throws Exception 
 	{
-		logger.debug("Entering into updateCourse():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();	
-			stmt = this.sqlDBManager.getPreparedStatement(update_course_sql);
-			
-			stmt.setString(1, course.getName());
-			stmt.setString(2, course.getTitle());
-			stmt.setString(3, course.getSubTitle());
-			stmt.setString(4, course.getDescription());
-			stmt.setInt(5, Integer.valueOf(course.getId()));
-			
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		logger.debug("Entering into updateCourse():::::");	
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		Boolean insertSuccess = jdbcTemplate.execute(update_course_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              			    	
+					try 
+					{
+						stmt.setString(1, course.getName());
+						stmt.setString(2, course.getTitle());
+						stmt.setString(3, course.getSubTitle());
+						stmt.setString(4, course.getDescription());
+						stmt.setInt(5, Integer.valueOf(course.getId()));
+						
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+					catch (NumberFormatException e) 
+					{					
+						e.printStackTrace();
+					} 
+					catch (SQLException e) {
+						e.printStackTrace();
+					}
+					
+					return false;
+			    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+				
 								
 	}
 	
@@ -273,27 +280,31 @@ public class CoursesDAO implements CoursesRepositoryInterface
 	public boolean deleteCourse(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteCourse():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(delete_course_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(delete_course_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setInt(1, Integer.parseInt(id));
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
+		
 								
 	}
 	

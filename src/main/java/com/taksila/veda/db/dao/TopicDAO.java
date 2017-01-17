@@ -9,8 +9,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.NamingException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,9 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Topic;
 
@@ -49,7 +48,6 @@ public class TopicDAO implements TopicRepositoryInterface
 		this.tenantId = tenantId;
     }
 
-	private String schoolId = null;	
 	private static String insert_topic_sql = "INSERT INTO TOPICS("+TOPIC_TABLE.chapterid.value()+","+
 																			TOPIC_TABLE.topicname.value()+","+
 																			TOPIC_TABLE.title.value()+","+
@@ -71,9 +69,7 @@ public class TopicDAO implements TopicRepositoryInterface
 	private static String search_all_topics_sql = "SELECT * FROM TOPICS";
 	
 	
-	static Logger logger = LogManager.getLogger(TopicDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;
-	
+	static Logger logger = LogManager.getLogger(TopicDAO.class.getName());	
 
 	
 	public enum TOPIC_TABLE
@@ -117,39 +113,44 @@ public class TopicDAO implements TopicRepositoryInterface
 	@Override
 	public List<Topic> searchTopicsByTitle(String q) throws Exception
 	{
-		List<Topic> topicHits = new ArrayList<Topic>();				
-		PreparedStatement stmt = null;		
-		logger.trace("searching topics query ="+q);
-
-		try
-		{
-			this.sqlDBManager.connect();
-			
-			if (StringUtils.isNotBlank(q))
-			{
-				stmt = this.sqlDBManager.getPreparedStatement(search_topic_by_title_sql);
-				stmt.setString(1, q+"%");
-			}
-			else
-				stmt = this.sqlDBManager.getPreparedStatement(search_all_topics_sql);
-			
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				topicHits.add(mapRow(resultSet));
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 		
-		return topicHits;
+		String sql = ""; 
+				
+		if (StringUtils.isNotBlank(q))		
+			sql = search_topic_by_title_sql;					
+		else
+			sql = search_all_topics_sql;
+		
+		
+		return jdbcTemplate.execute(sql,new PreparedStatementCallback<List<Topic>>()
+		{  
+		    @Override  
+		    public List<Topic> doInPreparedStatement(PreparedStatement stmt)  			            
+		    {  			              
+		    	List<Topic> hits = new ArrayList<Topic>();
+		    	try 
+		        {
+		    		if (StringUtils.isNotBlank(q))						
+						stmt.setString(1, q+"%");
+		    		else;
+					
+					ResultSet resultSet = stmt.executeQuery();	
+					while (resultSet.next()) 
+					{
+						hits.add(mapRow(resultSet));
+					}
+				} 
+		        catch (SQLException e) 
+		        {					
+					e.printStackTrace();
+				}
+		    	
+		    	return hits;
+		    }  
+		});
+		
+		
 		
 	}
 	
@@ -159,33 +160,34 @@ public class TopicDAO implements TopicRepositoryInterface
 	@Override
 	public List<Topic> searchTopicsByChapterid(String chapterid) throws Exception
 	{
-		List<Topic> topicHits = new ArrayList<Topic>();				
-		PreparedStatement stmt = null;		
 		logger.trace("searching topics by chapter id query ="+chapterid);
 
-		try
-		{
-			this.sqlDBManager.connect();						
-			stmt = this.sqlDBManager.getPreparedStatement(search_topic_by_chapter_id_sql);
-			stmt.setInt(1, Integer.parseInt(chapterid));
-			
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				topicHits.add(mapRow(resultSet));
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 		
-		return topicHits;
+		return jdbcTemplate.execute(search_topic_by_chapter_id_sql,new PreparedStatementCallback<List<Topic>>()
+		{  
+			    @Override  
+			    public List<Topic> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<Topic> hits = new ArrayList<Topic>();
+			    	try 
+			        {
+			    		stmt.setInt(1, Integer.parseInt(chapterid));						
+						ResultSet resultSet = stmt.executeQuery();	
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		}); 
+		
 		
 	}
 	
@@ -196,30 +198,24 @@ public class TopicDAO implements TopicRepositoryInterface
 	@Override
 	public Topic getTopicById(String id) throws Exception
 	{						
-		PreparedStatement stmt = null;	
-		Topic topic = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_topic_by_id_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				topic = mapRow(resultSet);
-			}
-			
-			return topic;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(search_topic_by_id_sql,new PreparedStatementCallback<Topic>()
+		{  
+			    @Override  
+			    public Topic doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	stmt.setInt(1, Integer.parseInt(id));
+					ResultSet resultSet = stmt.executeQuery();	
+					if (resultSet.next()) 
+					{
+						return mapRow(resultSet);
+					}
+					
+					return null;
+			    }  
+		});
+		
 				
 	}
 	
@@ -231,37 +227,32 @@ public class TopicDAO implements TopicRepositoryInterface
 	public Topic insertTopic(Topic topic) throws Exception 
 	{
 		logger.debug("Entering into insertTopic():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(insert_topic_sql);
-			
-			stmt.setInt(1, Integer.parseInt(topic.getChapterid()));
-			stmt.setString(2, topic.getName());
-			stmt.setString(3, topic.getTitle());
-			stmt.setString(4, topic.getSubTitle());
-			stmt.setString(5, topic.getDescription());
-			
-			stmt.executeUpdate();			
-			ResultSet rs = stmt.getGeneratedKeys();			
-			if (rs.next())
-			{
-				topic.setId(String.valueOf(rs.getInt(1)));
-			}
-			
-			return topic;
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}				 
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(insert_topic_sql,new PreparedStatementCallback<Topic>()
+		{  
+			    @Override  
+			    public Topic doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	stmt.setInt(1, Integer.parseInt(topic.getChapterid()));
+					stmt.setString(2, topic.getName());
+					stmt.setString(3, topic.getTitle());
+					stmt.setString(4, topic.getSubTitle());
+					stmt.setString(5, topic.getDescription());
+					
+					stmt.executeUpdate();			
+					ResultSet rs = stmt.getGeneratedKeys();			
+					if (rs.next())
+					{
+						topic.setId(String.valueOf(rs.getInt(1)));
+					}
+					
+					return topic;				
+					
+			    }  
+		});
+		
 								
 	}
 	
@@ -273,35 +264,40 @@ public class TopicDAO implements TopicRepositoryInterface
 	public boolean updateTopic(Topic topic) throws Exception 
 	{
 		logger.debug("Entering into updateTopic():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();	
-			stmt = this.sqlDBManager.getPreparedStatement(update_topic_sql);
-			
-			stmt.setInt(1, Integer.parseInt(topic.getChapterid()));
-			stmt.setString(2, topic.getName());
-			stmt.setString(3, topic.getTitle());
-			stmt.setString(4, topic.getSubTitle());
-			stmt.setString(5, topic.getDescription());
-			stmt.setInt(6, Integer.valueOf(topic.getId()));
-			
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-								
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		Boolean insertSuccess = jdbcTemplate.execute(update_topic_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setInt(1, Integer.parseInt(topic.getChapterid()));
+						stmt.setString(2, topic.getName());
+						stmt.setString(3, topic.getTitle());
+						stmt.setString(4, topic.getSubTitle());
+						stmt.setString(5, topic.getDescription());
+						stmt.setInt(6, Integer.valueOf(topic.getId()));
+						
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+		
 	}
 	
 	/* (non-Javadoc)
@@ -311,27 +307,29 @@ public class TopicDAO implements TopicRepositoryInterface
 	public boolean deleteTopic(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteTopic():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(delete_topic_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(delete_topic_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setInt(1, Integer.parseInt(id));
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
 								
 	}
 	

@@ -9,8 +9,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.NamingException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,9 +21,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
-import com.taksila.veda.db.eventsessions.EventSessionsRepository;
-import com.taksila.veda.db.eventsessions.EventSessionsRepositoryInterface;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Chapter;
 
@@ -40,7 +35,7 @@ public class ChapterDAO implements ChapterRepositoryInterface
 {
 	@Autowired
 	private TenantDBManager tenantDBManager;
-	static Logger logger = LogManager.getLogger(EventSessionsRepository.class.getName());
+	static Logger logger = LogManager.getLogger(ChapterDAO.class.getName());
 	private String tenantId;
 	
 	@Autowired
@@ -54,7 +49,6 @@ public class ChapterDAO implements ChapterRepositoryInterface
 		this.tenantId = tenantId;
     }
 
-	private String schoolId = null;	
 	private static String insert_chapter_sql = "INSERT INTO CHAPTERS("+CHAPTER_TABLE.courseid.value()+","+
 																			CHAPTER_TABLE.chaptername.value()+","+
 																			CHAPTER_TABLE.title.value()+","+
@@ -96,7 +90,8 @@ public class ChapterDAO implements ChapterRepositoryInterface
 		
 	};
 	
-	private Chapter mapRow(ResultSet resultSet) throws SQLException 
+	@Override
+	public Chapter rowMapper(ResultSet resultSet) throws SQLException 
 	{
 		Chapter chapter = new Chapter();		
 		
@@ -130,7 +125,7 @@ public class ChapterDAO implements ChapterRepositoryInterface
 						ResultSet resultSet = ps.executeQuery();
 						while (resultSet.next()) 
 						{
-							hits.add(mapRow(resultSet));
+							hits.add(rowMapper(resultSet));
 						}
 					} 
 			        catch (SQLException e) 
@@ -180,7 +175,7 @@ public class ChapterDAO implements ChapterRepositoryInterface
 						ResultSet resultSet = ps.executeQuery();
 						while (resultSet.next()) 
 						{
-							hits.add(mapRow(resultSet));
+							hits.add(rowMapper(resultSet));
 						}
 					} 
 			        catch (SQLException e) 
@@ -208,13 +203,13 @@ public class ChapterDAO implements ChapterRepositoryInterface
 		return jdbcTemplate.execute(search_chapter_by_id_sql,new PreparedStatementCallback<Chapter>()
 		{  
 			    @Override  
-			    public Chapter doInPreparedStatement(PreparedStatement ps)  			            
+			    public Chapter doInPreparedStatement(PreparedStatement ps) throws SQLException  			            
 			    {  			              			    	
 					ps.setInt(1, Integer.parseInt(id));
 					ResultSet resultSet = ps.executeQuery();	
 					if (resultSet.next()) 
 					{
-						return mapRow(resultSet);
+						return rowMapper(resultSet);
 					}
 					
 					return null;
@@ -231,37 +226,31 @@ public class ChapterDAO implements ChapterRepositoryInterface
 	public Chapter insertChapter(Chapter chapter) throws Exception 
 	{
 		logger.debug("Entering into insertChapter():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(insert_chapter_sql);
-			
-			stmt.setInt(1, Integer.parseInt(chapter.getCourseid()));
-			stmt.setString(2, chapter.getName());
-			stmt.setString(3, chapter.getTitle());
-			stmt.setString(4, chapter.getSubTitle());
-			stmt.setString(5, chapter.getDescription());
-			
-			stmt.executeUpdate();			
-			ResultSet rs = stmt.getGeneratedKeys();			
-			if (rs.next())
-			{
-				chapter.setId(String.valueOf(rs.getInt(1)));
-			}
-			
-			return chapter;
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}				 
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(insert_chapter_sql,new PreparedStatementCallback<Chapter>()
+		{  
+			    @Override  
+			    public Chapter doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+					stmt.setInt(1, Integer.parseInt(chapter.getCourseid()));
+					stmt.setString(2, chapter.getName());
+					stmt.setString(3, chapter.getTitle());
+					stmt.setString(4, chapter.getSubTitle());
+					stmt.setString(5, chapter.getDescription());					
+					stmt.executeUpdate();			
+					ResultSet rs = stmt.getGeneratedKeys();			
+					if (rs.next())
+					{
+						chapter.setId(String.valueOf(rs.getInt(1)));
+					}
+					
+					return chapter;					
+					
+			    }  
+		});
+					 
 								
 	}
 	
@@ -273,35 +262,41 @@ public class ChapterDAO implements ChapterRepositoryInterface
 	public boolean updateChapter(Chapter chapter) throws Exception 
 	{
 		logger.debug("Entering into updateChapter():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();	
-			stmt = this.sqlDBManager.getPreparedStatement(update_chapter_sql);
-			
-			stmt.setString(1, chapter.getName());
-			stmt.setString(2, chapter.getTitle());
-			stmt.setString(3, chapter.getSubTitle());
-			stmt.setString(4, chapter.getDescription());
-			stmt.setInt(5, Integer.parseInt(chapter.getCourseid()));
-			stmt.setInt(6, Integer.valueOf(chapter.getId()));
-			
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-								
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		Boolean insertSuccess = jdbcTemplate.execute(update_chapter_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setString(1, chapter.getName());
+						stmt.setString(2, chapter.getTitle());
+						stmt.setString(3, chapter.getSubTitle());
+						stmt.setString(4, chapter.getDescription());
+						stmt.setInt(5, Integer.parseInt(chapter.getCourseid()));
+						stmt.setInt(6, Integer.valueOf(chapter.getId()));
+						
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+		
+						
 	}
 	
 	/* (non-Javadoc)
@@ -311,28 +306,31 @@ public class ChapterDAO implements ChapterRepositoryInterface
 	public boolean deleteChapter(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteChapter():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(delete_chapter_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-								
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(delete_chapter_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setInt(1, Integer.parseInt(id));
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
+				
 	}
 	
 

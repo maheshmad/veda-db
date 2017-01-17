@@ -1,5 +1,7 @@
 package com.taksila.veda.db.dao;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 import com.taksila.veda.model.api.course.v1_0.Course;
@@ -45,5 +47,13 @@ public interface CoursesRepositoryInterface {
 	 * @throws Exception
 	 */
 	boolean deleteCourse(String id) throws Exception;
+	
+	/**
+	 * 
+	 * @param resultSet
+	 * @return
+	 * @throws SQLException
+	 */
+	Course mapRow(ResultSet resultSet) throws SQLException;
 
 }

@@ -21,9 +21,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.base.v1_0.UserRole;
 import com.taksila.veda.model.db.usermgmt.v1_0.User;
@@ -53,7 +54,6 @@ public class UsersDAO implements UsersRepositoryInterface
 		this.tenantId = tenantId;
     }
 
-	private String schoolId = null;	
 	private static String insert_user_sql = "INSERT INTO USERS("+	USER_TABLE.userid.value()+","+
 																		USER_TABLE.emailid.value()+","+
 																		USER_TABLE.pswd.value()+","+
@@ -121,7 +121,6 @@ public class UsersDAO implements UsersRepositoryInterface
 //																	USER_TABLE.title.value()+" = ? OR ";
 		
 	static Logger logger = LogManager.getLogger(UsersDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;	
 	
 	public enum USER_TABLE
 	{
@@ -211,32 +210,32 @@ public class UsersDAO implements UsersRepositoryInterface
 	 */
 	@Override
 	public User getUserById(int id) throws Exception
-	{						
-		PreparedStatement stmt = null;	
-		User user = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_users_by_id_sql);
-			stmt.setInt(1, id);
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				user = mapRow(resultSet);
-			}
-			
-			return user;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-				
+	{								
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(search_users_by_id_sql,new PreparedStatementCallback<User>()
+		{  
+			    @Override  
+			    public User doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setInt(1, id);
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+						{
+							return mapRow(resultSet);
+						}
+					} 
+			    	catch (Exception e) 
+			    	{
+						e.printStackTrace();
+			    	}
+					
+					return null;
+			    }  
+		});
+							
 	}
 	
 	
@@ -247,30 +246,29 @@ public class UsersDAO implements UsersRepositoryInterface
 	@Override
 	public User getUserByEmailId(String emailid) throws Exception
 	{						
-		PreparedStatement stmt = null;	
-		User user = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_users_by_emailid_sql);
-			stmt.setString(1, emailid);
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				user = mapRow(resultSet);
-			}
-			
-			return user;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(search_users_by_emailid_sql,new PreparedStatementCallback<User>()
+		{  
+			    @Override  
+			    public User doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setString(1, emailid);
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+						{
+							return mapRow(resultSet);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					} 
+					
+					return null;
+			    }  
+		});
+				
 				
 	}
 	
@@ -280,31 +278,31 @@ public class UsersDAO implements UsersRepositoryInterface
 	@Override
 	public List<User> searchUsers(String name) throws Exception
 	{						
-		PreparedStatement stmt = null;	
-		List<User> users = new ArrayList<User>();
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_all_users_sql);
-//			stmt.setString(1, name);
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				users.add(mapRow(resultSet));
-			}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+						
+		return jdbcTemplate.execute(search_all_users_sql,new PreparedStatementCallback<List<User>>()
+		{  
+			    @Override  
+			    public List<User> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<User> hits = new ArrayList<User>();
+			    	try 
+			        {
+			    		ResultSet resultSet = stmt.executeQuery();	
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}						
+					} 
+			        catch (Exception e) 
+			        {					
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		});
 			
-			return users;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-				
 	}
 	
 		
@@ -314,69 +312,57 @@ public class UsersDAO implements UsersRepositoryInterface
 	@Override
 	public User insertUser(User user) throws Exception 
 	{
-		logger.debug("Entering into insertUser():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(insert_user_sql);
-			
-			stmt.setString(1, user.getUserId());
-			stmt.setString(2, user.getEmailId());
-			stmt.setString(3, user.getUserPswd());
-//			stmt.setString(4, DaoUtils.getStringFromRolesList(user.getUserrole()));
-			stmt.setString(4, user.getUserrole().value());
-			stmt.setString(5, user.getFirstName());
-			stmt.setString(6, user.getMiddleName());
-			stmt.setString(7, user.getLastName());
-			
-//			Address addr = user.getAddress() == null ? new Address(): user.getAddress() ;
-//			stmt.setString(8, addr.getAddressLine1());
-//			stmt.setString(9, addr.getAddressLine2());
-//			stmt.setString(10, addr.getCity());
-//			stmt.setString(11, addr.getState());
-//			stmt.setString(12, addr.getPostalcode());
-//			stmt.setString(13, addr.getCountry());
-			
-			stmt.setString(8, user.getAddressLine1());
-			stmt.setString(9, user.getAddressLine2());
-			stmt.setString(10, user.getCity());
-			stmt.setString(11, user.getState());
-			stmt.setString(12, user.getPostalcode());
-			stmt.setString(13, user.getCountry());
-			
-			
-			stmt.setString(14, user.getCellphone());
-			stmt.setBoolean(15, user.isOkToText());
-			stmt.setString(16, user.getLandlinephone());
-			stmt.setString(17, user.getOfficephone());
-			stmt.setString(18, user.getOfficephoneExt());
-			stmt.setString(19, user.getUpdatedBy());
-			
-			stmt.executeUpdate();			
-			ResultSet rs = stmt.getGeneratedKeys();			
-			if (rs.next())
-			{
-				user.setId(String.valueOf(rs.getInt(1)));
-			}
-			
-			return user;
-			
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}				 
+		logger.debug("Entering into insertUser():::::");		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(insert_user_sql,new PreparedStatementCallback<User>()
+		{  
+			    @Override  
+			    public User doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	stmt.setString(1, user.getUserId());
+					stmt.setString(2, user.getEmailId());
+					stmt.setString(3, user.getUserPswd());
+//					stmt.setString(4, DaoUtils.getStringFromRolesList(user.getUserrole()));
+					stmt.setString(4, user.getUserrole().value());
+					stmt.setString(5, user.getFirstName());
+					stmt.setString(6, user.getMiddleName());
+					stmt.setString(7, user.getLastName());
+					
+//					Address addr = user.getAddress() == null ? new Address(): user.getAddress() ;
+//					stmt.setString(8, addr.getAddressLine1());
+//					stmt.setString(9, addr.getAddressLine2());
+//					stmt.setString(10, addr.getCity());
+//					stmt.setString(11, addr.getState());
+//					stmt.setString(12, addr.getPostalcode());
+//					stmt.setString(13, addr.getCountry());
+					
+					stmt.setString(8, user.getAddressLine1());
+					stmt.setString(9, user.getAddressLine2());
+					stmt.setString(10, user.getCity());
+					stmt.setString(11, user.getState());
+					stmt.setString(12, user.getPostalcode());
+					stmt.setString(13, user.getCountry());
+					
+					
+					stmt.setString(14, user.getCellphone());
+					stmt.setBoolean(15, user.isOkToText());
+					stmt.setString(16, user.getLandlinephone());
+					stmt.setString(17, user.getOfficephone());
+					stmt.setString(18, user.getOfficephoneExt());
+					stmt.setString(19, user.getUpdatedBy());
+					
+					stmt.executeUpdate();			
+					ResultSet rs = stmt.getGeneratedKeys();			
+					if (rs.next())
+					{
+						user.setId(String.valueOf(rs.getInt(1)));
+					}
+					
+					return user;
+			    }  
+		});
+						 
 								
 	}
 	
@@ -388,59 +374,67 @@ public class UsersDAO implements UsersRepositoryInterface
 	public boolean updateUser(User user) throws Exception 
 	{
 		logger.debug("Entering into updateUser():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();	
-			stmt = this.sqlDBManager.getPreparedStatement(update_user_sql);
-			
-			stmt.setString(1, user.getUserId());
-			stmt.setString(2, user.getEmailId());
-			stmt.setString(3, user.getUserPswd());
-			stmt.setString(4, user.getUserrole().value());
-			stmt.setString(5, user.getFirstName());
-			stmt.setString(6, user.getMiddleName());
-			stmt.setString(7, user.getLastName());
-			
-//			Address addr = user.getAddress() == null ? new Address(): user.getAddress() ;
-//			stmt.setString(8, addr.getAddressLine1());
-//			stmt.setString(9, addr.getAddressLine2());
-//			stmt.setString(10, addr.getCity());
-//			stmt.setString(11, addr.getState());
-//			stmt.setString(12, addr.getPostalcode());
-//			stmt.setString(13, addr.getCountry());
-			
-			stmt.setString(8, user.getAddressLine1());
-			stmt.setString(9, user.getAddressLine2());
-			stmt.setString(10, user.getCity());
-			stmt.setString(11, user.getState());
-			stmt.setString(12, user.getPostalcode());
-			stmt.setString(13, user.getCountry());
-			
-			stmt.setString(14, user.getCellphone());
-			stmt.setBoolean(15, user.isOkToText());
-			stmt.setString(16, user.getLandlinephone());
-			stmt.setString(17, user.getOfficephone());
-			stmt.setString(18, user.getOfficephoneExt());
-			stmt.setString(19, user.getUpdatedBy());
 
-			stmt.setString(20, user.getId());
-			
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		Boolean insertSuccess = jdbcTemplate.execute(update_user_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setString(1, user.getUserId());
+						stmt.setString(2, user.getEmailId());
+						stmt.setString(3, user.getUserPswd());
+						stmt.setString(4, user.getUserrole().value());
+						stmt.setString(5, user.getFirstName());
+						stmt.setString(6, user.getMiddleName());
+						stmt.setString(7, user.getLastName());
+						
+//						Address addr = user.getAddress() == null ? new Address(): user.getAddress() ;
+//						stmt.setString(8, addr.getAddressLine1());
+//						stmt.setString(9, addr.getAddressLine2());
+//						stmt.setString(10, addr.getCity());
+//						stmt.setString(11, addr.getState());
+//						stmt.setString(12, addr.getPostalcode());
+//						stmt.setString(13, addr.getCountry());
+						
+						stmt.setString(8, user.getAddressLine1());
+						stmt.setString(9, user.getAddressLine2());
+						stmt.setString(10, user.getCity());
+						stmt.setString(11, user.getState());
+						stmt.setString(12, user.getPostalcode());
+						stmt.setString(13, user.getCountry());
+						
+						stmt.setString(14, user.getCellphone());
+						stmt.setBoolean(15, user.isOkToText());
+						stmt.setString(16, user.getLandlinephone());
+						stmt.setString(17, user.getOfficephone());
+						stmt.setString(18, user.getOfficephoneExt());
+						stmt.setString(19, user.getUpdatedBy());
+
+						stmt.setString(20, user.getId());
+						
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+		
+		
 								
 	}
 		
@@ -451,28 +445,30 @@ public class UsersDAO implements UsersRepositoryInterface
 	public boolean deleteUser(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteUser():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(delete_user_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-								
+				
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(delete_user_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setInt(1, Integer.parseInt(id));
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		}); 
+										
 	}
 
 
@@ -501,31 +497,31 @@ public class UsersDAO implements UsersRepositoryInterface
 	 */
 	@Override
 	public User getUserByUserId(String userid) throws Exception
-	{						
-		PreparedStatement stmt = null;	
-		User user = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_users_by_userid_sql);
-			stmt.setString(1, userid);
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				user = mapRow(resultSet);
-			}
-			
-			return user;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+	{								
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(search_users_by_userid_sql,new PreparedStatementCallback<User>()
+		{  
+			    @Override  
+			    public User doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setString(1, userid);
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+						{
+							return mapRow(resultSet);
+						}
+					} 
+			    	catch (Exception e) 
+			    	{						
+						e.printStackTrace();
+					}
+					
+					return null;
+			    }  
+		});
 				
 	}
 	
@@ -538,32 +534,34 @@ public class UsersDAO implements UsersRepositoryInterface
 	@Override
 	public User authenticate(String userid, String pswd) throws Exception
 	{
-		PreparedStatement stmt = null;	
-		User user = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(authenticate_user_sql);
-			stmt.setString(1, userid);
-			stmt.setString(2, userid);
-			stmt.setString(3, CommonUtils.getSecureHash(pswd));
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				user = mapRow(resultSet);
-			}
-			
-			return user;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(authenticate_user_sql,new PreparedStatementCallback<User>()
+		{  
+			    @Override  
+			    public User doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setString(1, userid);
+						stmt.setString(2, userid);
+						stmt.setString(3, CommonUtils.getSecureHash(pswd));
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+						{
+							return mapRow(resultSet);
+						}
+					} 
+			    	catch (Exception e) 
+			    	{						
+						e.printStackTrace();
+					}
+					
+					return null;
+			    }  
+		});
+		
+		
 	}
 
 	/* (non-Javadoc)
@@ -573,32 +571,38 @@ public class UsersDAO implements UsersRepositoryInterface
 	public boolean updatePassword(String userId, String passwordHash, Boolean temporary) throws Exception 
 	{
 		logger.debug("Entering into updatePassword():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			logger.debug("SQL ="+update_user_password +" userid = "+userId);
-			stmt = this.sqlDBManager.getPreparedStatement(update_user_password);
-			
-			stmt.setString(1, passwordHash);
-			stmt.setBoolean(2, temporary);
-			stmt.setString(3, userId);
-						
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		Boolean insertSuccess = jdbcTemplate.execute(update_user_password,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+						stmt.setString(1, passwordHash);
+						stmt.setBoolean(2, temporary);
+						stmt.setString(3, userId);
+									
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+		
 		
 	}
 

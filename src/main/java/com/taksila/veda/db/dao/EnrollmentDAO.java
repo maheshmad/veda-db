@@ -16,9 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
 import com.taksila.veda.db.dao.ClassroomDAO.CLASSROOM_TABLE;
 import com.taksila.veda.db.dao.UsersDAO.USER_TABLE;
 import com.taksila.veda.db.utils.TenantDBManager;
@@ -46,7 +47,6 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 		this.tenantId = tenantId;
     }
 	
-	private String schoolId = null;	
 	private static String insert_enrollment_sql = "INSERT INTO ENROLLMENTS("+ENROLLMENT_TABLE.id.value()+","+
 																			ENROLLMENT_TABLE.classroomid.value()+","+
 																			ENROLLMENT_TABLE.userRecordId.value()+","+
@@ -92,32 +92,8 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	
 	
 	static Logger logger = LogManager.getLogger(EnrollmentDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;
 	
-	public enum ENROLLMENT_TABLE
-	{		
-		id("id"),
-		userRecordId("user_record_id"),
-		classroomid("classroomid"),
-		enrolledOn("enrolled_on"),
-		verifiedBy("verified_by"),
-		startDate("start_date"),
-		endDate("end_date"),
-		updatedBy("updated_by"),
-		lastUpdatedOn("last_updated_on"),
-		status("status");
-		private String name;       
-	    private ENROLLMENT_TABLE(String s) 
-	    {
-	        name = s;
-	    }
-		
-	    public String value() 
-	    {
-	        return this.name;
-	    }
-		
-	};
+	
 	
 	/**
 	 * 
@@ -127,7 +103,8 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	 * @throws DatatypeConfigurationException
 	 * @throws IOException 
 	 */
-	private static Enrollment mapRow(ResultSet resultSet) throws SQLException, DatatypeConfigurationException, IOException 
+	@Override
+	public Enrollment mapRow(ResultSet resultSet) throws SQLException, DatatypeConfigurationException, IOException 
 	{
 		Enrollment enrollment = new Enrollment();		
 		
@@ -153,35 +130,41 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	@Override
 	public List<Enrollment> searchEnrollmentsByClassroomId(String classroomid) throws Exception
 	{
-		List<Enrollment> enrollmentHits = new ArrayList<Enrollment>();				
-		PreparedStatement stmt = null;		
-		logger.trace("searching enrollments by classroomid ="+classroomid);
-
-		try
-		{
-			this.sqlDBManager.connect();			
-			stmt = this.sqlDBManager.getPreparedStatement(get_enrolled_students_sql);
-			stmt.setString(1, classroomid);
 			
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				Enrollment enroll = mapRow(resultSet);
-				enrollmentHits.add(enroll);
-				enroll.setStudent(UsersDAO.mapRow(resultSet));				
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-		
-		return enrollmentHits;
+		logger.trace("searching enrollments by classroomid ="+classroomid);
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+				
+		return jdbcTemplate.execute(get_enrolled_students_sql,new PreparedStatementCallback<List<Enrollment>>()
+		{  
+			    @Override  
+			    public List<Enrollment> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<Enrollment> hits = new ArrayList<Enrollment>();
+			    	try 
+			    	{
+						stmt.setString(1, classroomid);
+						
+						ResultSet resultSet = stmt.executeQuery();	
+						while (resultSet.next()) 
+						{
+							Enrollment enroll = mapRow(resultSet);
+							hits.add(enroll);
+							enroll.setStudent(UsersDAO.mapRow(resultSet));				
+						}
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (DatatypeConfigurationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		});					
 		
 	}
 	
@@ -192,35 +175,42 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	@Override
 	public List<Enrollment> searchEnrollmentsByUserRecordId(String userRecordId) throws Exception
 	{
-		List<Enrollment> enrollmentHits = new ArrayList<Enrollment>();				
-		PreparedStatement stmt = null;		
 		logger.trace("searching enrollments by user record id ="+userRecordId+ "sql = "+get_enrolled_classes_sql);
- 
-		try
-		{
-			this.sqlDBManager.connect();			
-			stmt = this.sqlDBManager.getPreparedStatement(get_enrolled_classes_sql);
-			stmt.setString(1, userRecordId);
-			
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				Enrollment enroll = mapRow(resultSet);
-				enrollmentHits.add(enroll);
-				enroll.setClassroom(ClassroomDAO.mapRow(resultSet));				
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
 		
-		return enrollmentHits;
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(get_enrolled_classes_sql,new PreparedStatementCallback<List<Enrollment>>()
+		{  
+			    @Override  
+			    public List<Enrollment> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<Enrollment> hits = new ArrayList<Enrollment>();
+			    	try 
+			    	{
+						stmt.setString(1, userRecordId);
+						
+						ResultSet resultSet = stmt.executeQuery();	
+						while (resultSet.next()) 
+						{
+							Enrollment enroll = mapRow(resultSet);
+							hits.add(enroll);
+							enroll.setClassroom(ClassroomDAO.mapRow(resultSet));			
+						}
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (DatatypeConfigurationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		});	
+		
 		
 	}
 	
@@ -276,33 +266,40 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	@Override
 	public Enrollment getEnrollmentById(String enrollid) throws Exception
 	{						
-		PreparedStatement stmt = null;	
-		Enrollment enrollment = null;
 		logger.trace("searching enrollments by id ="+enrollid+" sql = "+get_enrollment_by_id);
-		try
-		{
-			this.sqlDBManager.connect();			
-			stmt = this.sqlDBManager.getPreparedStatement(get_enrollment_by_id);
-			stmt.setString(1, enrollid);
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				enrollment = mapRow(resultSet);				
-				enrollment.setStudent(UsersDAO.mapRow(resultSet));
-				enrollment.setClassroom(ClassroomDAO.mapRow(resultSet));
-			}
-			
-			return enrollment;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(get_enrollment_by_id,new PreparedStatementCallback<Enrollment>()
+		{  
+			    @Override  
+			    public Enrollment doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setString(1, enrollid);
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+						{
+							Enrollment enrollment = mapRow(resultSet);				
+							enrollment.setStudent(UsersDAO.mapRow(resultSet));
+							enrollment.setClassroom(ClassroomDAO.mapRow(resultSet));
+							return enrollment;
+						}
+						else
+							return null;
+					} catch (DatatypeConfigurationException e) 
+			    	{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    	
+			    	return null;
+			    }  
+		});
 				
 	}
 	
@@ -314,42 +311,45 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	public Boolean insertEnrollment(Enrollment enrollment) throws Exception 
 	{
 		logger.debug("Entering into insertEnrollment():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(insert_enrollment_sql);
-			
-			stmt.setString(1, enrollment.getId());
-			stmt.setString(2, enrollment.getClassroomid());
-			stmt.setString(3, enrollment.getUserRecordId());
-			stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
-			stmt.setString(5, enrollment.getVerifiedBy());
-			stmt.setTimestamp(6, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
-			stmt.setTimestamp(7, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
-			stmt.setString(8, enrollment.getUpdatedBy());
-			if (enrollment.getEnrollStatus() != null)
-				stmt.setString(9, enrollment.getEnrollStatus().value());
-			else
-				stmt.setString(9, null);
-									
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}				 
-								
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(insert_enrollment_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setString(1, enrollment.getId());
+						stmt.setString(2, enrollment.getClassroomid());
+						stmt.setString(3, enrollment.getUserRecordId());
+						stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
+						stmt.setString(5, enrollment.getVerifiedBy());
+						stmt.setTimestamp(6, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
+						stmt.setTimestamp(7, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
+						stmt.setString(8, enrollment.getUpdatedBy());
+						if (enrollment.getEnrollStatus() != null)
+							stmt.setString(9, enrollment.getEnrollStatus().value());
+						else
+							stmt.setString(9, null);
+												
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} catch (DatatypeConfigurationException e) 
+			    	{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    	
+			    	return false;
+					
+			    }  
+		});
+						
 	}
 	
 	
@@ -360,38 +360,45 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	public boolean updateEnrollment(Enrollment enrollment) throws Exception 
 	{
 		logger.debug("Entering into updateEnrollment():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();	
-			stmt = this.sqlDBManager.getPreparedStatement(update_enrollment_sql);			
-			
-			stmt.setTimestamp(1, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
-			stmt.setString(2, enrollment.getVerifiedBy());
-			stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
-			stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
-			stmt.setString(5, enrollment.getUpdatedBy());
-			if (enrollment.getEnrollStatus() != null)
-				stmt.setString(6, enrollment.getEnrollStatus().value());
-			else
-				stmt.setString(6, null);
-			stmt.setString(7, enrollment.getId());
-			
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		Boolean insertSuccess = jdbcTemplate.execute(update_enrollment_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setTimestamp(1, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
+						stmt.setString(2, enrollment.getVerifiedBy());
+						stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
+						stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
+						stmt.setString(5, enrollment.getUpdatedBy());
+						if (enrollment.getEnrollStatus() != null)
+							stmt.setString(6, enrollment.getEnrollStatus().value());
+						else
+							stmt.setString(6, null);
+						stmt.setString(7, enrollment.getId());
+						
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException | DatatypeConfigurationException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+		
 								
 	}
 	
@@ -402,28 +409,30 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	public boolean deleteEnrollment(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteEnrollment():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(delete_enrollment_sql);
-			stmt.setString(1, id);
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-								
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(delete_enrollment_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setString(1, id);
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		}); 
+									
 	}
 
 }

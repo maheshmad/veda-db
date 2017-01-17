@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.NamingException;
 import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
@@ -19,9 +18,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventAttendance;
 import com.taksila.veda.utils.CommonUtils;
@@ -49,7 +49,6 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 		this.tenantId = tenantId;
     }
 	
-	private String schoolId = null;	
 	private static String insert_class_session_attendance_sql = "INSERT INTO EVENT_ATTENDANCE("+CLASS_SESSION_ATTENDANCE_TABLE.eventScheduleId.value()+","+
 																			CLASS_SESSION_ATTENDANCE_TABLE.startDatetime.value()+","+
 																			CLASS_SESSION_ATTENDANCE_TABLE.endDatetime.value()+","+
@@ -69,9 +68,7 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 	private static String search_class_session_attendance_by_class_session_schedule_sql = "SELECT * FROM CLASS_SESSION_ATTENDANCE WHERE "+CLASS_SESSION_ATTENDANCE_TABLE.eventScheduleId.value()+" = ? ";
 	
 	
-	static Logger logger = LogManager.getLogger(EventAttendanceDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;
-	
+	static Logger logger = LogManager.getLogger(EventAttendanceDAO.class.getName());	
 	
 	public enum CLASS_SESSION_ATTENDANCE_TABLE
 	{
@@ -126,30 +123,33 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 	@Override
 	public List<EventAttendance> searchEventAttendanceBySessionScheduleId(String classroomid) throws Exception
 	{						
-		List<EventAttendance> attendanceHits = new ArrayList<EventAttendance>();	
-		PreparedStatement stmt = null;	
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_class_session_attendance_by_class_session_schedule_sql);
-			stmt.setInt(1, Integer.parseInt(classroomid));
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				attendanceHits.add(mapRow(resultSet));
-			}
-			
-			return attendanceHits;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(search_class_session_attendance_by_class_session_schedule_sql,new PreparedStatementCallback<List<EventAttendance>>()
+		{  
+			    @Override  
+			    public List<EventAttendance> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<EventAttendance> hits = new ArrayList<EventAttendance>();
+			    	try 
+			        {
+			    		stmt.setInt(1, Integer.parseInt(classroomid));
+						ResultSet resultSet = stmt.executeQuery();	
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}
+						
+						return hits;
+			        }
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		}); 				
 				
 	}
 	
@@ -159,32 +159,25 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 	@Override
 	public EventAttendance getEventAttendanceById(String id) throws Exception
 	{						
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
-		PreparedStatement stmt = null;	
-		EventAttendance classSessionAttendance = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_class_session_attendance_by_id_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				classSessionAttendance = mapRow(resultSet);
-			}
-			
-			return classSessionAttendance;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-				
+		return jdbcTemplate.execute(search_class_session_attendance_by_id_sql,new PreparedStatementCallback<EventAttendance>()
+		{  
+			    @Override  
+			    public EventAttendance doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	stmt.setInt(1, Integer.parseInt(id));
+					ResultSet resultSet = stmt.executeQuery();	
+					if (resultSet.next()) 
+					{
+						return mapRow(resultSet);
+					}
+					else
+						return null;
+					
+			    }  
+		});
+						
 	}
 	
 		
@@ -195,37 +188,32 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 	public EventAttendance insertEventAttendance(EventAttendance classSessionAttendance) throws Exception 
 	{
 		logger.debug("Entering into insertEventAttendance():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(insert_class_session_attendance_sql);
-			
-			stmt.setInt(1, Integer.valueOf(classSessionAttendance.getEventScheduleId()));
-			stmt.setDate(2, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getStartDate()));
-			stmt.setDate(3, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getEndDate()));
-			stmt.setString(4, classSessionAttendance.getUserRecordId());
-			
-			
-			stmt.executeUpdate();			
-			ResultSet rs = stmt.getGeneratedKeys();			
-			while (rs.next())
-			{
-				classSessionAttendance.setId(String.valueOf(rs.getInt(1)));
-			}
-			
-			return classSessionAttendance;
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}				 
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(insert_class_session_attendance_sql,new PreparedStatementCallback<EventAttendance>()
+		{  
+		    @Override  
+		    public EventAttendance doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+		    {  			              			    	
+		    	stmt.setInt(1, Integer.valueOf(classSessionAttendance.getEventScheduleId()));
+				stmt.setDate(2, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getStartDate()));
+				stmt.setDate(3, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getEndDate()));
+				stmt.setString(4, classSessionAttendance.getUserRecordId());
+									
+				stmt.executeUpdate();			
+				ResultSet rs = stmt.getGeneratedKeys();			
+				if (rs.next())
+				{
+					classSessionAttendance.setId(String.valueOf(rs.getInt(1)));
+				}
+				
+				return classSessionAttendance;
+								
+		    }  
+		});
+		
+						 
 								
 	}
 	
@@ -237,32 +225,38 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 	public boolean updateEventAttendance(EventAttendance classSessionAttendance) throws Exception 
 	{
 		logger.debug("Entering into updateEventAttendance():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();	
-			stmt = this.sqlDBManager.getPreparedStatement(update_class_session_attendance_sql);
-			
-			stmt.setDate(1, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getStartDate()));
-			stmt.setDate(2, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getEndDate()));
-			stmt.setString(3, classSessionAttendance.getUserRecordId());			
-			stmt.setInt(4, Integer.valueOf(classSessionAttendance.getId()));
-			
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		Boolean insertSuccess = jdbcTemplate.execute(update_class_session_attendance_sql,new PreparedStatementCallback<Boolean>()
+		{  
+		    @Override  
+		    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+		    {  			              
+		        try 
+		        {
+		        	stmt.setDate(1, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getStartDate()));
+					stmt.setDate(2, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getEndDate()));
+					stmt.setString(3, classSessionAttendance.getUserRecordId());			
+					stmt.setInt(4, Integer.valueOf(classSessionAttendance.getId()));
+					
+					int t = stmt.executeUpdate();
+					if (t > 0)
+						return true;
+					else
+						return false;
+				} 
+		        catch (SQLException e) 
+		        {					
+					e.printStackTrace();
+					return false;
+				}  			              
+		    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+		
 								
 	}
 	
@@ -273,27 +267,29 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 	public boolean deleteEventAttendance(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteEventAttendance():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(delete_class_session_attendance_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(delete_class_session_attendance_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setInt(1, Integer.parseInt(id));
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		}); 				
 								
 	}
 	

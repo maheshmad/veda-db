@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +15,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
 import com.taksila.veda.db.utils.DaoUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.base.v1_0.UserRole;
@@ -35,6 +34,8 @@ import com.taksila.veda.utils.CommonUtils;
 @Lazy(value = true)
 public class ConfigDAO implements ConfigRepositoryInterface 
 {
+	static Logger logger = LogManager.getLogger(ConfigDAO.class.getName());	
+	
 	@Autowired
 	private TenantDBManager tenantDBManager;
 	private String tenantId;
@@ -140,7 +141,8 @@ public class ConfigDAO implements ConfigRepositoryInterface
 	
 
 	
-	private Config mapConfigRow(ResultSet resultSet) throws SQLException, DatatypeConfigurationException 
+	@Override
+	public Config mapConfigRow(ResultSet resultSet) throws Exception
 	{
 		Config config = new Config();
 		config.setId(resultSet.getString(CONFIG_TABLE.configid.value()));
@@ -157,92 +159,89 @@ public class ConfigDAO implements ConfigRepositoryInterface
 	@Override
 	public List<ConfigSection> getConfigSectionsByRole(UserRole userrole) throws SQLException,Exception
 	{		
-		Map<String, ConfigSection> configSectionsMap = new HashMap<String, ConfigSection>();
-		Map<String, ConfigGroup> configGroupMap = new HashMap<String, ConfigGroup>();
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);					
+		logger.trace("Executing sql"+select_config_by_role_sql);
 		
-		PreparedStatement stmt = null;		
-		try
-		{
-			this.sqlDBManager.connect();
-			
-			logger.trace("Executing sql"+select_config_by_role_sql);
-			stmt = this.sqlDBManager.getPreparedStatement(select_config_by_role_sql);
-			if (userrole == null)
-				stmt.setString(1,"%");
-			else
-				stmt.setString(1,userrole.name());
-			
-			ResultSet resultSet = stmt.executeQuery();
-			while (resultSet.next()) 
-			{
-				String sectionId = resultSet.getString(CONFIG_SECTION_TABLE.config_section_id.value());
-				ConfigSection currentSection = configSectionsMap.get(sectionId);
+		return jdbcTemplate.execute(select_config_by_role_sql,new PreparedStatementCallback<List<ConfigSection>>()
+		{  
+			    @Override  
+			    public List<ConfigSection> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	Map<String, ConfigSection> configSectionsMap = new HashMap<String, ConfigSection>();
+					Map<String, ConfigGroup> configGroupMap = new HashMap<String, ConfigGroup>();
+			    	
+			    	try 
+			        {
+			    		if (userrole == null)
+							stmt.setString(1,"%");
+						else
+							stmt.setString(1,userrole.name());
+										    					    		
+						ResultSet resultSet = stmt.executeQuery();
+						while (resultSet.next()) 
+						{
+							String sectionId = resultSet.getString(CONFIG_SECTION_TABLE.config_section_id.value());
+							ConfigSection currentSection = configSectionsMap.get(sectionId);
+							
+							if (currentSection == null)
+							{
+								currentSection = new ConfigSection();
+								configSectionsMap.put(sectionId, currentSection);
+							}
+							
+							currentSection.setId(sectionId);
+							currentSection.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_SECTION_TABLE.lastUpdatedOn.value())));				
+							currentSection.setSectionName(resultSet.getString(CONFIG_SECTION_TABLE.configSectionName.value()));
+							currentSection.setUpdatedBy(resultSet.getString(CONFIG_SECTION_TABLE.updatedBy.value()));
+							currentSection.setViewXtype(resultSet.getString(CONFIG_SECTION_TABLE.viewXtype.value()));
+							
+							String allowedRulesString = resultSet.getString(CONFIG_SECTION_TABLE.allowedRoles.value());
+							List<UserRole> rolesList = DaoUtils.getUserRolesFromString(allowedRulesString);
+							currentSection.getAllowedRoles().addAll(rolesList);
+							List<UserRole> dedupeList = DaoUtils.removeDuplicates(currentSection.getAllowedRoles());
+							currentSection.getAllowedRoles().clear();
+							currentSection.getAllowedRoles().addAll(dedupeList);
+							
+							
+							/*
+							 * map config group
+							 */
+							String configGroupId = resultSet.getString(CONFIG_GROUP_TABLE.config_group_id.value()); 
+							ConfigGroup configGroup = configGroupMap.get(configGroupId);
+							if (configGroup == null)
+							{
+								configGroup = new ConfigGroup();
+								configGroupMap.put(configGroupId, configGroup);
+								currentSection.getConfigGroups().add(configGroup);				
+							}
+							
+							configGroup.setId(configGroupId);
+							configGroup.setConfigGroupName(resultSet.getString(CONFIG_GROUP_TABLE.configGroupName.value()));
+							configGroup.setFooterNote(resultSet.getString(CONFIG_GROUP_TABLE.footerNote.value()));
+							configGroup.setHeaderNote(resultSet.getString(CONFIG_GROUP_TABLE.headerNote.value()));
+							configGroup.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_GROUP_TABLE.lastUpdatedOn.value())));
+							configGroup.setUpdatedBy(resultSet.getString(CONFIG_GROUP_TABLE.updatedBy.value()));
+							
+							/*
+							 * configs
+							 */
+							Config config = mapConfigRow(resultSet);
+							configGroup.getConfigs().add(config);
+							
+						}
+					} 
+			        catch (Exception e) 
+			    	{
+						e.printStackTrace();
+					}
+			    	
+			    	List<ConfigSection> configSectionList = new ArrayList<ConfigSection>(configSectionsMap.values());
+					
+					return configSectionList;
+			    }  
+		});
 				
-				if (currentSection == null)
-				{
-					currentSection = new ConfigSection();
-					configSectionsMap.put(sectionId, currentSection);
-				}
-				
-				currentSection.setId(sectionId);
-				currentSection.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_SECTION_TABLE.lastUpdatedOn.value())));				
-				currentSection.setSectionName(resultSet.getString(CONFIG_SECTION_TABLE.configSectionName.value()));
-				currentSection.setUpdatedBy(resultSet.getString(CONFIG_SECTION_TABLE.updatedBy.value()));
-				currentSection.setViewXtype(resultSet.getString(CONFIG_SECTION_TABLE.viewXtype.value()));
-				
-				String allowedRulesString = resultSet.getString(CONFIG_SECTION_TABLE.allowedRoles.value());
-				List<UserRole> rolesList = DaoUtils.getUserRolesFromString(allowedRulesString);
-				currentSection.getAllowedRoles().addAll(rolesList);
-				List<UserRole> dedupeList = DaoUtils.removeDuplicates(currentSection.getAllowedRoles());
-				currentSection.getAllowedRoles().clear();
-				currentSection.getAllowedRoles().addAll(dedupeList);
-				
-				
-				/*
-				 * map config group
-				 */
-				String configGroupId = resultSet.getString(CONFIG_GROUP_TABLE.config_group_id.value()); 
-				ConfigGroup configGroup = configGroupMap.get(configGroupId);
-				if (configGroup == null)
-				{
-					configGroup = new ConfigGroup();
-					configGroupMap.put(configGroupId, configGroup);
-					currentSection.getConfigGroups().add(configGroup);				
-				}
-				
-				configGroup.setId(configGroupId);
-				configGroup.setConfigGroupName(resultSet.getString(CONFIG_GROUP_TABLE.configGroupName.value()));
-				configGroup.setFooterNote(resultSet.getString(CONFIG_GROUP_TABLE.footerNote.value()));
-				configGroup.setHeaderNote(resultSet.getString(CONFIG_GROUP_TABLE.headerNote.value()));
-				configGroup.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_GROUP_TABLE.lastUpdatedOn.value())));
-				configGroup.setUpdatedBy(resultSet.getString(CONFIG_GROUP_TABLE.updatedBy.value()));
-				
-				/*
-				 * configs
-				 */
-				Config config = mapConfigRow(resultSet);
-				configGroup.getConfigs().add(config);
-				
-			}
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
 		
-		List<ConfigSection> configSectionList = new ArrayList<ConfigSection>(configSectionsMap.values());
-		
-		return configSectionList;
 		
 	}
 	
@@ -252,43 +251,37 @@ public class ConfigDAO implements ConfigRepositoryInterface
 	 */
 	@Override
 	public Map<ConfigId, String> getConfigsByRole(UserRole userrole) throws SQLException,Exception
-	{		
-		Map<ConfigId, String> configsMap = new HashMap<ConfigId, String>();
+	{						
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 		
-		PreparedStatement stmt = null;		
-		try
-		{
-			this.sqlDBManager.connect();
-			
-			stmt = this.sqlDBManager.getPreparedStatement(select_config_by_role_sql);
-			if (userrole == null)
-				stmt.setString(1,"%");
-			else
-				stmt.setString(1,userrole.name());
-			
-			ResultSet resultSet = stmt.executeQuery();
-			while (resultSet.next()) 
-			{
-				Config config = mapConfigRow(resultSet);	
-				configsMap.put(ConfigId.fromValue(config.getId()), config.getConfigValue());
-			}
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		return jdbcTemplate.execute(select_config_by_role_sql,new PreparedStatementCallback<Map<ConfigId, String>>()
+		{  
+			    @Override  
+			    public Map<ConfigId, String> doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	Map<ConfigId, String> configsMap = new HashMap<ConfigId, String>();
+			    	if (userrole == null)
+						stmt.setString(1,"%");
+					else
+						stmt.setString(1,userrole.name());
+					ResultSet resultSet = stmt.executeQuery();	
+					while (resultSet.next()) 
+					{
+						try 
+						{
+							Config config =  mapConfigRow(resultSet);						
+							configsMap.put(ConfigId.fromValue(config.getId()), config.getConfigValue());
+						} 
+						catch (Exception e) 
+						{
+							e.printStackTrace();
+						}
+					}
+					
+					return configsMap;
+			    }  
+		});		
 		
-		return configsMap;
 		
 	}
 	
@@ -300,50 +293,48 @@ public class ConfigDAO implements ConfigRepositoryInterface
 	public boolean updateConfigs(List<Config> configs) throws Exception 
 	{		
 		logger.trace("Entering into updateConfigs():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			this.sqlDBManager.setAutoCommit(false, "UpdateConfigs");
-			stmt = this.sqlDBManager.getPreparedStatement(update_config_sql);
-			
-			for (Config config: configs)
-			{				
-				logger.trace("CONFIG KEY = "+config.getId()+" VALUE = "+config.getConfigValue());
-				stmt.setString(1, config.getConfigValue());
-				stmt.setString(2, config.getId());
-				stmt.addBatch();				
-			}
-			
-			int[] t = stmt.executeBatch();
-			int totalUpdated = 0;
-			for (int i:t)
-			{
-				totalUpdated += i;
-			}
-			
-			this.sqlDBManager.commit();
-			if (totalUpdated < configs.size())
-			{
-				logger.trace("Only updated "+totalUpdated+"/"+configs.size()+" rows in config");
-				return false;
-			}
-			else
-			{
-				return true;
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-			logger.trace("Completed updateConfigs():::::");	
-		}
-				
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(update_config_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	for (Config config: configs)
+						{				
+							logger.trace("CONFIG KEY = "+config.getId()+" VALUE = "+config.getConfigValue());
+							stmt.setString(1, config.getConfigValue());
+							stmt.setString(2, config.getId());
+							stmt.addBatch();				
+						}
+						
+						int[] t = stmt.executeBatch();
+						int totalUpdated = 0;
+						for (int i:t)
+						{
+							totalUpdated += i;
+						}
+						
+						if (totalUpdated < configs.size())
+						{
+							logger.trace("Only updated "+totalUpdated+"/"+configs.size()+" rows in config");
+							return false;
+						}
+						else
+						{
+							return true;
+						}
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
 								
 	}
 	

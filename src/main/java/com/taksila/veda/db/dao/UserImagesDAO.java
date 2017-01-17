@@ -22,9 +22,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.usermgmt.v1_0.UserImageInfo;
 import com.taksila.veda.model.db.usermgmt.v1_0.UserImageType;
@@ -53,7 +54,6 @@ public class UserImagesDAO implements UserImagesRepositoryInterface
 		this.tenantId = tenantId;
     }
 	
-	private String schoolId = null;	
 	private static String insert_user_image_sql = "REPLACE INTO USER_IMAGES("+USER_IMAGES_TABLE.userid.value()+","+
 																	USER_IMAGES_TABLE.imageid.value()+","+
 																	USER_IMAGES_TABLE.image_type.value()+","+
@@ -93,7 +93,6 @@ public class UserImagesDAO implements UserImagesRepositoryInterface
 	private static String delete_image_sql = "DELETE FROM USER_IMAGES WHERE "+USER_IMAGES_TABLE.imageid.value()+" = ? ";	
 		
 	static Logger logger = LogManager.getLogger(UserImagesDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;
 		
 	
 	private enum USER_IMAGES_TABLE
@@ -138,53 +137,61 @@ public class UserImagesDAO implements UserImagesRepositoryInterface
 	@Override
 	public List<UserImageInfo> search(UserImageInfo searchUserImage) throws Exception
 	{
-		List<UserImageInfo> UserImageInfoHits = new ArrayList<UserImageInfo>();				
-		PreparedStatement stmt = null;				
-
-		try
-		{
-			this.sqlDBManager.connect();
-			if (StringUtils.isNotBlank(searchUserImage.getImageid()))
-			{
-				logger.trace("searching UserImageInfo query = "+search_by_image_id_sql +"param 1 ="+searchUserImage.getImageid());
-				stmt = this.sqlDBManager.getPreparedStatement(search_by_image_id_sql);				
-				stmt.setString(1, searchUserImage.getImageid());			
-			}
-			else
-			{
-				if (searchUserImage.getUserImageType() == null)
-				{				
-					stmt = this.sqlDBManager.getPreparedStatement(search_by_user_id_sql);				
-					stmt.setString(1, searchUserImage.getUserId());								
-				}
-				else
-				{
-					logger.trace("searching UserImageInfo query = "+search_by_userid_and_image_type_sql +"param 1 ="+searchUserImage.getUserId()+", param 2 = "+searchUserImage.getUserImageType().value());
-					stmt = this.sqlDBManager.getPreparedStatement(search_by_userid_and_image_type_sql);
-					stmt.setString(1, searchUserImage.getUserId());	
-					stmt.setString(2, searchUserImage.getUserImageType().value());
-				}
-			}
-			
-			
-									
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				UserImageInfoHits.add(mapRow(resultSet));
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 		
-		return UserImageInfoHits;
+		String sql = ""; 
+		if (StringUtils.isNotBlank(searchUserImage.getImageid()))		
+			sql = search_by_image_id_sql;											
+		else if (searchUserImage.getUserImageType() == null)			
+			sql = search_by_user_id_sql;																			
+		else						
+			sql = search_by_userid_and_image_type_sql;
+		
+		
+		return jdbcTemplate.execute(sql,new PreparedStatementCallback<List<UserImageInfo>>()
+		{  
+			    @Override  
+			    public List<UserImageInfo> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<UserImageInfo> hits = new ArrayList<UserImageInfo>();
+			    	try
+					{						
+						if (StringUtils.isNotBlank(searchUserImage.getImageid()))
+						{
+							logger.trace("searching UserImageInfo query = "+search_by_image_id_sql +"param 1 ="+searchUserImage.getImageid());									
+							stmt.setString(1, searchUserImage.getImageid());			
+						}
+						else
+						{
+							if (searchUserImage.getUserImageType() == null)
+							{														
+								stmt.setString(1, searchUserImage.getUserId());								
+							}
+							else
+							{
+								logger.trace("searching UserImageInfo query = "+search_by_userid_and_image_type_sql +"param 1 ="+searchUserImage.getUserId()+", param 2 = "+searchUserImage.getUserImageType().value());								
+								stmt.setString(1, searchUserImage.getUserId());	
+								stmt.setString(2, searchUserImage.getUserImageType().value());
+							}
+						}
+												
+												
+						ResultSet resultSet = stmt.executeQuery();	
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}
+					}
+					catch(Exception ex)
+					{
+						ex.printStackTrace();
+					}
+					
+			    	
+			    	return hits;
+			    }  
+		});
+		
 		
 	}
 	
@@ -194,30 +201,29 @@ public class UserImagesDAO implements UserImagesRepositoryInterface
 	@Override
 	public UserImageInfo getUserImageInfoById(String imageid) throws Exception
 	{						
-		PreparedStatement stmt = null;	
-		UserImageInfo UserImageInfo = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_by_image_id_sql);
-			stmt.setString(1, imageid);
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				UserImageInfo = mapRow(resultSet);
-			}
-			
-			return UserImageInfo;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(search_by_image_id_sql,new PreparedStatementCallback<UserImageInfo>()
+		{  
+			    @Override  
+			    public UserImageInfo doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setString(1, imageid);
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+							return mapRow(resultSet);
+					} 
+			    	catch (IOException | DatatypeConfigurationException e) 
+			    	{					
+						e.printStackTrace();
+					} 				
+									
+					return null;
+			    }  
+		});
+				
 				
 	}
 	
@@ -228,41 +234,56 @@ public class UserImagesDAO implements UserImagesRepositoryInterface
 	public UserImageInfo insertUserImageInfo(UserImageInfo UserImageInfo,InputStream imageLarge, InputStream imageThumb) throws Exception 
 	{
 		logger.debug("Entering into insertUserImageInfo():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(insert_user_image_sql);
-			
-			stmt.setString(1, UserImageInfo.getUserId());
-			stmt.setString(2, UserImageInfo.getImageid());
-			stmt.setString(3, UserImageInfo.getUserImageType().value());
-			stmt.setBinaryStream(4,imageLarge);			
-			stmt.setBinaryStream(5, imageThumb);
-			stmt.setString(6, UserImageInfo.getUpdatedBy());
-			
-			stmt.executeUpdate();			
-			ResultSet rs = stmt.getGeneratedKeys();			
-			if (rs.next())
-			{
-				UserImageInfo.setId(String.valueOf(rs.getInt(1)));
-			}
-			
-			return UserImageInfo;
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-			imageLarge.close();
-			imageThumb.close();
-			
-		}				 
+				
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(insert_user_image_sql,new PreparedStatementCallback<UserImageInfo>()
+		{  
+			    @Override  
+			    public UserImageInfo doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setString(1, UserImageInfo.getUserId());
+						stmt.setString(2, UserImageInfo.getImageid());
+						stmt.setString(3, UserImageInfo.getUserImageType().value());
+						stmt.setBinaryStream(4,imageLarge);			
+						stmt.setBinaryStream(5, imageThumb);
+						stmt.setString(6, UserImageInfo.getUpdatedBy());
+						
+						stmt.executeUpdate();			
+						ResultSet rs = stmt.getGeneratedKeys();			
+						if (rs.next())
+						{
+							UserImageInfo.setId(String.valueOf(rs.getInt(1)));
+						}
+						
+						return UserImageInfo;
+					} 
+			    	catch (Exception e) 
+			    	{						
+						e.printStackTrace();
+					}
+			    	finally
+			    	{
+			    		try 
+			    		{
+							imageLarge.close();
+							imageThumb.close();
+						} 
+			    		catch (IOException e) 
+			    		{							
+							e.printStackTrace();
+						}
+						
+			    	}
+			    	
+			    	return null;
+					
+			    }  
+		});
+		
+					 
 								
 	}
 	
@@ -275,49 +296,50 @@ public class UserImagesDAO implements UserImagesRepositoryInterface
 	public ByteArrayOutputStream readUserImageContent(String imageId, double scale) throws Exception 
 	{
 		logger.trace("Entering into readUserImageInfoImage():::::");		
-		PreparedStatement stmt = null;
-		ByteArrayOutputStream imageOut = new ByteArrayOutputStream();
-		try
-		{
-			this.sqlDBManager.connect();
-			logger.trace("search images :"+read_image_by_image_id_sql);
-			stmt = this.sqlDBManager.getPreparedStatement(read_image_by_image_id_sql);								
-			stmt.setString(1, imageId);									
-			ResultSet resultSet = stmt.executeQuery();
-			if (resultSet.next()) 
-			{
-				InputStream imgIns = null;
-				if (scale < 1)
-					imgIns = resultSet.getBinaryStream(USER_IMAGES_TABLE.imageContentThumb.value());	
-				else
-					imgIns = resultSet.getBinaryStream(USER_IMAGES_TABLE.imageContentLarge.value());	
-				
-				if (imgIns != null)
-				{
-					logger.trace("Found an image:::::size = "+imgIns.available());
-					int data = imgIns.read();
-			        while (data >= 0) 
-			        {
-			        	imageOut.write((char) data);
-			        	data = imgIns.read();
-			        }
-			        imageOut.flush();
-			        imgIns.close();
-				}
-			}
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);			
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
-		return imageOut;
+		return jdbcTemplate.execute(read_image_by_image_id_sql,new PreparedStatementCallback<ByteArrayOutputStream>()
+		{  
+		    @Override  
+		    public ByteArrayOutputStream doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+		    {  			              			    	
+				ByteArrayOutputStream imageOut = new ByteArrayOutputStream();
+		    	try 
+		    	{
+		    		stmt.setString(1, imageId);									
+					ResultSet resultSet = stmt.executeQuery();
+					if (resultSet.next()) 
+					{
+						InputStream imgIns = null;
+						if (scale < 1)
+							imgIns = resultSet.getBinaryStream(USER_IMAGES_TABLE.imageContentThumb.value());	
+						else
+							imgIns = resultSet.getBinaryStream(USER_IMAGES_TABLE.imageContentLarge.value());	
+						
+						if (imgIns != null)
+						{
+							logger.trace("Found an image:::::size = "+imgIns.available());
+							int data = imgIns.read();
+					        while (data >= 0) 
+					        {
+					        	imageOut.write((char) data);
+					        	data = imgIns.read();
+					        }
+					        imageOut.flush();
+					        imgIns.close();
+						}
+					}
+				} 
+		    	catch (Exception e) 
+		    	{
+					e.printStackTrace();
+				}
+				
+				return imageOut;
+				
+		    }  
+		});
+			
 								
 	}
 	
@@ -329,27 +351,30 @@ public class UserImagesDAO implements UserImagesRepositoryInterface
 	public boolean deleteUserImageInfo(String imageId) throws Exception 
 	{
 		logger.debug("Entering into deleteUserImageInfo():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(delete_image_sql);
-			stmt.setString(1, imageId);
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(delete_image_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setString(1, imageId);
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+				
 								
 	}
 

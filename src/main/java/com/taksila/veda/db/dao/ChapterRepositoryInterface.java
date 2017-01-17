@@ -1,6 +1,10 @@
 package com.taksila.veda.db.dao;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+
+import javax.xml.datatype.DatatypeConfigurationException;
 
 import com.taksila.veda.model.api.course.v1_0.Chapter;
 
@@ -53,5 +57,14 @@ public interface ChapterRepositoryInterface {
 	 * @throws Exception
 	 */
 	boolean deleteChapter(String id) throws Exception;
+	
+	/**
+	 * 
+	 * @param rs
+	 * @return
+	 * @throws SQLException
+	 * @throws DatatypeConfigurationException
+	 */
+	Chapter rowMapper(ResultSet rs)  throws SQLException, DatatypeConfigurationException;
 
 }

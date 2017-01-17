@@ -9,8 +9,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.NamingException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,10 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import com.taksila.veda.db.SQLDataBaseManager;
-import com.taksila.veda.db.eventsessions.EventSessionsRepository;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.classroom.v1_0.Classroom;
 
@@ -50,7 +48,6 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 		this.tenantId = tenantId;
     }
 	
-	private String schoolId = null;	
 	private static String insert_classroom_sql = "INSERT INTO CLASSROOM("+CLASSROOM_TABLE.classname.value()+","+
 																			CLASSROOM_TABLE.courseRecordId.value()+","+
 																			CLASSROOM_TABLE.title.value()+","+
@@ -75,9 +72,7 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 	private static String search_classroom_by_id_sql = "SELECT * FROM CLASSROOM WHERE "+CLASSROOM_TABLE.id.value()+" = ? ";	
 	
 	
-	static Logger logger = LogManager.getLogger(ClassroomDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;
-	
+	static Logger logger = LogManager.getLogger(ClassroomDAO.class.getName());	
 
 	
 	public enum CLASSROOM_TABLE
@@ -101,7 +96,6 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 		
 	};
 			
-	
 	public static Classroom mapRow(ResultSet resultSet) throws SQLException 
 	{
 		Classroom classroom = new Classroom();		
@@ -122,38 +116,47 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 	@Override
 	public List<Classroom> searchClassroomsByTitle(String q) throws Exception
 	{
-		List<Classroom> classroomHits = new ArrayList<Classroom>();				
-		PreparedStatement stmt = null;		
-		try
-		{
-			this.sqlDBManager.connect();
-			if (StringUtils.isNotBlank(q))
-			{
-				stmt = this.sqlDBManager.getPreparedStatement(search_classroom_by_title_sql);
-				stmt.setString(1, q+"%");
-				stmt.setString(2, q+"%");
-				stmt.setString(3, q+"%");
-			}
-			else
-				stmt = this.sqlDBManager.getPreparedStatement(search_all_classrooms_sql);
-			
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				classroomHits.add(mapRow(resultSet));
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
 		
-		return classroomHits;
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		String sql = ""; 
+				
+		if (StringUtils.isNotBlank(q))		
+			sql = search_classroom_by_title_sql;					
+		else
+			sql = search_all_classrooms_sql;
+		
+		
+		return jdbcTemplate.execute(sql,new PreparedStatementCallback<List<Classroom>>()
+		{  
+			    @Override  
+			    public List<Classroom> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<Classroom> hits = new ArrayList<Classroom>();
+			    	try 
+			        {
+			    		if (StringUtils.isNotBlank(q))
+						{
+			    			stmt.setString(1, q+"%");
+							stmt.setString(2, q+"%");
+							stmt.setString(3, q+"%");
+						}
+						else;
+										    					    		
+						ResultSet resultSet = stmt.executeQuery();
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		});
 		
 	}
 	
@@ -163,30 +166,25 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 	@Override
 	public Classroom getClassroomById(String id) throws Exception
 	{						
-		PreparedStatement stmt = null;	
-		Classroom classroom = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_classroom_by_id_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				classroom = mapRow(resultSet);
-			}
-			
-			return classroom;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		logger.trace("searching chapters by courseid ="+id);
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(search_classroom_by_id_sql,new PreparedStatementCallback<Classroom>()
+		{  
+			    @Override  
+			    public Classroom doInPreparedStatement(PreparedStatement ps) throws SQLException  			            
+			    {  			              			    	
+					ps.setInt(1, Integer.parseInt(id));
+					ResultSet resultSet = ps.executeQuery();	
+					if (resultSet.next()) 
+					{
+						return mapRow(resultSet);
+					}
+					
+					return null;
+			    }  
+		});
+						
 				
 	}
 	
@@ -198,38 +196,32 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 	public Classroom insertClassroom(Classroom classroom) throws Exception 
 	{
 		logger.debug("Entering into insertClassroom():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(insert_classroom_sql);
-			
-			stmt.setString(1, classroom.getCourseRecordId());
-			stmt.setString(2, classroom.getName());
-			stmt.setString(3, classroom.getTitle());
-			stmt.setString(4, classroom.getSubTitle());
-			stmt.setString(5, classroom.getDescription());
-			
-			stmt.executeUpdate();			
-			ResultSet rs = stmt.getGeneratedKeys();			
-			if (rs.next())
-			{
-				classroom.setId(String.valueOf(rs.getInt(1)));
-			}
-			
-			return classroom;
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}				 
-								
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(insert_classroom_sql,new PreparedStatementCallback<Classroom>()
+		{  
+			    @Override  
+			    public Classroom doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	stmt.setString(1, classroom.getCourseRecordId());
+					stmt.setString(2, classroom.getName());
+					stmt.setString(3, classroom.getTitle());
+					stmt.setString(4, classroom.getSubTitle());
+					stmt.setString(5, classroom.getDescription());				
+					stmt.executeUpdate();			
+					ResultSet rs = stmt.getGeneratedKeys();			
+					if (rs.next())
+					{
+						classroom.setId(String.valueOf(rs.getInt(1)));
+					}
+					
+					return classroom;					
+					
+			    }  
+		});
+		
+						
 	}
 	
 	
@@ -240,35 +232,42 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 	public boolean updateClassroom(Classroom classroom) throws Exception 
 	{
 		logger.debug("Entering into updateClassroom():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();	
-			stmt = this.sqlDBManager.getPreparedStatement(update_classroom_sql);
-			
-			stmt.setString(1, classroom.getCourseRecordId());
-			stmt.setString(2, classroom.getName());
-			stmt.setString(3, classroom.getTitle());
-			stmt.setString(4, classroom.getSubTitle());
-			stmt.setString(5, classroom.getDescription());
-			stmt.setInt(6, Integer.valueOf(classroom.getId()));
-			
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
-								
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		Boolean insertSuccess = jdbcTemplate.execute(update_classroom_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setString(1, classroom.getCourseRecordId());
+						stmt.setString(2, classroom.getName());
+						stmt.setString(3, classroom.getTitle());
+						stmt.setString(4, classroom.getSubTitle());
+						stmt.setString(5, classroom.getDescription());
+						stmt.setInt(6, Integer.valueOf(classroom.getId()));
+						
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+		
+					
 	}
 	
 	/* (non-Javadoc)
@@ -278,27 +277,30 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 	public boolean deleteClassroom(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteClassroom():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(delete_classroom_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+				
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(delete_classroom_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setInt(1, Integer.parseInt(id));
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+						
 								
 	}
 	

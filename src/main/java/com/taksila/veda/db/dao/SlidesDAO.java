@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
@@ -108,9 +110,7 @@ public class SlidesDAO implements SlidesRepositoryInterface
 																	SLIDE_TABLE.title.value()+" = ? OR "+
 																	SLIDE_TABLE.title.value()+" = ? OR ";
 		
-	static Logger logger = LogManager.getLogger(SlidesDAO.class.getName());
-	SQLDataBaseManager sqlDBManager= null;
-	
+	static Logger logger = LogManager.getLogger(SlidesDAO.class.getName());	
 	
 	public enum SLIDE_TABLE
 	{
@@ -162,40 +162,46 @@ public class SlidesDAO implements SlidesRepositoryInterface
 	@Override
 	public List<Slide> searchSlidesByTitle(String q) throws Exception
 	{
-		List<Slide> slideHits = new ArrayList<Slide>();				
-		PreparedStatement stmt = null;		
 		logger.trace("searching slides query ="+q);
 
-		try
-		{
-			this.sqlDBManager.connect();
-			
-			if (StringUtils.isNotBlank(q))
-			{
-				stmt = this.sqlDBManager.getPreparedStatement(search_slide_by_title_sql);
-				stmt.setString(1, q+"%");
-				stmt.setString(2, q);
-			}
-			else
-				stmt = this.sqlDBManager.getPreparedStatement(search_all_slides_sql);
-			
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				slideHits.add(mapRow(resultSet));
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 		
-		return slideHits;
+		String sql;
+		if (StringUtils.isNotBlank(q))		
+			sql = search_slide_by_title_sql;		
+		else
+			sql = search_all_slides_sql;
+				
+		return jdbcTemplate.execute(sql,new PreparedStatementCallback<List<Slide>>()
+		{  
+			    @Override  
+			    public List<Slide> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<Slide> hits = new ArrayList<Slide>();
+			    	try 
+			        {
+			    		if (StringUtils.isNotBlank(q))
+						{
+							stmt.setString(1, q+"%");
+							stmt.setString(2, q);
+						}
+						else;
+						
+						ResultSet resultSet = stmt.executeQuery();	
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}
+					} 
+			        catch (SQLException | IOException e) 
+			        {					
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		}); 
+		
 		
 	}
 	
@@ -205,30 +211,34 @@ public class SlidesDAO implements SlidesRepositoryInterface
 	@Override
 	public Slide getSlideById(String id) throws Exception
 	{						
-		PreparedStatement stmt = null;	
-		Slide slide = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_slide_by_id_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				slide = mapRow(resultSet);
-			}
-			
-			return slide;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(search_slide_by_id_sql,new PreparedStatementCallback<Slide>()
+		{  
+			    @Override  
+			    public Slide doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setInt(1, Integer.parseInt(id));
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+						{
+							return mapRow(resultSet);
+						}
+					} catch (NumberFormatException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					return null;
+			    }  
+		});
+		
 				
 	}
 	
@@ -237,33 +247,35 @@ public class SlidesDAO implements SlidesRepositoryInterface
 	 */
 	@Override
 	public List<Slide> searchSlidesByTopicId(String topicid) throws Exception
-	{
-		List<Slide> slideHits = new ArrayList<Slide>();				
-		PreparedStatement stmt = null;		
+	{		
 		logger.trace("searching slides query by topic id ="+topicid);
-
-		try
-		{
-			this.sqlDBManager.connect();						
-			stmt = this.sqlDBManager.getPreparedStatement(search_slides_by_topicid_sql);
-			stmt.setInt(1, Integer.parseInt(topicid));
-			ResultSet resultSet = stmt.executeQuery();	
-			while (resultSet.next()) 
-			{
-				slideHits.add(mapRow(resultSet));
-			}
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
 		
-		return slideHits;
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(search_slides_by_topicid_sql,new PreparedStatementCallback<List<Slide>>()
+		{  
+			    @Override  
+			    public List<Slide> doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	List<Slide> hits = new ArrayList<Slide>();
+			    	try 
+			        {
+						stmt.setInt(1, Integer.parseInt(topicid));
+						ResultSet resultSet = stmt.executeQuery();	
+						while (resultSet.next()) 
+						{
+							hits.add(mapRow(resultSet));
+						}
+					} 
+			        catch (SQLException | IOException e) 
+			        {					
+						e.printStackTrace();
+					}
+			    	
+			    	return hits;
+			    }  
+		}); 
+		
 		
 	}
 	
@@ -273,31 +285,34 @@ public class SlidesDAO implements SlidesRepositoryInterface
 	 */
 	@Override
 	public Slide getSlideByName(String name) throws Exception
-	{						
-		PreparedStatement stmt = null;	
-		Slide slide = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			stmt = this.sqlDBManager.getPreparedStatement(search_slide_by_name_sql);
-			stmt.setString(1, name);
-			ResultSet resultSet = stmt.executeQuery();	
-			if (resultSet.next()) 
-			{
-				slide = mapRow(resultSet);
-			}
-			
-			return slide;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+	{								
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(search_slide_by_name_sql,new PreparedStatementCallback<Slide>()
+		{  
+			    @Override  
+			    public Slide doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	try 
+			    	{
+						stmt.setString(1, name);
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+						{
+							return mapRow(resultSet);
+						}
+					} catch (NumberFormatException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					return null;
+			    }  
+		});
+		
 				
 	}
 	
@@ -309,38 +324,33 @@ public class SlidesDAO implements SlidesRepositoryInterface
 	public Slide insertSlide(Slide slide) throws Exception 
 	{
 		logger.debug("Entering into insertSlide():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(insert_slide_sql);
-			
-			stmt.setString(1, slide.getName());
-			stmt.setInt(2, Integer.parseInt(slide.getTopicid()));
-			stmt.setString(3, slide.getTitle());
-			stmt.setString(4, slide.getSubTitle());
-			stmt.setString(5, slide.getDescription());			
-			stmt.setString(6, slide.getTextContent());			
-			
-			stmt.executeUpdate();			
-			ResultSet rs = stmt.getGeneratedKeys();			
-			if (rs.next())
-			{
-				slide.setId(String.valueOf(rs.getInt(1)));
-			}
-			
-			return slide;
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}				 
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(insert_slide_sql,new PreparedStatementCallback<Slide>()
+		{  
+		    @Override  
+		    public Slide doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+		    {  			              			    	
+		    	stmt.setString(1, slide.getName());
+				stmt.setInt(2, Integer.parseInt(slide.getTopicid()));
+				stmt.setString(3, slide.getTitle());
+				stmt.setString(4, slide.getSubTitle());
+				stmt.setString(5, slide.getDescription());			
+				stmt.setString(6, slide.getTextContent());			
+				
+				stmt.executeUpdate();			
+				ResultSet rs = stmt.getGeneratedKeys();			
+				if (rs.next())
+				{
+					slide.setId(String.valueOf(rs.getInt(1)));
+				}
+				
+				return slide;					
+				
+		    }  
+		});
+			 
 								
 	}
 	
@@ -352,34 +362,40 @@ public class SlidesDAO implements SlidesRepositoryInterface
 	public boolean updateSlide(Slide slide) throws Exception 
 	{
 		logger.debug("Entering into updateSlide():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();	
-			stmt = this.sqlDBManager.getPreparedStatement(update_slide_sql);
-			
-			stmt.setString(1, slide.getName());
-			stmt.setString(2, slide.getTitle());
-			stmt.setString(3, slide.getSubTitle());
-			stmt.setString(4, slide.getDescription());			
-			stmt.setString(5, slide.getTextContent());
-			stmt.setInt(6, Integer.valueOf(slide.getId()));
-			
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		Boolean insertSuccess = jdbcTemplate.execute(update_slide_sql,new PreparedStatementCallback<Boolean>()
+		{  
+		    @Override  
+		    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+		    {  			              
+		        try 
+		        {
+		        	stmt.setString(1, slide.getName());
+					stmt.setString(2, slide.getTitle());
+					stmt.setString(3, slide.getSubTitle());
+					stmt.setString(4, slide.getDescription());			
+					stmt.setString(5, slide.getTextContent());
+					stmt.setInt(6, Integer.valueOf(slide.getId()));
+					
+					int t = stmt.executeUpdate();
+					if (t > 0)
+						return true;
+					else
+						return false;
+				} 
+		        catch (SQLException e) 
+		        {					
+					e.printStackTrace();
+					return false;
+				}  			              
+		    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+		
 								
 	}
 		
@@ -390,36 +406,53 @@ public class SlidesDAO implements SlidesRepositoryInterface
 	public boolean updateSlideImage(String slideId,InputStream slideContentImageIs, String imageType, double scale) throws Exception 
 	{
 		logger.debug("Entering into updateSlideLargeImage():::::");		
-		PreparedStatement stmt = null;
-		try
-		{
-			this.sqlDBManager.connect();
-			
-			if (scale < 1)
-				stmt = this.sqlDBManager.getPreparedStatement(update_slide_content_image_thumb_sql);
-			else
-				stmt = this.sqlDBManager.getPreparedStatement(update_slide_content_image_large_sql);
-			
-			stmt.setBinaryStream(1, slideContentImageIs);
-			stmt.setString(2, imageType);			
-			stmt.setInt(3, Integer.valueOf(slideId));
-			
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-			slideContentImageIs.close();
-		}
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		String sql;
+		if (scale < 1)
+			sql = update_slide_content_image_thumb_sql;
+		else
+			sql = update_slide_content_image_large_sql;
+		
+		Boolean insertSuccess = jdbcTemplate.execute(sql,new PreparedStatementCallback<Boolean>()
+		{  
+		    @Override  
+		    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+		    {  			              
+		        try 
+		        {
+		        	stmt.setBinaryStream(1, slideContentImageIs);
+					stmt.setString(2, imageType);			
+					stmt.setInt(3, Integer.valueOf(slideId));
+					
+					int t = stmt.executeUpdate();
+					if (t > 0)
+						return true;
+					else
+						return false;
+				} 
+		        catch (SQLException e) 
+		        {					
+					e.printStackTrace();
+					return false;
+				}
+		        finally
+		        {
+		        	try {
+						slideContentImageIs.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+		        }
+		    }  
+		});  
+		
+		if (!insertSuccess)
+			throw new Exception("Unsuccessful in adding an entry into DB, please check logs");
+		
+		return insertSuccess;
+		
 								
 	}
 	
@@ -431,48 +464,51 @@ public class SlidesDAO implements SlidesRepositoryInterface
 	public ByteArrayOutputStream readSlideImage(int slideId, double scale) throws Exception 
 	{
 		logger.trace("Entering into readSlideImage():::::");		
-		PreparedStatement stmt = null;
-		ByteArrayOutputStream imageOut = new ByteArrayOutputStream();
-		try
-		{
-			this.sqlDBManager.connect();									
-			stmt = this.sqlDBManager.getPreparedStatement(search_slide_by_id_sql);								
-			stmt.setInt(1, slideId);									
-			ResultSet resultSet = stmt.executeQuery();
-			if (resultSet.next()) 
-			{
-				logger.trace("Found an image:::::");
-				InputStream imgIns = null;
-				if (scale < 1)
-					imgIns = resultSet.getBinaryStream("content_image_thumb");	
-				else
-					imgIns = resultSet.getBinaryStream("content_image_large");	
-				
-				if (imgIns != null)
-				{
-			        int data = imgIns.read();
-			        while (data >= 0) 
-			        {
-			        	imageOut.write((char) data);
-			          data = imgIns.read();
-			        }
-			        imageOut.flush();
-			        imgIns.close();
-				}
-			}
-			
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);			
-		}
 		
-		return imageOut;
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(search_slide_by_id_sql,new PreparedStatementCallback<ByteArrayOutputStream>()
+		{  
+		    @Override  
+		    public ByteArrayOutputStream doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+		    {  			              			    	
+				ByteArrayOutputStream imageOut = new ByteArrayOutputStream();
+		    	try 
+		    	{
+					stmt.setInt(1, slideId);									
+					ResultSet resultSet = stmt.executeQuery();
+					if (resultSet.next()) 
+					{
+						logger.trace("Found an image:::::");
+						InputStream imgIns = null;
+						if (scale < 1)
+							imgIns = resultSet.getBinaryStream("content_image_thumb");	
+						else
+							imgIns = resultSet.getBinaryStream("content_image_large");	
+						
+						if (imgIns != null)
+						{
+					        int data = imgIns.read();
+					        while (data >= 0) 
+					        {
+					        	imageOut.write((char) data);
+					          data = imgIns.read();
+					        }
+					        imageOut.flush();
+					        imgIns.close();
+						}
+					}
+				} catch (Exception e) 
+		    	{
+					e.printStackTrace();
+				}
+				
+				return imageOut;
+				
+		    }  
+		});
+		
+	
 								
 	}
 	
@@ -484,27 +520,31 @@ public class SlidesDAO implements SlidesRepositoryInterface
 	public boolean deleteSlide(String id) throws Exception 
 	{
 		logger.debug("Entering into deleteSlide():::::");
-		this.sqlDBManager.connect();	
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = this.sqlDBManager.getPreparedStatement(delete_slide_sql);
-			stmt.setInt(1, Integer.parseInt(id));
-			int t = stmt.executeUpdate();
-			if (t > 0)
-				return true;
-			else
-				return false;
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();			
-			throw ex;
-		}
-		finally
-		{
-			this.sqlDBManager.close(stmt);
-		}
+
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		return jdbcTemplate.execute(delete_slide_sql,new PreparedStatementCallback<Boolean>()
+		{  
+			    @Override  
+			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			        try 
+			        {
+			        	stmt.setInt(1, Integer.parseInt(id));
+						int t = stmt.executeUpdate();
+						if (t > 0)
+							return true;
+						else
+							return false;
+					} 
+			        catch (SQLException e) 
+			        {					
+						e.printStackTrace();
+						return false;
+					}  			              
+			    }  
+		});  
+		
+		
 								
 	}
 
