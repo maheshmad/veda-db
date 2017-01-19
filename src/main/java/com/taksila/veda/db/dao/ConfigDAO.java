@@ -46,7 +46,7 @@ public class ConfigDAO implements ConfigRepositoryInterface
 	@Autowired
     public ConfigDAO(@Value("tenantId") String tenantId)
     {
-		logger.trace(" building for tenant id = "+tenantId);
+		logger.trace(" building config dao for tenant id = "+tenantId);
 		this.tenantId = tenantId;
     }
 	

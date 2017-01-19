@@ -20,7 +20,8 @@ public class TenantDBManager
 		{
 			DriverManagerDataSource dataSource = new DriverManagerDataSource();
 			dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-			dataSource.setUrl("jdbc:mysql://localhost:3306/xe1-"+tenantId);
+//			dataSource.setUrl("jdbc:mysql://localhost:3306/xe1_"+tenantId+"_db");
+			dataSource.setUrl("jdbc:mysql://localhost:3306/xe1");
 			dataSource.setUsername("xe1jdbcuser");
 			dataSource.setPassword("xe1jdbcuser@123");
 			
