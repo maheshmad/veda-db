@@ -3,9 +3,11 @@
  */
 package com.taksila.veda.db.dao;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,9 +21,13 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
+import com.taksila.veda.model.api.classroom.v1_0.Classroom;
 import com.taksila.veda.model.api.course.v1_0.Course;
 
 /**
@@ -199,27 +205,26 @@ public class CoursesDAO implements CoursesRepositoryInterface
 		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
-		return jdbcTemplate.execute(insert_course_sql,new PreparedStatementCallback<Course>()
-		{  
-			    @Override  
-			    public Course doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-			    {  			              			    	
-			    	stmt.setString(1, course.getName());
-					stmt.setString(2, course.getTitle());
-					stmt.setString(3, course.getSubTitle());
-					stmt.setString(4, course.getDescription());
-					
-					stmt.executeUpdate();			
-					ResultSet rs = stmt.getGeneratedKeys();			
-					if (rs.next())
-					{
-						course.setId(String.valueOf(rs.getInt(1)));
-					}
-					
-					return course;				
-					
-			    }  
-		});
+		KeyHolder holder = new GeneratedKeyHolder();
+		 
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+		 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        PreparedStatement stmt = connection.prepareStatement(insert_course_sql, Statement.RETURN_GENERATED_KEYS);
+		        stmt.setString(1, course.getName());
+				stmt.setString(2, course.getTitle());
+				stmt.setString(3, course.getSubTitle());
+				stmt.setString(4, course.getDescription());			   
+		        return stmt;
+		    }
+			}, holder);
+		
+		course.setId(holder.getKey().toString());
+		return course;
+		
+		
 		
 		 
 								

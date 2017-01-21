@@ -3,9 +3,11 @@
  */
 package com.taksila.veda.db.dao;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
@@ -229,27 +234,47 @@ public class ChapterDAO implements ChapterRepositoryInterface
 		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
-		return jdbcTemplate.execute(insert_chapter_sql,new PreparedStatementCallback<Chapter>()
-		{  
-			    @Override  
-			    public Chapter doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-			    {  			              			    	
-					stmt.setInt(1, Integer.parseInt(chapter.getCourseid()));
-					stmt.setString(2, chapter.getName());
-					stmt.setString(3, chapter.getTitle());
-					stmt.setString(4, chapter.getSubTitle());
-					stmt.setString(5, chapter.getDescription());					
-					stmt.executeUpdate();			
-					ResultSet rs = stmt.getGeneratedKeys();			
-					if (rs.next())
-					{
-						chapter.setId(String.valueOf(rs.getInt(1)));
-					}
-					
-					return chapter;					
-					
-			    }  
-		});
+		KeyHolder holder = new GeneratedKeyHolder();
+		 
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+		 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        PreparedStatement stmt = connection.prepareStatement(insert_chapter_sql, Statement.RETURN_GENERATED_KEYS);
+		        stmt.setInt(1, Integer.parseInt(chapter.getCourseid()));
+				stmt.setString(2, chapter.getName());
+				stmt.setString(3, chapter.getTitle());
+				stmt.setString(4, chapter.getSubTitle());
+				stmt.setString(5, chapter.getDescription());	    
+		        return stmt;
+		    }
+			}, holder);
+		
+		chapter.setId(holder.getKey().toString());
+		return chapter;
+//		
+//		return jdbcTemplate.execute(insert_chapter_sql,new PreparedStatementCallback<Chapter>()
+//		{  
+//			    @Override  
+//			    public Chapter doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+//			    {  			              			    	
+//					stmt.setInt(1, Integer.parseInt(chapter.getCourseid()));
+//					stmt.setString(2, chapter.getName());
+//					stmt.setString(3, chapter.getTitle());
+//					stmt.setString(4, chapter.getSubTitle());
+//					stmt.setString(5, chapter.getDescription());					
+//					stmt.executeUpdate();			
+//					ResultSet rs = stmt.getGeneratedKeys();			
+//					if (rs.next())
+//					{
+//						chapter.setId(String.valueOf(rs.getInt(1)));
+//					}
+//					
+//					return chapter;					
+//					
+//			    }  
+//		});
 					 
 								
 	}

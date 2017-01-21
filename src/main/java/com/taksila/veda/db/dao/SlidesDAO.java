@@ -6,9 +6,11 @@ package com.taksila.veda.db.dao;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
@@ -326,30 +331,35 @@ public class SlidesDAO implements SlidesRepositoryInterface
 		logger.debug("Entering into insertSlide():::::");
 		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
-		
-		return jdbcTemplate.execute(insert_slide_sql,new PreparedStatementCallback<Slide>()
-		{  
-		    @Override  
-		    public Slide doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-		    {  			              			    	
-		    	stmt.setString(1, slide.getName());
-				stmt.setInt(2, Integer.parseInt(slide.getTopicid()));
-				stmt.setString(3, slide.getTitle());
-				stmt.setString(4, slide.getSubTitle());
-				stmt.setString(5, slide.getDescription());			
-				stmt.setString(6, slide.getTextContent());			
-				
-				stmt.executeUpdate();			
-				ResultSet rs = stmt.getGeneratedKeys();			
-				if (rs.next())
-				{
-					slide.setId(String.valueOf(rs.getInt(1)));
+		KeyHolder holder = new GeneratedKeyHolder();
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+			 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        try 
+		        {
+					PreparedStatement stmt = connection.prepareStatement(insert_slide_sql, Statement.RETURN_GENERATED_KEYS);
+					stmt.setString(1, slide.getName());
+					stmt.setInt(2, Integer.parseInt(slide.getTopicid()));
+					stmt.setString(3, slide.getTitle());
+					stmt.setString(4, slide.getSubTitle());
+					stmt.setString(5, slide.getDescription());			
+					stmt.setString(6, slide.getTextContent());								
+					
+					return stmt;
+				} 
+		        catch (Exception e) 
+		        {				
+					e.printStackTrace();
+					return null;
 				}
-				
-				return slide;					
-				
-		    }  
-		});
+		    }
+			}, holder);
+		
+		slide.setId(holder.getKey().toString());
+		return slide;
+		
 			 
 								
 	}

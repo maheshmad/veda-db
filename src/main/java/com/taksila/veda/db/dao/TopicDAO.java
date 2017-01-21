@@ -3,9 +3,11 @@
  */
 package com.taksila.veda.db.dao;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,10 +21,14 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Topic;
+import com.taksila.veda.utils.CommonUtils;
 
 /**
  * @author mahesh
@@ -230,28 +236,35 @@ public class TopicDAO implements TopicRepositoryInterface
 		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
-		return jdbcTemplate.execute(insert_topic_sql,new PreparedStatementCallback<Topic>()
-		{  
-			    @Override  
-			    public Topic doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-			    {  			              			    	
-			    	stmt.setInt(1, Integer.parseInt(topic.getChapterid()));
+		KeyHolder holder = new GeneratedKeyHolder();
+		 
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+		 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        try 
+		        {
+					PreparedStatement stmt = connection.prepareStatement(insert_topic_sql, Statement.RETURN_GENERATED_KEYS);
+					stmt.setInt(1, Integer.parseInt(topic.getChapterid()));
 					stmt.setString(2, topic.getName());
 					stmt.setString(3, topic.getTitle());
 					stmt.setString(4, topic.getSubTitle());
-					stmt.setString(5, topic.getDescription());
+					stmt.setString(5, topic.getDescription());					
 					
-					stmt.executeUpdate();			
-					ResultSet rs = stmt.getGeneratedKeys();			
-					if (rs.next())
-					{
-						topic.setId(String.valueOf(rs.getInt(1)));
-					}
-					
-					return topic;				
-					
-			    }  
-		});
+					return stmt;
+				} 
+		        catch (Exception e) 
+		        {				
+					e.printStackTrace();
+					return null;
+				}
+		    }
+			}, holder);
+		
+		topic.setId(holder.getKey().toString());
+		return topic;
+		
 		
 								
 	}

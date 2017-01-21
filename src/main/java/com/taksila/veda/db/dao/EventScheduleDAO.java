@@ -1,9 +1,11 @@
 package com.taksila.veda.db.dao;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +20,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
@@ -57,19 +62,6 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 																			EVENT_SCHEDULE_TABLE.eventStatus.value()+","+	
 																			EVENT_SCHEDULE_TABLE.eventSessionId.value()+") "+
 																	"VALUES (?,?,?,?,?,?,?,?);";		
-	
-	private static String update_eventSchedule_sql = "UPDATE EVENT_SCHEDULE SET "+
-																			EVENT_SCHEDULE_TABLE.classroomId.value()+" = ? ,"+
-																			EVENT_SCHEDULE_TABLE.startDatetime.value()+" = ? ,"+
-																			EVENT_SCHEDULE_TABLE.endDatetime.value()+" = ? ,"+
-																			EVENT_SCHEDULE_TABLE.eventTitle.value()+" = ? ,"+
-																			EVENT_SCHEDULE_TABLE.eventDescription.value()+" = ? ,"+	
-																			EVENT_SCHEDULE_TABLE.lastUpdatedOn.value()+" = ? ,"+
-																			EVENT_SCHEDULE_TABLE.updatedBy.value()+" = ? ,"+
-																			EVENT_SCHEDULE_TABLE.eventType.value()+" = ? ,"+	
-																			EVENT_SCHEDULE_TABLE.eventStatus.value()+" = ? "+
-																			EVENT_SCHEDULE_TABLE.eventSessionId.value()+" = ? "+
-													" WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
 	
 	private static String update_event_schedule_session_sql = "UPDATE EVENT_SCHEDULE SET "+																
 																EVENT_SCHEDULE_TABLE.eventSessionId.value()+" = ? "+
@@ -344,48 +336,46 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
-		return jdbcTemplate.execute(insert_eventSchedule_sql,new PreparedStatementCallback<EventSchedule>()
-		{  
-			    @Override  
-			    public EventSchedule doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-			    {  			              			    	
-			    	try 
-			    	{
-						stmt.setInt(1, Integer.valueOf(eventSchedule.getClassroomid()));
-						stmt.setTimestamp(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
-						stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
-						stmt.setString(4, eventSchedule.getEventTitle());
-						stmt.setString(5, eventSchedule.getEventDescription());			
-						stmt.setString(6, eventSchedule.getUpdatedBy());
-						
-						if (eventSchedule.getEventType() != null)
-							stmt.setString(7, eventSchedule.getEventType().value());
-						else
-							stmt.setString(7, null);
-						
-						if (eventSchedule.getEventStatus() != null)
-							stmt.setString(8, eventSchedule.getEventStatus().value());
-						else
-							stmt.setString(8, null);
-						
-						stmt.executeUpdate();	
-						ResultSet rs = stmt.getGeneratedKeys();			
-						if (rs.next())
-						{
-							eventSchedule.setId(String.valueOf(rs.getInt(1)));
-						}
-					} catch (NumberFormatException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (DatatypeConfigurationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+		KeyHolder holder = new GeneratedKeyHolder();
+		 
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+		 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        try 
+		        {
+					PreparedStatement stmt = connection.prepareStatement(insert_eventSchedule_sql, Statement.RETURN_GENERATED_KEYS);
+					stmt.setInt(1, Integer.valueOf(eventSchedule.getClassroomid()));
+					stmt.setTimestamp(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
+					stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
+					stmt.setString(4, eventSchedule.getEventTitle());
+					stmt.setString(5, eventSchedule.getEventDescription());			
+					stmt.setString(6, eventSchedule.getUpdatedBy());
 					
-					return eventSchedule;			
+					if (eventSchedule.getEventType() != null)
+						stmt.setString(7, eventSchedule.getEventType().value());
+					else
+						stmt.setString(7, null);
 					
-			    }  
-		});
+					if (eventSchedule.getEventStatus() != null)
+						stmt.setString(8, eventSchedule.getEventStatus().value());
+					else
+						stmt.setString(8, null);
+					
+					return stmt;
+				} 
+		        catch (Exception e) 
+		        {				
+					e.printStackTrace();
+					return null;
+				}
+		    }
+			}, holder);
+		
+		eventSchedule.setId(holder.getKey().toString());
+		return eventSchedule;
+		
 		
 								
 	}
@@ -397,7 +387,20 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 	@Override
 	public boolean updateEventSchedule(EventSchedule eventSchedule) throws Exception 
 	{
-		logger.debug("Entering into updateEventSchedule():::::");		
+		logger.debug("Entering into updateEventSchedule():::::------");		
+		
+		String update_eventSchedule_sql = "UPDATE EVENT_SCHEDULE SET "+
+												EVENT_SCHEDULE_TABLE.classroomId.value()+" = ? ,"+
+												EVENT_SCHEDULE_TABLE.startDatetime.value()+" = ? ,"+
+												EVENT_SCHEDULE_TABLE.endDatetime.value()+" = ? ,"+
+												EVENT_SCHEDULE_TABLE.eventTitle.value()+" = ? ,"+
+												EVENT_SCHEDULE_TABLE.eventDescription.value()+" = ? ,"+	
+												EVENT_SCHEDULE_TABLE.updatedBy.value()+" = ? ,"+
+												EVENT_SCHEDULE_TABLE.eventType.value()+" = ? ,"+	
+												EVENT_SCHEDULE_TABLE.eventStatus.value()+" = ? ,"+
+												EVENT_SCHEDULE_TABLE.eventSessionId.value()+" = ? "+
+												" WHERE "+EVENT_SCHEDULE_TABLE.id.value()+" = ?";
+		
 		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		Boolean insertSuccess = jdbcTemplate.execute(update_eventSchedule_sql,new PreparedStatementCallback<Boolean>()
@@ -407,23 +410,25 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 			    {  			              
 			        try 
 			        {
+						System.out.println("About to insert = "+CommonUtils.toJson(eventSchedule));
+
 			        	stmt.setInt(1, Integer.valueOf(eventSchedule.getClassroomid()));
 						stmt.setTimestamp(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
 						stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
 						stmt.setString(4, eventSchedule.getEventTitle());
 						stmt.setString(5, eventSchedule.getEventDescription());			
-						stmt.setTimestamp(6, CommonUtils.geSQLDateTimestamp(CommonUtils.getXMLGregorianCalendarNow()));
-						stmt.setString(7, eventSchedule.getUpdatedBy());
+						stmt.setString(6, eventSchedule.getUpdatedBy());
 						if (eventSchedule.getEventType() != null)
-							stmt.setString(8, eventSchedule.getEventType().value());
+							stmt.setString(7, eventSchedule.getEventType().value());
+						else
+							stmt.setString(7, null);
+						
+						if (eventSchedule.getEventStatus() != null)
+							stmt.setString(8, eventSchedule.getEventStatus().value());
 						else
 							stmt.setString(8, null);
 						
-						if (eventSchedule.getEventStatus() != null)
-							stmt.setString(9, eventSchedule.getEventStatus().value());
-						else
-							stmt.setString(9, null);
-						
+						stmt.setString(9, eventSchedule.getEventSessionId());
 						stmt.setInt(10, Integer.parseInt(eventSchedule.getId()));
 						
 						int t = stmt.executeUpdate();
@@ -458,7 +463,7 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 		logger.debug("Entering into updateEventScheduleSession():::::");		
 		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
-		Boolean insertSuccess = jdbcTemplate.execute(update_eventSchedule_sql,new PreparedStatementCallback<Boolean>()
+		Boolean insertSuccess = jdbcTemplate.execute(update_event_schedule_session_sql,new PreparedStatementCallback<Boolean>()
 		{  
 			    @Override  
 			    public Boolean doInPreparedStatement(PreparedStatement stmt)  			            

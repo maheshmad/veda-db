@@ -4,9 +4,11 @@
 package com.taksila.veda.db.dao;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
@@ -19,6 +21,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
@@ -116,37 +121,39 @@ public class UserSessionDAO implements UserSessionRepositoryInterface
 	 * @see com.taksila.veda.db.dao.UserSessionRepositoryInterface#addSession(com.taksila.veda.model.db.security.v1_0.UserSession)
 	 */
 	@Override
-	public boolean addSession(UserSession userSession) throws Exception
+	public UserSession insertSession(UserSession userSession) throws Exception
 	{		
 		logger.debug("Entering into authorizeSession():::::");
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
-		return jdbcTemplate.execute(insert_user_session_sql,new PreparedStatementCallback<Boolean>()
-		{  
-			    @Override  
-			    public Boolean doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-			    {  			              			    	
-			    	try 
-			    	{
-						stmt.setString(1, userSession.getUserId());
-						stmt.setString(2, userSession.getId());
-						stmt.setString(3, userSession.getClient());
-						stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(userSession.getExpiresOn()));
-						stmt.setString(5, userSession.getIpAddr());			
-												
-						int updates = stmt.executeUpdate();			
-						if (updates > 0)			
-							return true;
-						else
-							return false;
-					} 
-			    	catch (Exception e) 
-			    	{
-						e.printStackTrace();
-					}
-					return false;
-			    }  
-		});
+		KeyHolder holder = new GeneratedKeyHolder();
+		 
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+		 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        try 
+		        {
+					PreparedStatement stmt = connection.prepareStatement(insert_user_session_sql, Statement.RETURN_GENERATED_KEYS);
+					stmt.setString(1, userSession.getUserId());
+					stmt.setString(2, userSession.getId());
+					stmt.setString(3, userSession.getClient());
+					stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(userSession.getExpiresOn()));
+					stmt.setString(5, userSession.getIpAddr());			
+					
+					return stmt;
+				} 
+		        catch (Exception e) 
+		        {				
+					e.printStackTrace();
+					return null;
+				}
+		    }
+			}, holder);
+		
+		userSession.setId(holder.getKey().toString());
+		return userSession;
 		
 		
 				

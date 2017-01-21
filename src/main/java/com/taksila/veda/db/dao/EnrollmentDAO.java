@@ -1,9 +1,11 @@
 package com.taksila.veda.db.dao;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +20,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.dao.ClassroomDAO.CLASSROOM_TABLE;
@@ -308,47 +313,47 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	 * @see com.taksila.veda.db.dao.EnrollmentRepositoryInterface#insertEnrollment(com.taksila.veda.model.api.classroom.v1_0.Enrollment)
 	 */	
 	@Override
-	public Boolean insertEnrollment(Enrollment enrollment) throws Exception 
+	public Enrollment insertEnrollment(Enrollment enrollment) throws Exception 
 	{
 		logger.debug("Entering into insertEnrollment():::::");
 		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
-		return jdbcTemplate.execute(insert_enrollment_sql,new PreparedStatementCallback<Boolean>()
-		{  
-			    @Override  
-			    public Boolean doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-			    {  			              			    	
-			    	try 
-			    	{
-						stmt.setString(1, enrollment.getId());
-						stmt.setString(2, enrollment.getClassroomid());
-						stmt.setString(3, enrollment.getUserRecordId());
-						stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
-						stmt.setString(5, enrollment.getVerifiedBy());
-						stmt.setTimestamp(6, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
-						stmt.setTimestamp(7, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
-						stmt.setString(8, enrollment.getUpdatedBy());
-						if (enrollment.getEnrollStatus() != null)
-							stmt.setString(9, enrollment.getEnrollStatus().value());
-						else
-							stmt.setString(9, null);
-												
-						int t = stmt.executeUpdate();
-						if (t > 0)
-							return true;
-						else
-							return false;
-					} catch (DatatypeConfigurationException e) 
-			    	{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-			    	
-			    	return false;
-					
-			    }  
-		});
+		KeyHolder holder = new GeneratedKeyHolder();
+		 
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+		 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        try 
+		        {
+					PreparedStatement stmt = connection.prepareStatement(insert_enrollment_sql, Statement.RETURN_GENERATED_KEYS);
+					stmt.setString(1, enrollment.getId());
+					stmt.setString(2, enrollment.getClassroomid());
+					stmt.setString(3, enrollment.getUserRecordId());
+					stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
+					stmt.setString(5, enrollment.getVerifiedBy());
+					stmt.setTimestamp(6, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
+					stmt.setTimestamp(7, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
+					stmt.setString(8, enrollment.getUpdatedBy());
+					if (enrollment.getEnrollStatus() != null)
+						stmt.setString(9, enrollment.getEnrollStatus().value());
+					else
+						stmt.setString(9, null);			   
+					return stmt;
+				} 
+		        catch (DatatypeConfigurationException e) 
+		        {				
+					e.printStackTrace();
+					return null;
+				}
+		    }
+			}, holder);
+		
+		enrollment.setId(holder.getKey().toString());
+		return enrollment;
+				
 						
 	}
 	

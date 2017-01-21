@@ -6,9 +6,11 @@ package com.taksila.veda.db.dao;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
@@ -231,57 +236,54 @@ public class UserImagesDAO implements UserImagesRepositoryInterface
 	 * @see com.taksila.veda.db.dao.UserImagesRepositoryInterface#insertUserImageInfo(com.taksila.veda.model.db.usermgmt.v1_0.UserImageInfo, java.io.InputStream, java.io.InputStream)
 	 */	
 	@Override
-	public UserImageInfo insertUserImageInfo(UserImageInfo UserImageInfo,InputStream imageLarge, InputStream imageThumb) throws Exception 
+	public UserImageInfo insertUserImageInfo(UserImageInfo userImageInfo,InputStream imageLarge, InputStream imageThumb) throws Exception 
 	{
 		logger.debug("Entering into insertUserImageInfo():::::");
 				
-		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
-		
-		return jdbcTemplate.execute(insert_user_image_sql,new PreparedStatementCallback<UserImageInfo>()
-		{  
-			    @Override  
-			    public UserImageInfo doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-			    {  			              			    	
-			    	try 
-			    	{
-						stmt.setString(1, UserImageInfo.getUserId());
-						stmt.setString(2, UserImageInfo.getImageid());
-						stmt.setString(3, UserImageInfo.getUserImageType().value());
-						stmt.setBinaryStream(4,imageLarge);			
-						stmt.setBinaryStream(5, imageThumb);
-						stmt.setString(6, UserImageInfo.getUpdatedBy());
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);						
+		KeyHolder holder = new GeneratedKeyHolder();
+		 
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+		 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        try 
+		        {
+					PreparedStatement stmt = connection.prepareStatement(insert_user_image_sql, Statement.RETURN_GENERATED_KEYS);
+					stmt.setString(1, userImageInfo.getUserId());
+					stmt.setString(2, userImageInfo.getImageid());
+					stmt.setString(3, userImageInfo.getUserImageType().value());
+					stmt.setBinaryStream(4,imageLarge);			
+					stmt.setBinaryStream(5, imageThumb);
+					stmt.setString(6, userImageInfo.getUpdatedBy());
 						
-						stmt.executeUpdate();			
-						ResultSet rs = stmt.getGeneratedKeys();			
-						if (rs.next())
-						{
-							UserImageInfo.setId(String.valueOf(rs.getInt(1)));
-						}
-						
-						return UserImageInfo;
+					return stmt;
+				} 
+		        catch (Exception e) 
+		        {				
+					e.printStackTrace();
+					return null;
+				}
+		        finally
+		    	{
+		    		try 
+		    		{
+						imageLarge.close();
+						imageThumb.close();
 					} 
-			    	catch (Exception e) 
-			    	{						
+		    		catch (IOException e) 
+		    		{							
 						e.printStackTrace();
 					}
-			    	finally
-			    	{
-			    		try 
-			    		{
-							imageLarge.close();
-							imageThumb.close();
-						} 
-			    		catch (IOException e) 
-			    		{							
-							e.printStackTrace();
-						}
-						
-			    	}
-			    	
-			    	return null;
 					
-			    }  
-		});
+		    	}
+		    }
+			}, holder);
+		
+		userImageInfo.setId(holder.getKey().toString());
+		return userImageInfo;
+		
 		
 					 
 								

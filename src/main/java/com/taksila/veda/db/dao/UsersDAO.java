@@ -6,9 +6,11 @@ package com.taksila.veda.db.dao;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +25,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
@@ -103,7 +108,7 @@ public class UsersDAO implements UsersRepositoryInterface
 	
 	private static String delete_user_sql = "DELETE FROM USERS WHERE "+USER_TABLE.id.value()+" = ? ";	
 	
-	private static String search_users_by_id_sql = "SELECT * FROM USERS WHERE "+USER_TABLE.id.value()+" = ?";
+	private static String search_users_by_userrecordid_sql = "SELECT * FROM USERS WHERE "+USER_TABLE.id.value()+" = ?";
 	private static String search_users_by_userid_sql = "SELECT * FROM USERS WHERE "+USER_TABLE.userid.value()+" = ?";
 	private static String search_users_by_emailid_sql = "SELECT * FROM USERS WHERE "+USER_TABLE.emailid.value()+" = ?";
 	private static String authenticate_user_sql = "SELECT * FROM USERS WHERE ("+
@@ -209,11 +214,11 @@ public class UsersDAO implements UsersRepositoryInterface
 	 * @see com.taksila.veda.db.dao.UsersRepositoryInterface#getUserById(int)
 	 */
 	@Override
-	public User getUserById(int id) throws Exception
+	public User getUserByUserRecordId(int id) throws Exception
 	{								
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 		
-		return jdbcTemplate.execute(search_users_by_id_sql,new PreparedStatementCallback<User>()
+		return jdbcTemplate.execute(search_users_by_userrecordid_sql,new PreparedStatementCallback<User>()
 		{  
 			    @Override  
 			    public User doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
@@ -314,13 +319,18 @@ public class UsersDAO implements UsersRepositoryInterface
 	{
 		logger.debug("Entering into insertUser():::::");		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
-		
-		return jdbcTemplate.execute(insert_user_sql,new PreparedStatementCallback<User>()
-		{  
-			    @Override  
-			    public User doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-			    {  			              			    	
-			    	stmt.setString(1, user.getUserId());
+
+		KeyHolder holder = new GeneratedKeyHolder();
+		 
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+		 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        try 
+		        {
+					PreparedStatement stmt = connection.prepareStatement(insert_user_sql, Statement.RETURN_GENERATED_KEYS);
+					stmt.setString(1, user.getUserId());
 					stmt.setString(2, user.getEmailId());
 					stmt.setString(3, user.getUserPswd());
 //					stmt.setString(4, DaoUtils.getStringFromRolesList(user.getUserrole()));
@@ -350,18 +360,22 @@ public class UsersDAO implements UsersRepositoryInterface
 					stmt.setString(16, user.getLandlinephone());
 					stmt.setString(17, user.getOfficephone());
 					stmt.setString(18, user.getOfficephoneExt());
-					stmt.setString(19, user.getUpdatedBy());
+					stmt.setString(19, user.getUpdatedBy());	
+								
 					
-					stmt.executeUpdate();			
-					ResultSet rs = stmt.getGeneratedKeys();			
-					if (rs.next())
-					{
-						user.setId(String.valueOf(rs.getInt(1)));
-					}
-					
-					return user;
-			    }  
-		});
+					return stmt;
+				} 
+		        catch (Exception e) 
+		        {				
+					e.printStackTrace();
+					return null;
+				}
+		    }
+			}, holder);
+		
+		user.setId(holder.getKey().toString());
+		return user;
+		
 						 
 								
 	}
@@ -507,7 +521,8 @@ public class UsersDAO implements UsersRepositoryInterface
 			    {  			              			    	
 			    	try 
 			    	{
-						stmt.setString(1, userid);
+						logger.trace("about to run sql = "+search_users_by_userid_sql);
+			    		stmt.setString(1, userid);
 						ResultSet resultSet = stmt.executeQuery();	
 						if (resultSet.next()) 
 						{

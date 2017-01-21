@@ -62,10 +62,10 @@ public interface EnrollmentRepositoryInterface {
 	/**
 	 * 
 	 * @param enrollment
-	 * @return
+	 * @return Enrollment
 	 * @throws Exception
 	 */
-	Boolean insertEnrollment(Enrollment enrollment) throws Exception;
+	Enrollment insertEnrollment(Enrollment enrollment) throws Exception;
 
 	/**
 	 * 

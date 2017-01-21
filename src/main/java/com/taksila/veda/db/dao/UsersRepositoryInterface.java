@@ -14,7 +14,7 @@ public interface UsersRepositoryInterface {
 	 * @return
 	 * @throws Exception 
 	 */
-	User getUserById(int id) throws Exception;
+	User getUserByUserRecordId(int id) throws Exception;
 
 	/**
 	 * 

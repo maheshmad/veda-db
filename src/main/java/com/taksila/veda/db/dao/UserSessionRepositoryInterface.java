@@ -10,7 +10,7 @@ public interface UserSessionRepositoryInterface {
 	 * @return
 	 * @throws Exception 
 	 */
-	boolean addSession(UserSession userSession) throws Exception;
+	UserSession insertSession(UserSession userSession) throws Exception;
 
 	UserSession getValidSession(String sessionid) throws Exception;
 

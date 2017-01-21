@@ -3,9 +3,11 @@
  */
 package com.taksila.veda.db.dao;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
@@ -199,27 +204,27 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
-		return jdbcTemplate.execute(insert_classroom_sql,new PreparedStatementCallback<Classroom>()
-		{  
-			    @Override  
-			    public Classroom doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
-			    {  			              			    	
-			    	stmt.setString(1, classroom.getCourseRecordId());
-					stmt.setString(2, classroom.getName());
-					stmt.setString(3, classroom.getTitle());
-					stmt.setString(4, classroom.getSubTitle());
-					stmt.setString(5, classroom.getDescription());				
-					stmt.executeUpdate();			
-					ResultSet rs = stmt.getGeneratedKeys();			
-					if (rs.next())
-					{
-						classroom.setId(String.valueOf(rs.getInt(1)));
-					}
-					
-					return classroom;					
-					
-			    }  
-		});
+		KeyHolder holder = new GeneratedKeyHolder();
+		 
+		jdbcTemplate.update(new PreparedStatementCreator() {           
+		 
+		    @Override
+		    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException 
+		    {
+		        PreparedStatement stmt = connection.prepareStatement(insert_classroom_sql, Statement.RETURN_GENERATED_KEYS);
+		        stmt.setString(1, classroom.getCourseRecordId());
+				stmt.setString(2, classroom.getName());
+				stmt.setString(3, classroom.getTitle());
+				stmt.setString(4, classroom.getSubTitle());
+				stmt.setString(5, classroom.getDescription());				   
+		        return stmt;
+		    }
+			}, holder);
+		
+		classroom.setId(holder.getKey().toString());
+		return classroom;
+		
+		
 		
 						
 	}
