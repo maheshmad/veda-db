@@ -152,7 +152,7 @@ public class UserSessionDAO implements UserSessionRepositoryInterface
 		    }
 			}, holder);
 		
-		userSession.setId(holder.getKey().toString());
+//		userSession.setId(holder.getKey().toString());
 		return userSession;
 		
 		
