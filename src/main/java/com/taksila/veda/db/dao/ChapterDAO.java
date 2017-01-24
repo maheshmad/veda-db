@@ -49,7 +49,7 @@ public class ChapterDAO implements ChapterRepositoryInterface
 	@Autowired
     public ChapterDAO(@Value("tenantId") String tenantId)
     {
-		logger.trace(" building EventSessionsRepository for tenant id = "+tenantId);
+		logger.trace(" building ChapterDAO for tenant id = "+tenantId);
 //    	this.dbManager = applicationContext.getBean(TenantDBManager.class,tenantId);
 		this.tenantId = tenantId;
     }

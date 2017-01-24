@@ -48,7 +48,7 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	@Autowired
     public EnrollmentDAO(@Value("tenantId") String tenantId)
     {
-		logger.trace(" building for tenant id = "+tenantId);
+		logger.trace(" building EnrollmentDAO for tenant id = "+tenantId);
 		this.tenantId = tenantId;
     }
 	

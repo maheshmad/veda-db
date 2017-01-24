@@ -177,7 +177,7 @@ public class UsersDAO implements UsersRepositoryInterface
 		user.setEmailId(resultSet.getString(USER_TABLE.emailid.value()));
 		user.setUserPswd(resultSet.getString(USER_TABLE.pswd.value()));
 //		user.getUserrole().addAll(DaoUtils.getUserRolesFromString(resultSet.getString(USER_TABLE.roles.value())));
-		user.setUserrole(UserRole.fromValue(resultSet.getString(USER_TABLE.roles.value())));
+		user.getUserRoles().add(UserRole.fromValue(resultSet.getString(USER_TABLE.roles.value())));
 		user.setFirstName(resultSet.getString(USER_TABLE.firstName.value()));
 		user.setMiddleName(resultSet.getString(USER_TABLE.middleName.value()));
 		user.setLastName(resultSet.getString(USER_TABLE.lastName.value()));
@@ -334,7 +334,8 @@ public class UsersDAO implements UsersRepositoryInterface
 					stmt.setString(2, user.getEmailId());
 					stmt.setString(3, user.getUserPswd());
 //					stmt.setString(4, DaoUtils.getStringFromRolesList(user.getUserrole()));
-					stmt.setString(4, user.getUserrole().value());
+					if (user.getUserRoles() != null && !user.getUserRoles().isEmpty())
+						stmt.setString(4, user.getUserRoles().get(0).value());
 					stmt.setString(5, user.getFirstName());
 					stmt.setString(6, user.getMiddleName());
 					stmt.setString(7, user.getLastName());
@@ -400,7 +401,8 @@ public class UsersDAO implements UsersRepositoryInterface
 			        	stmt.setString(1, user.getUserId());
 						stmt.setString(2, user.getEmailId());
 						stmt.setString(3, user.getUserPswd());
-						stmt.setString(4, user.getUserrole().value());
+						if (user.getUserRoles() != null && !user.getUserRoles().isEmpty())
+							stmt.setString(4, user.getUserRoles().get(0).value());						
 						stmt.setString(5, user.getFirstName());
 						stmt.setString(6, user.getMiddleName());
 						stmt.setString(7, user.getLastName());

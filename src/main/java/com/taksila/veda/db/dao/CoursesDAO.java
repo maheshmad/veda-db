@@ -50,7 +50,7 @@ public class CoursesDAO implements CoursesRepositoryInterface
 	@Autowired
     public CoursesDAO(@Value("tenantId") String tenantId)
     {
-		logger.trace(" building for tenant id = "+tenantId);
+		logger.trace(" building CoursesDAO for tenant id = "+tenantId);
 		this.tenantId = tenantId;
     }
 	

@@ -48,7 +48,7 @@ public class ClassroomDAO implements ClassroomRepositoryInterface {
 	@Autowired
     public ClassroomDAO(@Value("tenantId") String tenantId)
     {
-		logger.trace(" building EventSessionsRepository for tenant id = "+tenantId);
+		logger.trace(" building ClassroomDAO for tenant id = "+tenantId);
 //    	this.dbManager = applicationContext.getBean(TenantDBManager.class,tenantId);
 		this.tenantId = tenantId;
     }

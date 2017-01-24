@@ -51,17 +51,6 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 		this.tenantId = tenantId;
     }
 	
-	private static String insert_eventSchedule_sql = "INSERT INTO EVENT_SCHEDULE("+																		
-																			EVENT_SCHEDULE_TABLE.classroomId.value()+","+
-																			EVENT_SCHEDULE_TABLE.startDatetime.value()+","+
-																			EVENT_SCHEDULE_TABLE.endDatetime.value()+","+
-																			EVENT_SCHEDULE_TABLE.eventTitle.value()+","+
-																			EVENT_SCHEDULE_TABLE.eventDescription.value()+","+
-																			EVENT_SCHEDULE_TABLE.updatedBy.value()+","+
-																			EVENT_SCHEDULE_TABLE.eventType.value()+","+	
-																			EVENT_SCHEDULE_TABLE.eventStatus.value()+","+	
-																			EVENT_SCHEDULE_TABLE.eventSessionId.value()+") "+
-																	"VALUES (?,?,?,?,?,?,?,?);";		
 	
 	private static String update_event_schedule_session_sql = "UPDATE EVENT_SCHEDULE SET "+																
 																EVENT_SCHEDULE_TABLE.eventSessionId.value()+" = ? "+
@@ -334,6 +323,20 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 	{
 		logger.debug("Entering into insertEventSchedule():::::");
 		
+		String insert_eventSchedule_sql = "INSERT INTO EVENT_SCHEDULE("+																		
+																	EVENT_SCHEDULE_TABLE.classroomId.value()+","+
+																	EVENT_SCHEDULE_TABLE.startDatetime.value()+","+
+																	EVENT_SCHEDULE_TABLE.endDatetime.value()+","+
+																	EVENT_SCHEDULE_TABLE.eventTitle.value()+","+
+																	EVENT_SCHEDULE_TABLE.eventDescription.value()+","+
+																	EVENT_SCHEDULE_TABLE.updatedBy.value()+","+
+																	EVENT_SCHEDULE_TABLE.eventType.value()+","+	
+																	EVENT_SCHEDULE_TABLE.eventStatus.value()+","+	
+																	EVENT_SCHEDULE_TABLE.eventSessionId.value()+") "+
+															"VALUES (?,?,?,?,?,?,?,?,?);";		
+
+		
+		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
 		KeyHolder holder = new GeneratedKeyHolder();
@@ -362,6 +365,8 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 						stmt.setString(8, eventSchedule.getEventStatus().value());
 					else
 						stmt.setString(8, null);
+					
+					stmt.setString(9, null);
 					
 					return stmt;
 				} 
