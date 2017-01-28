@@ -61,6 +61,7 @@ import com.taksila.veda.model.api.base.v1_0.BaseResponse;
 import com.taksila.veda.model.api.base.v1_0.Err;
 import com.taksila.veda.model.api.base.v1_0.ErrorInfo;
 import com.taksila.veda.model.api.base.v1_0.StatusType;
+import com.taksila.veda.model.db.base.v1_0.UserRole;
 
 
 
@@ -86,6 +87,25 @@ public class CommonUtils
 	    }
 	}
 
+	public static List<UserRole> convertStringToUserRoles(String userRolesString)
+	{
+		logger.trace("getting roles from string = "+userRolesString);
+		Set<UserRole> userRolesSet = new HashSet<UserRole>();
+		if (!StringUtils.isBlank(userRolesString))
+		{
+			for(String role: userRolesString.split(","))
+			{
+				userRolesSet.add(UserRole.fromValue(role));
+			}
+		}
+		
+		List<UserRole> userRoles = new ArrayList<UserRole>();
+		userRoles.addAll(userRolesSet);
+		
+		return userRoles;
+				
+	}
+	
 	
 	public static String readFile(String fileName) throws IOException
 	{		

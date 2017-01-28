@@ -66,9 +66,7 @@ public class EventSessionsRepository implements EventSessionsRepositoryInterface
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 		String insert_event_sessions_sql = "INSERT INTO event_sessions (event_sessions_id, user_record_id) "+																
 														"VALUES (?,?);";		
-		
-		newEventSession.setEventSessionId(UUID.randomUUID().toString());
-		
+			
 		 Boolean insertSuccess = jdbcTemplate.execute(insert_event_sessions_sql,new PreparedStatementCallback<Boolean>()
 		 {  
 			    @Override  
