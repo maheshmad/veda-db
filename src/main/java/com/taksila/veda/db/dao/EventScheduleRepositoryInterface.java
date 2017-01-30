@@ -69,5 +69,12 @@ public interface EventScheduleRepositoryInterface {
 	 * @throws Exception
 	 */
 	boolean deleteEventSchedule(String id) throws Exception;
+	/**
+	 * 
+	 * @param sessionId
+	 * @return
+	 * @throws Exception
+	 */
+	EventSchedule getEventScheduleBySessionId(String sessionId) throws Exception;
 
 }

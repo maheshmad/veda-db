@@ -52,16 +52,7 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 		this.tenantId = tenantId;
     }
 	
-	private static String insert_enrollment_sql = "INSERT INTO ENROLLMENTS("+ENROLLMENT_TABLE.id.value()+","+
-																			ENROLLMENT_TABLE.classroomid.value()+","+
-																			ENROLLMENT_TABLE.userRecordId.value()+","+
-																			ENROLLMENT_TABLE.enrolledOn.value()+","+
-																			ENROLLMENT_TABLE.verifiedBy.value()+","+
-																			ENROLLMENT_TABLE.startDate.value()+","+
-																			ENROLLMENT_TABLE.endDate.value()+","+
-																			ENROLLMENT_TABLE.updatedBy.value()+","+																			
-																			ENROLLMENT_TABLE.status.value()+") "+
-																	"VALUES (?,?,?,?,?,?,?,?,?);";		
+	
 	
 	private static String update_enrollment_sql = "UPDATE ENROLLMENTS SET "+ENROLLMENT_TABLE.enrolledOn.value()+" = ? ,"+
 																			ENROLLMENT_TABLE.verifiedBy.value()+" = ? ,"+
@@ -74,12 +65,7 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	private static String delete_enrollment_sql = "DELETE FROM ENROLLMENTS WHERE "+ENROLLMENT_TABLE.id.value()+" = ?";
 //	private static String search_enrollment_by_classroomid_sql = "SELECT * FROM ENROLLMENTS WHERE "+ENROLLMENT_TABLE.classroomid.value()+" = ? ";
 //	private static String search_enrollment_by_id_sql = "SELECT * FROM ENROLLMENTS WHERE "+ENROLLMENT_TABLE.id.value()+" = ? ";
-	private static String get_enrolled_students_sql =  	"	select * "+                
-												    	"		from enrollments as e "+ 
-												        "       join users as u "+ 
-												        "		on e."+ENROLLMENT_TABLE.userRecordId.value()+" = u."+USER_TABLE.id.value()+
-												        "       where u."+USER_TABLE.roles.value()+" = 'STUDENT' "+
-												        "       and e."+ENROLLMENT_TABLE.classroomid.value()+" = ? ";
+
 	
 	private static String get_enrolled_classes_sql =  	"	select * "+                
 												    	"		from enrollments as e "+ 
@@ -135,7 +121,13 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	@Override
 	public List<Enrollment> searchEnrollmentsByClassroomId(String classroomid) throws Exception
 	{
-			
+		String get_enrolled_students_sql =  	"	select * "+                
+										    	"		from enrollments as e "+ 
+										        "       join users as u "+ 
+										        "		on e."+ENROLLMENT_TABLE.userRecordId.value()+" = u."+USER_TABLE.id.value()+
+										        "       where u."+USER_TABLE.roles.value()+" like '%STUDENT%' "+
+										        "       and e."+ENROLLMENT_TABLE.classroomid.value()+" = ? ";
+		
 		logger.trace("searching enrollments by classroomid ="+classroomid);
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
 				
@@ -213,6 +205,57 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 					}
 			    	
 			    	return hits;
+			    }  
+		});	
+		
+		
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EnrollmentRepositoryInterface#getEnrollmentByUserAndClassroom(java.lang.String)
+	 */
+	@Override
+	public Enrollment getEnrollmentByUserAndClassroom(String userRecordId, String classroomId) throws Exception
+	{
+		String get_enrolled_user_classes_sql =  	"	select * "+                
+		    	"		from enrollments as e "+ 		        
+		        "       where e."+ENROLLMENT_TABLE.classroomid.value()+" = ? "+
+		        "       and e."+ENROLLMENT_TABLE.userRecordId.value()+" = ? ";
+		
+		logger.trace("searching enrollments by user record id ="+userRecordId+", classroomid = "+classroomId +" sql = "+get_enrolled_user_classes_sql);
+				
+		
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
+		
+		return jdbcTemplate.execute(get_enrolled_user_classes_sql,new PreparedStatementCallback<Enrollment>()
+		{  
+			    @Override  
+			    public Enrollment doInPreparedStatement(PreparedStatement stmt)  			            
+			    {  			              
+			    	try 
+			    	{
+						stmt.setInt(1, Integer.parseInt(classroomId));
+						stmt.setInt(2, Integer.parseInt(userRecordId));
+						
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+						{
+							Enrollment enroll = mapRow(resultSet);
+							return enroll;
+						}
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (DatatypeConfigurationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    	
+			    	return null;
 			    }  
 		});	
 		
@@ -317,6 +360,18 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 	{
 		logger.debug("Entering into insertEnrollment():::::");
 		
+		String insert_enrollment_sql = "INSERT INTO ENROLLMENTS("+ENROLLMENT_TABLE.id.value()+","+
+																	ENROLLMENT_TABLE.classroomid.value()+","+
+																	ENROLLMENT_TABLE.userRecordId.value()+","+
+																	ENROLLMENT_TABLE.enrolledOn.value()+","+
+																	ENROLLMENT_TABLE.verifiedBy.value()+","+
+																	ENROLLMENT_TABLE.startDate.value()+","+
+																	ENROLLMENT_TABLE.endDate.value()+","+
+																	ENROLLMENT_TABLE.updatedBy.value()+","+																			
+																	ENROLLMENT_TABLE.status.value()+") "+
+															"VALUES (?,?,?,?,?,?,?,?,?);";		
+		
+		
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
 		
 		KeyHolder holder = new GeneratedKeyHolder();
@@ -351,7 +406,6 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 		    }
 			}, holder);
 		
-		enrollment.setId(holder.getKey().toString());
 		return enrollment;
 				
 						

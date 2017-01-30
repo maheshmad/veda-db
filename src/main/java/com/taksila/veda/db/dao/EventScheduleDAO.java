@@ -314,6 +314,40 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 				
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#getEventScheduleById(java.lang.String)
+	 */
+	@Override
+	public EventSchedule getEventScheduleBySessionId(String sessionId) throws Exception
+	{						
+		String search_event_schedule_by_session_id_sql = "SELECT * FROM EVENT_SCHEDULE  WHERE "+EVENT_SCHEDULE_TABLE.eventSessionId.value()+" = ?";
+		logger.trace("searching eventSchedules by id ="+sessionId+" sql = "+search_event_schedule_by_session_id_sql);
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		
+		return jdbcTemplate.execute(search_event_schedule_by_session_id_sql,new PreparedStatementCallback<EventSchedule>()
+		{  
+			    @Override  
+			    public EventSchedule doInPreparedStatement(PreparedStatement stmt) throws SQLException  			            
+			    {  			              			    	
+			    	stmt.setString(1, sessionId);
+					try 
+					{
+						ResultSet resultSet = stmt.executeQuery();	
+						if (resultSet.next()) 
+						{
+							return mapRow(resultSet);							
+						}
+					} catch (DatatypeConfigurationException | IOException e) {
+						e.printStackTrace();
+					}
+					
+					return null;
+			    }  
+		});				
+				
+	}
+	
 		
 	/* (non-Javadoc)
 	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#insertEventSchedule(com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventSchedule)

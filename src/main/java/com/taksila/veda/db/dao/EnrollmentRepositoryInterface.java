@@ -93,4 +93,6 @@ public interface EnrollmentRepositoryInterface {
 	 */
 	Enrollment mapRow(ResultSet resultSet) throws SQLException, DatatypeConfigurationException, IOException;
 
+	Enrollment getEnrollmentByUserAndClassroom(String userRecordId, String classroomId) throws Exception;
+
 }

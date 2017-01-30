@@ -64,8 +64,8 @@ public class EventSessionsRepository implements EventSessionsRepositoryInterface
 	{		
 		logger.trace("about to save event session for tenantid = "+this.tenantId);
 		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);	
-		String insert_event_sessions_sql = "INSERT INTO event_sessions (event_sessions_id, user_record_id) "+																
-														"VALUES (?,?);";		
+		String insert_event_sessions_sql = "INSERT INTO event_sessions (event_session_id, user_record_id) "+																
+														"VALUES (?,?) ON DUPLICATE KEY UPDATE event_session_id=event_session_id, user_record_id=user_record_id";		
 			
 		 Boolean insertSuccess = jdbcTemplate.execute(insert_event_sessions_sql,new PreparedStatementCallback<Boolean>()
 		 {  
@@ -161,7 +161,7 @@ public class EventSessionsRepository implements EventSessionsRepositoryInterface
 	{
 		EventSession eventSessionEntity = new EventSession();
 		logger.trace("****** Inside row mapper ");
-		eventSessionEntity.setEventSessionId(rs.getString("event_sessions_id"));
+		eventSessionEntity.setEventSessionId(rs.getString("event_session_id"));
 		eventSessionEntity.setUserRecordId(rs.getString("user_record_id"));
 		eventSessionEntity.setJoiningDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(rs.getTimestamp(("joining_datetime"))));
 		eventSessionEntity.setLeavingDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(rs.getTimestamp(("leaving_datetime"))));
