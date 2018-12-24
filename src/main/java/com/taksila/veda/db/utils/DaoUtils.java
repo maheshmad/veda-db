@@ -3,7 +3,9 @@ package com.taksila.veda.db.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -14,6 +16,27 @@ import com.taksila.veda.model.db.base.v1_0.UserRole;
 public class DaoUtils 
 {		
 	static Logger logger = LogManager.getLogger(DaoUtils.class.getName());
+	
+	
+	public static List<UserRole> convertStringToUserRoles(String userRolesString)
+	{
+		logger.trace("getting roles from string = "+userRolesString);
+		Set<UserRole> userRolesSet = new HashSet<UserRole>();
+		if (!StringUtils.isBlank(userRolesString))
+		{
+			for(String role: userRolesString.split(","))
+			{
+				userRolesSet.add(UserRole.fromValue(role));
+			}
+		}
+		
+		List<UserRole> userRoles = new ArrayList<UserRole>();
+		userRoles.addAll(userRolesSet);
+		
+		return userRoles;
+				
+	}
+	
 	public static List<UserRole> getUserRolesFromString(String userRoleString)
 	{
 		List<String> rolesStringList = Arrays.asList(userRoleString.split(","));

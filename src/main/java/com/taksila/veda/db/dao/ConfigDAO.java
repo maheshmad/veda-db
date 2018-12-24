@@ -19,6 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.DaoUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.base.v1_0.UserRole;
@@ -26,12 +27,10 @@ import com.taksila.veda.model.db.config.v1_0.Config;
 import com.taksila.veda.model.db.config.v1_0.ConfigGroup;
 import com.taksila.veda.model.db.config.v1_0.ConfigId;
 import com.taksila.veda.model.db.config.v1_0.ConfigSection;
-import com.taksila.veda.utils.CommonUtils;
 
 
 @Repository
 @Scope(value="prototype")
-@Lazy(value = true)
 public class ConfigDAO implements ConfigRepositoryInterface 
 {
 	static Logger logger = LogManager.getLogger(ConfigDAO.class.getName());	
@@ -147,7 +146,7 @@ public class ConfigDAO implements ConfigRepositoryInterface
 		Config config = new Config();
 		config.setId(resultSet.getString(CONFIG_TABLE.configid.value()));
 		config.setConfigValue(resultSet.getString(CONFIG_TABLE.configValue.value()));
-		config.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_TABLE.lastUpdatedOn.value())));
+		config.setLastUpdatedDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_TABLE.lastUpdatedOn.value())));
 		config.setUpdatedBy(resultSet.getString(CONFIG_TABLE.updatedBy.value()));
 		
 		return config;
@@ -190,7 +189,7 @@ public class ConfigDAO implements ConfigRepositoryInterface
 							}
 							
 							currentSection.setId(sectionId);
-							currentSection.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_SECTION_TABLE.lastUpdatedOn.value())));				
+							currentSection.setLastUpdatedDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_SECTION_TABLE.lastUpdatedOn.value())));				
 							currentSection.setSectionName(resultSet.getString(CONFIG_SECTION_TABLE.configSectionName.value()));
 							currentSection.setUpdatedBy(resultSet.getString(CONFIG_SECTION_TABLE.updatedBy.value()));
 							currentSection.setViewXtype(resultSet.getString(CONFIG_SECTION_TABLE.viewXtype.value()));
@@ -219,7 +218,7 @@ public class ConfigDAO implements ConfigRepositoryInterface
 							configGroup.setConfigGroupName(resultSet.getString(CONFIG_GROUP_TABLE.configGroupName.value()));
 							configGroup.setFooterNote(resultSet.getString(CONFIG_GROUP_TABLE.footerNote.value()));
 							configGroup.setHeaderNote(resultSet.getString(CONFIG_GROUP_TABLE.headerNote.value()));
-							configGroup.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_GROUP_TABLE.lastUpdatedOn.value())));
+							configGroup.setLastUpdatedDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CONFIG_GROUP_TABLE.lastUpdatedOn.value())));
 							configGroup.setUpdatedBy(resultSet.getString(CONFIG_GROUP_TABLE.updatedBy.value()));
 							
 							/*

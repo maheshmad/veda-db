@@ -28,7 +28,6 @@ import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Topic;
-import com.taksila.veda.utils.CommonUtils;
 
 /**
  * @author mahesh

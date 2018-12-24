@@ -5,9 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,9 +19,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.event_session.v1_0.EventSession;
-import com.taksila.veda.utils.CommonUtils;
 
 /*
 * @Column(name="event_session_id")
@@ -53,7 +51,7 @@ public class EventSessionsRepository implements EventSessionsRepositoryInterface
 	@Autowired
     public EventSessionsRepository(@Value("tenantId") String tenantId)
     {
-		logger.trace(" building EventSessionsRepository for tenant id = "+tenantId);
+		logger.trace(" **************************************  building EventSessionsRepository for tenant id = "+tenantId);
 //    	this.dbManager = applicationContext.getBean(TenantDBManager.class,tenantId);
 		this.tenantId = tenantId;
 
@@ -167,8 +165,8 @@ public class EventSessionsRepository implements EventSessionsRepositoryInterface
 		logger.trace("****** Inside row mapper ");
 		eventSessionEntity.setEventSessionId(rs.getString("event_session_id"));
 		eventSessionEntity.setUserRecordId(rs.getString("user_record_id"));
-		eventSessionEntity.setJoiningDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(rs.getTimestamp(("joining_datetime"))));
-		eventSessionEntity.setLeavingDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(rs.getTimestamp(("leaving_datetime"))));
+		eventSessionEntity.setJoiningDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(rs.getTimestamp(("joining_datetime"))));
+		eventSessionEntity.setLeavingDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(rs.getTimestamp(("leaving_datetime"))));
 		eventSessionEntity.setPresenter(rs.getInt("is_presenter") == 1 ? true:false);
 		
 		return eventSessionEntity;

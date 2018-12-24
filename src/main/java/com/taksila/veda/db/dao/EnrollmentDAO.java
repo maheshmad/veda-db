@@ -27,10 +27,10 @@ import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.dao.ClassroomDAO.CLASSROOM_TABLE;
 import com.taksila.veda.db.dao.UsersDAO.USER_TABLE;
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.classroom.v1_0.Enrollment;
 import com.taksila.veda.model.db.classroom.v1_0.EnrollmentStatusType;
-import com.taksila.veda.utils.CommonUtils;
 
 
 @Repository
@@ -101,10 +101,10 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 		
 		enrollment.setId(resultSet.getString(ENROLLMENT_TABLE.id.value()));
 		enrollment.setClassroomid(resultSet.getString(ENROLLMENT_TABLE.classroomid.value()));
-		enrollment.setEndDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.endDate.value())));
-		enrollment.setEnrolledOn(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.enrolledOn.value())));
-		enrollment.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.lastUpdatedOn.value())));
-		enrollment.setStartDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.startDate.value())));
+		enrollment.setEndDate(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.endDate.value())));
+		enrollment.setEnrolledOn(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.enrolledOn.value())));
+		enrollment.setLastUpdatedDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.lastUpdatedOn.value())));
+		enrollment.setStartDate(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(ENROLLMENT_TABLE.startDate.value())));
 		enrollment.setUpdatedBy(resultSet.getString(ENROLLMENT_TABLE.updatedBy.value()));
 		enrollment.setUserRecordId(resultSet.getString(ENROLLMENT_TABLE.userRecordId.value()));
 		enrollment.setVerifiedBy(resultSet.getString(ENROLLMENT_TABLE.verifiedBy.value()));
@@ -387,10 +387,10 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 					stmt.setString(1, enrollment.getId());
 					stmt.setString(2, enrollment.getClassroomid());
 					stmt.setString(3, enrollment.getUserRecordId());
-					stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
+					stmt.setTimestamp(4, DBCommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
 					stmt.setString(5, enrollment.getVerifiedBy());
-					stmt.setTimestamp(6, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
-					stmt.setTimestamp(7, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
+					stmt.setTimestamp(6, DBCommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
+					stmt.setTimestamp(7, DBCommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
 					stmt.setString(8, enrollment.getUpdatedBy());
 					if (enrollment.getEnrollStatus() != null)
 						stmt.setString(9, enrollment.getEnrollStatus().value());
@@ -428,10 +428,10 @@ public class EnrollmentDAO implements EnrollmentRepositoryInterface
 			    {  			              
 			        try 
 			        {
-			        	stmt.setTimestamp(1, CommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
+			        	stmt.setTimestamp(1, DBCommonUtils.geSQLDateTimestamp(enrollment.getEnrolledOn()));
 						stmt.setString(2, enrollment.getVerifiedBy());
-						stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
-						stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
+						stmt.setTimestamp(3, DBCommonUtils.geSQLDateTimestamp(enrollment.getStartDate()));
+						stmt.setTimestamp(4, DBCommonUtils.geSQLDateTimestamp(enrollment.getEndDate()));
 						stmt.setString(5, enrollment.getUpdatedBy());
 						if (enrollment.getEnrollStatus() != null)
 							stmt.setString(6, enrollment.getEnrollStatus().value());

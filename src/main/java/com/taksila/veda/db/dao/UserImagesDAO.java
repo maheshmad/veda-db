@@ -31,10 +31,10 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.usermgmt.v1_0.UserImageInfo;
 import com.taksila.veda.model.db.usermgmt.v1_0.UserImageType;
-import com.taksila.veda.utils.CommonUtils;
 
 /**
  * @author mahesh
@@ -130,7 +130,7 @@ public class UserImagesDAO implements UserImagesRepositoryInterface
 		UserImageInfo.setImageid(resultSet.getString(USER_IMAGES_TABLE.imageid.value()));
 		UserImageInfo.setUserImageType(UserImageType.fromValue(resultSet.getString(USER_IMAGES_TABLE.image_type.value())));
 		UserImageInfo.setUpdatedBy(resultSet.getString(USER_IMAGES_TABLE.lastUpdatedBy.value()));
-		UserImageInfo.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(USER_IMAGES_TABLE.lastUpdatedDatetime.value())));
+		UserImageInfo.setLastUpdatedDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(USER_IMAGES_TABLE.lastUpdatedDatetime.value())));
 
 		
 		return UserImageInfo;

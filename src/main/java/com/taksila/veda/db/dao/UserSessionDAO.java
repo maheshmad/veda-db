@@ -26,9 +26,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.security.v1_0.UserSession;
-import com.taksila.veda.utils.CommonUtils;
 
 /**
  * @author Mahesh 
@@ -111,8 +111,8 @@ public class UserSessionDAO implements UserSessionRepositoryInterface
 		userSession.setClient(resultSet.getString(USER_SESSIONS_TABLE.client.value()));
 		userSession.setIpAddr(resultSet.getString(USER_SESSIONS_TABLE.ipAddr.value()));
 		userSession.setUserId(resultSet.getString(USER_SESSIONS_TABLE.userid.value()));		
-		userSession.setExpiresOn(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(USER_SESSIONS_TABLE.expiresOn.value())));
-		userSession.setLastLoginOn(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(USER_SESSIONS_TABLE.lastUpdatedOn.value())));
+		userSession.setExpiresOn(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(USER_SESSIONS_TABLE.expiresOn.value())));
+		userSession.setLastLoginOn(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(USER_SESSIONS_TABLE.lastUpdatedOn.value())));
 				
 		return userSession;
 	}
@@ -139,7 +139,7 @@ public class UserSessionDAO implements UserSessionRepositoryInterface
 					stmt.setString(1, userSession.getUserId());
 					stmt.setString(2, userSession.getId());
 					stmt.setString(3, userSession.getClient());
-					stmt.setTimestamp(4, CommonUtils.geSQLDateTimestamp(userSession.getExpiresOn()));
+					stmt.setTimestamp(4, DBCommonUtils.geSQLDateTimestamp(userSession.getExpiresOn()));
 					stmt.setString(5, userSession.getIpAddr());			
 					
 					return stmt;

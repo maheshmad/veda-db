@@ -25,11 +25,11 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventSchedule;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventStatusType;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventType;
-import com.taksila.veda.utils.CommonUtils;
 
 
 @Repository
@@ -138,9 +138,9 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 		eventSchedule.setId(String.valueOf(resultSet.getInt(EVENT_SCHEDULE_TABLE.id.value())));
 //		eventSchedule.setEventRecordId(resultSet.getString(EVENT_SCHEDULE_TABLE.eventRecordId.value()));
 		eventSchedule.setClassroomid(String.valueOf(resultSet.getInt(EVENT_SCHEDULE_TABLE.classroomId.value())));
-		eventSchedule.setEventStartDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.startDatetime.value())));
-		eventSchedule.setEventEndDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.endDatetime.value())));
-		eventSchedule.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.lastUpdatedOn.value())));
+		eventSchedule.setEventStartDate(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.startDatetime.value())));
+		eventSchedule.setEventEndDate(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.endDatetime.value())));
+		eventSchedule.setLastUpdatedDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getTimestamp(EVENT_SCHEDULE_TABLE.lastUpdatedOn.value())));
 		eventSchedule.setUpdatedBy(resultSet.getString(EVENT_SCHEDULE_TABLE.updatedBy.value()));
 		eventSchedule.setEventTitle(resultSet.getString(EVENT_SCHEDULE_TABLE.eventTitle.value()));
 		eventSchedule.setEventDescription(resultSet.getString(EVENT_SCHEDULE_TABLE.eventDescription.value()));
@@ -384,8 +384,8 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 		        {
 					PreparedStatement stmt = connection.prepareStatement(insert_eventSchedule_sql, Statement.RETURN_GENERATED_KEYS);
 					stmt.setInt(1, Integer.valueOf(eventSchedule.getClassroomid()));
-					stmt.setTimestamp(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
-					stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
+					stmt.setTimestamp(2, DBCommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
+					stmt.setTimestamp(3, DBCommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
 					stmt.setString(4, eventSchedule.getEventTitle());
 					stmt.setString(5, eventSchedule.getEventDescription());			
 					stmt.setString(6, eventSchedule.getUpdatedBy());
@@ -449,11 +449,11 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 			    {  			              
 			        try 
 			        {
-						System.out.println("About to insert = "+CommonUtils.toJson(eventSchedule));
+						System.out.println("About to insert = "+DBCommonUtils.toJson(eventSchedule));
 
 			        	stmt.setInt(1, Integer.valueOf(eventSchedule.getClassroomid()));
-						stmt.setTimestamp(2, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
-						stmt.setTimestamp(3, CommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
+						stmt.setTimestamp(2, DBCommonUtils.geSQLDateTimestamp(eventSchedule.getEventStartDate()));
+						stmt.setTimestamp(3, DBCommonUtils.geSQLDateTimestamp(eventSchedule.getEventEndDate()));			
 						stmt.setString(4, eventSchedule.getEventTitle());
 						stmt.setString(5, eventSchedule.getEventDescription());			
 						stmt.setString(6, eventSchedule.getUpdatedBy());

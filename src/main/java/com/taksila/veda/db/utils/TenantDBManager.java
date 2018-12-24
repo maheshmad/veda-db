@@ -20,12 +20,13 @@ public class TenantDBManager
 		{
 			DriverManagerDataSource dataSource = new DriverManagerDataSource();
 			dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+			String dsParams = "?verifyServerCertificate=false&useSSL=false&requireSSL=false"; 
 //			dataSource.setUrl("jdbc:mysql://localhost:3306/xe1_"+tenantId+"_db");
 			
-			if ("demo".equals(tenantId))
-				dataSource.setUrl("jdbc:mysql://localhost:3306/xe1");
-			else
-				dataSource.setUrl("jdbc:mysql://localhost:3306/xe1_"+tenantId+"_db");
+//			if ("demo".equals(tenantId))
+//				dataSource.setUrl("jdbc:mysql://localhost:3306/xe1"+dsParams);
+//			else
+			dataSource.setUrl("jdbc:mysql://localhost:3306/xe1_"+tenantId+"_db"+dsParams);
 			
 			dataSource.setUsername("xe1jdbcuser");
 			dataSource.setPassword("xe1jdbcuser@123");

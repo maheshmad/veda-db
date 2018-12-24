@@ -27,7 +27,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.taksila.veda.db.utils.TenantDBManager;
-import com.taksila.veda.model.api.classroom.v1_0.Classroom;
 import com.taksila.veda.model.api.course.v1_0.Course;
 
 /**

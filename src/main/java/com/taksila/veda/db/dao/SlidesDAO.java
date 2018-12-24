@@ -29,9 +29,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.Slide;
-import com.taksila.veda.utils.CommonUtils;
 
 /**
  * @author mahesh
@@ -155,7 +155,7 @@ public class SlidesDAO implements SlidesRepositoryInterface
 		slide.setTitle(resultSet.getString(SLIDE_TABLE.title.value()));
 		slide.setSubTitle(resultSet.getString(SLIDE_TABLE.subTitle.value()));
 		slide.setDescription(resultSet.getString(SLIDE_TABLE.description.value()));		
-		slide.setTextContent(CommonUtils.readSQLTextColumn(resultSet,SLIDE_TABLE.textContent.value()));
+		slide.setTextContent(DBCommonUtils.readSQLTextColumn(resultSet,SLIDE_TABLE.textContent.value()));
 		slide.setUpdatedBy(resultSet.getString(SLIDE_TABLE.textContent.value()));
 		
 		return slide;

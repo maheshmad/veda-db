@@ -30,11 +30,10 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.DaoUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
-import com.taksila.veda.model.db.base.v1_0.UserRole;
 import com.taksila.veda.model.db.usermgmt.v1_0.User;
-import com.taksila.veda.utils.CommonUtils;
 
 /**
  * @author mahesh
@@ -177,7 +176,7 @@ public class UsersDAO implements UsersRepositoryInterface
 		user.setUserId(resultSet.getString(USER_TABLE.userid.value()));
 		user.setEmailId(resultSet.getString(USER_TABLE.emailid.value()));
 		user.setUserPswd(resultSet.getString(USER_TABLE.pswd.value()));		
-		user.getUserRoles().addAll(CommonUtils.convertStringToUserRoles(resultSet.getString(USER_TABLE.roles.value())));
+		user.getUserRoles().addAll(DaoUtils.convertStringToUserRoles(resultSet.getString(USER_TABLE.roles.value())));
 		user.setFirstName(resultSet.getString(USER_TABLE.firstName.value()));
 		user.setMiddleName(resultSet.getString(USER_TABLE.middleName.value()));
 		user.setLastName(resultSet.getString(USER_TABLE.lastName.value()));
@@ -203,7 +202,7 @@ public class UsersDAO implements UsersRepositoryInterface
 		
 		user.setLastLoginIp(resultSet.getString(USER_TABLE.lastLoginIp.value()));
 		user.setUpdatedBy(resultSet.getString(USER_TABLE.lastUpdatedBy.value()));
-		user.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(USER_TABLE.lastUpdatedOn.value())));
+		user.setLastUpdatedDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(USER_TABLE.lastUpdatedOn.value())));
 
 		
 		return user;
@@ -559,7 +558,7 @@ public class UsersDAO implements UsersRepositoryInterface
 			    	{
 						stmt.setString(1, userid);
 						stmt.setString(2, userid);
-						stmt.setString(3, CommonUtils.getSecureHash(pswd));
+						stmt.setString(3, DBCommonUtils.getSecureHash(pswd));
 						ResultSet resultSet = stmt.executeQuery();	
 						if (resultSet.next()) 
 						{

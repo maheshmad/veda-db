@@ -27,9 +27,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.db.event_schedule_mgmt.v1_0.EventAttendance;
-import com.taksila.veda.utils.CommonUtils;
 
 /**
  * @author mahesh
@@ -110,8 +110,8 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 		{
 			classSessionAttendance.setId(String.valueOf(resultSet.getInt(CLASS_SESSION_ATTENDANCE_TABLE.id.value())));
 			classSessionAttendance.setEventScheduleId(String.valueOf(resultSet.getInt(CLASS_SESSION_ATTENDANCE_TABLE.eventScheduleId.value())));
-			classSessionAttendance.setStartDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CLASS_SESSION_ATTENDANCE_TABLE.startDatetime.value())));
-			classSessionAttendance.setEndDate(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CLASS_SESSION_ATTENDANCE_TABLE.endDatetime.value())));
+			classSessionAttendance.setStartDate(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CLASS_SESSION_ATTENDANCE_TABLE.startDatetime.value())));
+			classSessionAttendance.setEndDate(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(CLASS_SESSION_ATTENDANCE_TABLE.endDatetime.value())));
 			classSessionAttendance.setUserRecordId(resultSet.getString(CLASS_SESSION_ATTENDANCE_TABLE.userRecordId.value()));			
 		}
 		catch (DatatypeConfigurationException e) 
@@ -207,8 +207,8 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 		        {
 					PreparedStatement stmt = connection.prepareStatement(insert_class_session_attendance_sql, Statement.RETURN_GENERATED_KEYS);
 					stmt.setInt(1, Integer.valueOf(classSessionAttendance.getEventScheduleId()));
-					stmt.setDate(2, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getStartDate()));
-					stmt.setDate(3, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getEndDate()));
+					stmt.setDate(2, DBCommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getStartDate()));
+					stmt.setDate(3, DBCommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getEndDate()));
 					stmt.setString(4, classSessionAttendance.getUserRecordId());	   
 					return stmt;
 				} 
@@ -243,8 +243,8 @@ public class EventAttendanceDAO implements EventAttendanceRepositoryInterface
 		    {  			              
 		        try 
 		        {
-		        	stmt.setDate(1, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getStartDate()));
-					stmt.setDate(2, CommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getEndDate()));
+		        	stmt.setDate(1, DBCommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getStartDate()));
+					stmt.setDate(2, DBCommonUtils.getSqlDateFromXMLGregorianCalendarDateTimestamp(classSessionAttendance.getEndDate()));
 					stmt.setString(3, classSessionAttendance.getUserRecordId());			
 					stmt.setInt(4, Integer.valueOf(classSessionAttendance.getId()));
 					

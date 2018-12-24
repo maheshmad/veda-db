@@ -1,7 +1,5 @@
 package com.taksila.veda.db.dao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 import com.taksila.veda.model.api.classroom.v1_0.Classroom;

@@ -30,9 +30,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import com.taksila.veda.db.utils.DBCommonUtils;
 import com.taksila.veda.db.utils.TenantDBManager;
 import com.taksila.veda.model.api.course.v1_0.UploadedFile;
-import com.taksila.veda.utils.CommonUtils;
 
 /**
  * @author mahesh
@@ -137,7 +137,7 @@ public class UploadedFileDAO implements UploadedFileRepositoryInterface
 		uploadedfile.setFileType(resultSet.getString(UPLOADED_FILES_TABLE.fileType.value()));
 		uploadedfile.setFileProcessingCode(resultSet.getString(UPLOADED_FILES_TABLE.fileProcessingCode.value()));		
 		uploadedfile.setUpdatedBy(resultSet.getString(UPLOADED_FILES_TABLE.uploaded_by.value()));
-		uploadedfile.setLastUpdatedDateTime(CommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(UPLOADED_FILES_TABLE.uploadedDatetime.value())));		
+		uploadedfile.setLastUpdatedDateTime(DBCommonUtils.getXMLGregorianCalendarDateTimestamp(resultSet.getDate(UPLOADED_FILES_TABLE.uploadedDatetime.value())));		
 		
 		return uploadedfile;
 	}
