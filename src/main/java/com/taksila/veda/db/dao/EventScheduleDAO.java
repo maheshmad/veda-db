@@ -315,6 +315,7 @@ public class EventScheduleDAO implements EventScheduleRepositoryInterface
 	}
 	
 	
+	
 	/* (non-Javadoc)
 	 * @see com.taksila.veda.db.dao.EventScheduleRepositoryInterface#getEventScheduleById(java.lang.String)
 	 */

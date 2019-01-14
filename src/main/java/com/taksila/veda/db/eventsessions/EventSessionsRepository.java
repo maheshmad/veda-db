@@ -108,9 +108,42 @@ public class EventSessionsRepository implements EventSessionsRepositoryInterface
 	}
 
 	@Override
-	public List<EventSession> findByEventSessionsId(String eventSessionsId) {
-		// TODO Auto-generated method stub
-		return null;
+	public EventSession findByEventSessionById(String eventSessionsId) 
+	{
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		String sql = "select * from event_sessions where event_session_id = ?";		
+		logger.trace("****** about to run sql "+ sql);
+		/*
+		 * 
+		 */
+		
+		return jdbcTemplate.execute(sql,new PreparedStatementCallback<EventSession>()
+		{  
+		    @Override  
+		    public EventSession doInPreparedStatement(PreparedStatement ps)  			            
+		    {  			              
+		    	EventSession eventSession = new EventSession();
+		    	try 
+		        {
+					ps.setString(1, eventSessionsId);  
+					ResultSet rs = ps.executeQuery();
+					System.out.println("****** sql query result count = "+ rs.getFetchSize());
+					if (rs.next()) 
+					{
+						eventSession = rowMapper(rs);
+					}
+					else
+						return null;
+					
+				} 
+		        catch (SQLException | DatatypeConfigurationException e) 
+		        {					
+					e.printStackTrace();
+				}  
+		    	
+		    	return eventSession;
+		    }  
+		});  
 	}
 
 	@Override
@@ -153,9 +186,43 @@ public class EventSessionsRepository implements EventSessionsRepositoryInterface
 	}
 
 	@Override
-	public EventSession findByUserRecordIdAndEventSessionsId(String eventSessionsId, String userRecordId) {
-		// TODO Auto-generated method stub
-		return null;
+	public EventSession findByUserRecordIdAndEventSessionsId(String eventSessionsId, String userRecordId) 
+	{
+		JdbcTemplate jdbcTemplate = this.tenantDBManager.getJdbcTemplate(this.tenantId);
+		String sql = "select * from event_sessions where event_session_id = ? and user_record_id = ?";		
+		logger.trace("****** about to run sql "+ sql);
+		/*
+		 * 
+		 */
+		
+		return jdbcTemplate.execute(sql,new PreparedStatementCallback<EventSession>()
+		{  
+		    @Override  
+		    public EventSession doInPreparedStatement(PreparedStatement ps)  			            
+		    {  			              
+		    	EventSession eventSession = new EventSession();
+		    	try 
+		        {
+					ps.setString(1, eventSessionsId);
+					ps.setString(2, userRecordId);
+					ResultSet rs = ps.executeQuery();
+					System.out.println("****** sql query result count = "+ rs.getFetchSize());
+					if (rs.next()) 
+					{
+						eventSession = rowMapper(rs);
+					}
+					else
+						return null;
+					
+				} 
+		        catch (SQLException | DatatypeConfigurationException e) 
+		        {					
+					e.printStackTrace();
+				}  
+		    	
+		    	return eventSession;
+		    }  
+		});  
 	}
 
 	@Override
@@ -173,5 +240,4 @@ public class EventSessionsRepository implements EventSessionsRepositoryInterface
 	}
 
 	
-	 	
 }

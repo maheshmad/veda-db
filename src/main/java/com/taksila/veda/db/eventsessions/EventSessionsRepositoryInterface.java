@@ -13,8 +13,8 @@ public interface EventSessionsRepositoryInterface
 	Boolean save(EventSession newEventSession) throws Exception;
 	Boolean update(EventSession newEventSession);
 	Boolean delete(EventSession newEventSession);
-	List<EventSession> findByEventSessionsId(String eventSessionsId);
 	List<EventSession> findByUserRecordId(String userRecordId);
 	EventSession findByUserRecordIdAndEventSessionsId(String eventSessionsId,String userRecordId);
 	EventSession rowMapper(ResultSet rs)  throws SQLException, DatatypeConfigurationException;
+	EventSession findByEventSessionById(String eventSessionsId);
 }
