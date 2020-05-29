@@ -23,6 +23,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>2.3.3</version>
+		</dependency>
+		<dependency>
 			<groupId>com.taksila.veda.model</groupId>
 			<artifactId>veda-model</artifactId>
 			 <version>0.0.1-VM-SNAPSHOT</version>
@@ -34,10 +39,6 @@
 			 <version>0.0.1-SNAPSHOT</version>
 			 <scope>provided</scope>
 		</dependency>		
-		<!--  <dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-security</artifactId>
-		</dependency>-->
 		<dependency>
 	        <groupId>mysql</groupId>
 	        <artifactId>mysql-connector-java</artifactId>
@@ -135,12 +136,14 @@
 	</dependencyManagement>
 
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
+		<resources>
+            <resource>
+                <directory>src/main/java</directory>
+			</resource>
+			<resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>		
 	</build>
 
 	<repositories>
