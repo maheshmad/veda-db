@@ -12,24 +12,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class TenantDBManager 
 {
-	private Map<String, DataSource> dsMap = new HashMap<String,DataSource>();
-		
+	private Map<String, DataSource> dsMap = new HashMap<String,DataSource>();		
+
 	private DataSource getTenantDataSource(String tenantId)
 	{
 		if (dsMap.get(tenantId) == null)
 		{
 			DriverManagerDataSource dataSource = new DriverManagerDataSource();
-			dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-//			dataSource.setUrl("jdbc:mysql://localhost:3306/xe1_"+tenantId+"_db");
-			
-			if ("demo".equals(tenantId))
-				dataSource.setUrl("jdbc:mysql://localhost:3306/xe1");
-			else
-				dataSource.setUrl("jdbc:mysql://localhost:3306/xe1_"+tenantId+"_db");
-			
+			dataSource.setDriverClassName("com.mysql.jdbc.Driver");			
+			dataSource.setUrl("jdbc:mysql://localhost:3306/xe1_"+tenantId+"_db");			
 			dataSource.setUsername("xe1jdbcuser");
-			dataSource.setPassword("xe1jdbcuser@123");
-			
+			dataSource.setPassword("xe1jdbcuser@123");			
 			dsMap.put(tenantId, dataSource);
 		}
 		
